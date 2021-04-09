@@ -78,18 +78,19 @@ class GeneralizedRCNN(nn.Module):
             assert len(val) == 2
             original_image_sizes.append((val[0], val[1]))
         images,targets = self.transform(images,targets)
-        for target_idx,tar in enumerate(targets):
-            if tar is not None:
-                if len(tar["boxes"])>0:
-                    boxes = tar["boxes"]
-                    degenerate_boxes = boxes[:, 2:] <= boxes[:, :2]
-                    if degenerate_boxes.any():
-                        # print the first degenerate box
-                        bb_idx = torch.where(degenerate_boxes.any(dim=1))[0][0]
-                        degen_bb: List[float] = boxes[bb_idx].tolist()
-                        raise ValueError("All bounding boxes should have positive height and width."
-                                         " Found invalid box {} for target at index {}."
-                                         .format(degen_bb, target_idx))
+        if self.training:
+            for target_idx,tar in enumerate(targets):
+                if tar is not None:
+                    if len(tar["boxes"])>0:
+                        boxes = tar["boxes"]
+                        degenerate_boxes = boxes[:, 2:] <= boxes[:, :2]
+                        if degenerate_boxes.any():
+                            # print the first degenerate box
+                            bb_idx = torch.where(degenerate_boxes.any(dim=1))[0][0]
+                            degen_bb: List[float] = boxes[bb_idx].tolist()
+                            raise ValueError("All bounding boxes should have positive height and width."
+                                             " Found invalid box {} for target at index {}."
+                                             .format(degen_bb, target_idx))
 
 
 

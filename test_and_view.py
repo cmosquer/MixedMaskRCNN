@@ -176,14 +176,12 @@ def main(args=None):
     csv = pd.read_csv(
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210308-03_ubuntu.csv')
     output_dir = baseDir +'TRx-v2/Experiments'
-    chosen_experiment = '19-03-21'
+    chosen_experiment = '09-04-21'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test/'
     os.makedirs(save_fig_dir,exist_ok=True)
     print('Created dir')
-    chosen_epoch = 8
-
-    trainedModelPath = "{}/{}/maskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
-    #csv_test = csv[csv.image_source == 'hiba'].reset_index()
+    chosen_epoch = 0
+    trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
     image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name==idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,
@@ -203,7 +201,7 @@ def main(args=None):
      }
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=True)
     torch.manual_seed(1)
-    num_classes=6
+    num_classes = 6
     model = get_instance_segmentation_model(num_classes)
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)

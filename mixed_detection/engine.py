@@ -6,13 +6,13 @@ import torchvision.models.detection.mask_rcnn
 
 from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
-from mixed_detection import utils
+from mixed_detection import vision_utils
 
 
-def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,loss_type_weights=None):
+def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,loss_type_weights=None,breaking_n=0):
     model.train()
-    metric_logger = utils.MetricLogger(delimiter="  ")
-    metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
+    metric_logger.add_meter('lr', vision_utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}]'.format(epoch)
 
     lr_scheduler = None
@@ -20,12 +20,11 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,los
         warmup_factor = 1. / 1000
         warmup_iters = min(1000, len(data_loader) - 1)
 
-        lr_scheduler = utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
+        lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-    breaking_n = 100
     n=0
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
-        if n > breaking_n:
+        if n > breaking_n and breaking_n!=0:
             break
         n+=1
         images = list(image.to(device) for image in images)
@@ -33,22 +32,28 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,los
         #print('processing')
         loss_dict = model(images, targets)
         # reduce losses over all GPUs for logging purposes
-        loss_dict_reduced = utils.reduce_dict(loss_dict)
+        loss_dict_reduced = vision_utils.reduce_dict(loss_dict)
         #print(loss_dict)
-        if loss_type_weights is None:
-            n_losses = sum(loss_type_weights.values())
-            losses = sum(loss*loss_type_weights[loss_name] for loss_name,loss in loss_dict.items())/n_losses
-            losses_reduced = sum(loss* loss_type_weights[loss_name] for loss_name, loss in loss_dict_reduced.items())/n_losses
-            print('Weighted n losses: ',n_losses)
+
+        if loss_type_weights is not None:
+            n_losses_weighted = sum([loss_type_weights[curr_loss_type] for curr_loss_type in loss_dict.keys()])
+            if int(n_losses_weighted) == 0:
+                print('zero losses!!')
+                continue
+            else:
+                losses = sum(loss*loss_type_weights[loss_name] for loss_name,loss in loss_dict.items())/n_losses_weighted
+                losses_reduced = sum(loss* loss_type_weights[loss_name] for loss_name, loss in loss_dict_reduced.items())/n_losses_weighted
+            #print('Weighted n losses: ',n_losses)
 
 
         else:
             n_losses = len(loss_dict.keys())
             losses = sum(loss for loss in loss_dict.values())/n_losses
             losses_reduced = sum(loss for loss in loss_dict_reduced.values())/n_losses
-            print('unweighted n losses: ',n_losses)
+            #print('unweighted n losses: ',n_losses)
         loss_value = losses_reduced.item()
-
+        if not losses.requires_grad:
+            print(loss_dict)
         if not math.isfinite(loss_value):
             print("Loss is {}, stopping training".format(loss_value))
             print(loss_dict_reduced)
@@ -89,7 +94,7 @@ def evaluate(model, data_loader, device, saving_path=None):
         torch.save(model.state_dict(),saving_path)
         print('Saved model to ',saving_path)
 
-    metric_logger = utils.MetricLogger(delimiter="  ")
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
 
     coco = get_coco_api_from_dataset(data_loader.dataset)

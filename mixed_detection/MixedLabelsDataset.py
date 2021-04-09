@@ -52,11 +52,12 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 xmax = row['x2']
                 ymin = row['y1']
                 ymax = row['y2']
-                if ymax>ymin and xmax>xmin:
+                if ymax > ymin and xmax > xmin:
                     boxes.append([xmin, ymin, xmax, ymax])
                 if isinstance(row['class_name'],str):
                     if len(row['class_name'])>0:
-                        labels.append(self.class_numbers[row['class_name']])
+                        raw_labels = row['class_name'].split('-')
+                        labels += [self.class_numbers[c] for c in raw_labels]
 
             img_shape = np.array(img).shape
             masks = torch.as_tensor(np.zeros((len(boxes),img_shape[0],img_shape[1])),
@@ -78,7 +79,6 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["image_id"] = image_id
         target["area"] = area
         target["iscrowd"] = iscrowd
-
         if self.transforms is not None:
             img, target = self.transforms(img, target)
 

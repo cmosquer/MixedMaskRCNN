@@ -18,7 +18,7 @@ def get_transform(train):
 
 def get_instance_segmentation_model(num_classes):
     # load an instance segmentation model pre-trained on COCO
-    model = maskrcnn_resnet50_fpn(pretrained=True)
+    model = maskrcnn_resnet50_fpn(pretrained=False)
 
     # get the number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features

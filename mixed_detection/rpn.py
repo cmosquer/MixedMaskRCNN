@@ -184,14 +184,10 @@ class RegionProposalNetwork(torch.nn.Module):
             gt_boxes = targets_per_image["boxes"]
 
             if gt_boxes.numel() == 0:
-                if targets_per_image["labels"].numel() == 0:
-                    # Background image (negative example)
-                    device = anchors_per_image.device
-                    matched_gt_boxes_per_image = torch.zeros(anchors_per_image.shape, dtype=torch.float32, device=device)
-                    labels_per_image = torch.zeros((anchors_per_image.shape[0],), dtype=torch.float32, device=device)
-                else:
-                    labels_per_image = None
-                    matched_gt_boxes_per_image = None
+                # Background image (negative example)
+                device = anchors_per_image.device
+                matched_gt_boxes_per_image = torch.zeros(anchors_per_image.shape, dtype=torch.float32, device=device)
+                labels_per_image = torch.zeros((anchors_per_image.shape[0],), dtype=torch.float32, device=device)
             else:
                 match_quality_matrix = self.box_similarity(gt_boxes, anchors_per_image)
                 matched_idxs = self.proposal_matcher(match_quality_matrix)
@@ -215,6 +211,7 @@ class RegionProposalNetwork(torch.nn.Module):
             labels.append(labels_per_image)
             matched_gt_boxes.append(matched_gt_boxes_per_image)
         return labels, matched_gt_boxes
+
 
     def _get_top_n_idx(self, objectness, num_anchors_per_level):
         # type: (Tensor, List[int]) -> Tensor
@@ -346,9 +343,9 @@ class RegionProposalNetwork(torch.nn.Module):
         # RPN uses all feature maps that are available
         features = list(features.values())
         anchors = self.anchor_generator(images, features)
-        labels, matched_gt_boxes = self.assign_targets_to_anchors(anchors, targets)
-        objectness, pred_bbox_deltas = self.head(features)
         num_images = len(anchors)
+
+        objectness, pred_bbox_deltas = self.head(features)
         num_anchors_per_level_shape_tensors = [o[0].shape for o in objectness]
         num_anchors_per_level = [s[0] * s[1] * s[2] for s in num_anchors_per_level_shape_tensors]
         objectness, pred_bbox_deltas = \
@@ -361,18 +358,16 @@ class RegionProposalNetwork(torch.nn.Module):
         boxes, scores = self.filter_proposals(proposals, objectness, images.image_sizes, num_anchors_per_level)
         losses = {}
         if self.training:
-
-            try:
-                positive_no_boxes_images = labels.index(None)
-                compute_loss_images = list(range(len(targets)))
-                compute_loss_images.remove(positive_no_boxes_images)
-                none_labels = True
-            except ValueError:
-                none_labels = False
-            if none_labels:
-
-                features = [feats[compute_loss_images,:,:,:] for feats in features]
-                images.tensors = images.tensors [compute_loss_images,:,:,]
+            #Identificar instancias del batch que son label positiva pero sin caja
+            positive_no_boxes_images = []
+            for j,target in enumerate(targets):
+                if target['boxes'].numel() == 0:
+                    if target["labels"].numel() != 0:
+                        positive_no_boxes_images.append(j)
+            compute_loss_images = [k for k in range(len(targets)) if k not in positive_no_boxes_images]
+            if len(compute_loss_images) > 0:
+                features = [feats[compute_loss_images, :, :, :] for feats in features]
+                images.tensors = images.tensors[compute_loss_images, :, :, ]
                 images.image_sizes = [images.image_sizes[j] for j in compute_loss_images]
                 anchors = self.anchor_generator(images, features)
                 objectness, pred_bbox_deltas = self.head(features)
@@ -380,12 +375,12 @@ class RegionProposalNetwork(torch.nn.Module):
                     concat_box_prediction_layers(objectness, pred_bbox_deltas)
                 labels, matched_gt_boxes = self.assign_targets_to_anchors(anchors,
                                                                           [targets[j] for j in compute_loss_images])
+                regression_targets = self.box_coder.encode(matched_gt_boxes, anchors)
+                loss_objectness, loss_rpn_box_reg = self.compute_loss(
+                    objectness, pred_bbox_deltas, labels, regression_targets)
+                losses = {
+                    "loss_objectness": loss_objectness,
+                    "loss_rpn_box_reg": loss_rpn_box_reg,
+                }
 
-            regression_targets = self.box_coder.encode(matched_gt_boxes, anchors)
-            loss_objectness, loss_rpn_box_reg = self.compute_loss(
-                objectness, pred_bbox_deltas, labels, regression_targets)
-            losses = {
-                "loss_objectness": loss_objectness,
-                "loss_rpn_box_reg": loss_rpn_box_reg,
-            }
         return boxes, losses
