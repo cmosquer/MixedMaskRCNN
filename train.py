@@ -21,7 +21,7 @@ def main(args=None):
      }
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
-    output_dir = experiment_dir+'/09-04-21/'
+    output_dir = experiment_dir+'/14-04-21/'
     os.makedirs(output_dir,exist_ok=True)
     loss_type_weights = {
                 "loss_classifier": 4,
@@ -119,8 +119,7 @@ def main(args=None):
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,loss_type_weights=loss_type_weights,
-                        breaking_n=30,
+        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10
                         )
         # update the learning rate
         lr_scheduler.step()
