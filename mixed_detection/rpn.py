@@ -240,7 +240,7 @@ class RegionProposalNetwork(torch.nn.Module):
             torch.full((n,), idx, dtype=torch.int64, device=device)
             for idx, n in enumerate(num_anchors_per_level)
         ]
-        levels = torch.cat(levels, 0)
+        levels = torch.cat(levels, 0) #Chequear que son los levels. las clases?las imaegnes del batch?
         levels = levels.reshape(1, -1).expand_as(objectness)
 
         # select top_n boxes independently per level before applying nms
@@ -346,7 +346,7 @@ class RegionProposalNetwork(torch.nn.Module):
         num_images = len(anchors)
 
         objectness, pred_bbox_deltas = self.head(features)
-        num_anchors_per_level_shape_tensors = [o[0].shape for o in objectness]
+        num_anchors_per_level_shape_tensors = [o[0].shape for o in objectness] #Chequear que es este parametro. Cantidad de anchors por clase? que son los levels?
         num_anchors_per_level = [s[0] * s[1] * s[2] for s in num_anchors_per_level_shape_tensors]
         objectness, pred_bbox_deltas = \
             concat_box_prediction_layers(objectness, pred_bbox_deltas)

@@ -1,6 +1,7 @@
 import torch
 from PIL import Image
 import numpy as np
+import pandas as pd
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
     def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
@@ -8,7 +9,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         self.class_numbers = class_numbers
         self.transforms = transforms
         self.return_image_source = return_image_source
-
+        assert pd.Series(['mask_path','label_level',
+                          'x1','x2','y1','y2',
+                          'class_name','image_source',
+                          'file_name']).isin(self.csv.columns).all()
 
     def __getitem__(self, idx):
         img_path = self.csv.file_name.values[idx]
@@ -90,3 +94,29 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.csv)
 
+
+
+
+class MixedSampler(torch.utils.data.Sampler):
+    def __init__(self, folds_distr_path, fold_index, demand_non_empty_proba):
+        assert demand_non_empty_proba > 0, 'frequensy of non-empty images must be greater then zero'
+        self.fold_index = fold_index
+        self.positive_proba = demand_non_empty_proba
+
+        self.folds = pd.read_csv(folds_distr_path)
+        self.folds.fold = self.folds.fold.astype(str)
+        self.folds = self.folds[self.folds.fold != fold_index].reset_index(drop=True)
+
+        self.positive_idxs = self.folds[self.folds.exist_labels == 1].index.values
+        self.negative_idxs = self.folds[self.folds.exist_labels == 0].index.values
+
+        self.n_positive = self.positive_idxs.shape[0]
+        self.n_negative = int(self.n_positive * (1 - self.positive_proba) / self.positive_proba)
+
+    def __iter__(self):
+        negative_sample = np.random.choice(self.negative_idxs, size=self.n_negative)
+        shuffled = np.random.permutation(np.hstack((negative_sample, self.positive_idxs)))
+        return iter(shuffled.tolist())
+
+    def __len__(self):
+        return self.n_positive + self.n_negative

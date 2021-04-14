@@ -4,7 +4,7 @@ import torch.utils.data
 from mixed_detection.utils import get_instance_segmentation_model,get_transform,collate_fn
 from mixed_detection.engine import train_one_epoch, evaluate
 from sklearn.model_selection import train_test_split
-from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
+from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
 import os
 
 def main(args=None):
@@ -32,25 +32,57 @@ def main(args=None):
                 "loss_rpn_box_reg": 3,
             }
     image_ids = list(set(csv.file_name.values))
+
+    csv['label_level'] = [None] * len(csv)
+    for i, row in csv.iterrows():
+        assigned = False
+        if isinstance(row['mask_path'], str):
+            if os.path.exists(row['mask_path']):
+                csv.loc[i, 'label_level'] = 'mask'
+                assigned = True
+        else:
+            xmin = row['x1']
+            xmax = row['x2']
+            ymin = row['y1']
+            ymax = row['y2']
+            if ymax > ymin and xmax > xmin:
+                csv.loc[i, 'label_level'] = 'box'
+                assigned = True
+            else:
+                if isinstance(row['class_name'], str):
+                    if len(row['class_name']) > 0:
+                        csv.loc[i, 'label_level'] = 'imagelabel'
+                        assigned = True
+        if not assigned:
+            csv.loc[i, 'label_level'] = 'nofinding'
+    print('finished initialization: ')
+    print(csv.label_level.value_counts())
+    """
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,test_size=0.1,random_state=42)
+    train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,#--->sources o label level? 
+                                            test_size=0.1,random_state=42)
+    
     csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index()
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
     print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_test),
                                                                                                       len(train_idx),len(test_idx)))
-    #csv_train = csv[:300]
-    #csv_test = csv[:-300]
+    """
+    csv_train = csv[:30000].reset_index()
+    csv_test = csv[30000:].reset_index()
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))
 
     # split the dataset in train and test set
     torch.manual_seed(1)
+    # train_sampler = MixedSampler(folds_distr_path, fold_id, non_empty_mask_proba)
 
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=2, shuffle=True, num_workers=0,
-        collate_fn=collate_fn)
+        collate_fn=collate_fn,
+        #sampler=train_sampler
+         )
 
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=1, shuffle=False, num_workers=0,
@@ -83,7 +115,9 @@ def main(args=None):
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,loss_type_weights=loss_type_weights)
+        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10,loss_type_weights=loss_type_weights,
+                        breaking_n=30,
+                        )
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset

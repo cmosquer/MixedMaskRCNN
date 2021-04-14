@@ -11,7 +11,7 @@ import pycocotools.mask as mask_util
 
 from collections import defaultdict
 
-from mixed_detection import utils
+from mixed_detection import vision_utils
 
 
 class CocoEvaluator(object):
@@ -159,8 +159,8 @@ def convert_to_xywh(boxes):
 
 
 def merge(img_ids, eval_imgs):
-    all_img_ids = utils.all_gather(img_ids)
-    all_eval_imgs = utils.all_gather(eval_imgs)
+    all_img_ids = vision_utils.all_gather(img_ids)
+    all_eval_imgs = vision_utils.all_gather(eval_imgs)
 
     merged_img_ids = []
     for p in all_img_ids:

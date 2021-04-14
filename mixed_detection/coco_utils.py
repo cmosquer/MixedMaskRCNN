@@ -152,7 +152,7 @@ def convert_to_coco_api(ds):
         # targets = ds.get_annotations(img_idx)
         img, targets = ds[img_idx]
         image_id = targets["image_id"].item()
-        print(image_id,targets)
+        #print(image_id,targets)
         img_dict = {}
         img_dict['id'] = image_id
         img_dict['height'] = img.shape[-2]

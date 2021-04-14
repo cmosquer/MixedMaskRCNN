@@ -7,7 +7,7 @@ import torchvision.models.detection.mask_rcnn
 from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
 from mixed_detection import vision_utils
-
+from mixed_detection.utils import mean_average_precision
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,loss_type_weights=None,breaking_n=0):
     model.train()
@@ -34,7 +34,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,los
         # reduce losses over all GPUs for logging purposes
         loss_dict_reduced = vision_utils.reduce_dict(loss_dict)
         #print(loss_dict)
-
+        del images,targets
         if loss_type_weights is not None:
             n_losses_weighted = sum([loss_type_weights[curr_loss_type] for curr_loss_type in loss_dict.keys()])
             if int(n_losses_weighted) == 0:
@@ -83,7 +83,7 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, saving_path=None):
+def evaluate(model, data_loader, device, max_detections=10,saving_path=None):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -97,26 +97,54 @@ def evaluate(model, data_loader, device, saving_path=None):
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
 
-    coco = get_coco_api_from_dataset(data_loader.dataset)
-    iou_types = _get_iou_types(model)
-    coco_evaluator = CocoEvaluator(coco, iou_types)
-
+    #coco = get_coco_api_from_dataset(data_loader.dataset)
+    #iou_types = _get_iou_types(model)
+    #coco_evaluator = CocoEvaluator(coco, iou_types)
+    pred_image_indices = []
     for image, targets in metric_logger.log_every(data_loader, 100, header):
         image = list(img.to(device) for img in image)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         torch.cuda.synchronize()
         model_time = time.time()
-        outputs = model(image)
 
-        outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
-        model_time = time.time() - model_time
+        with torch.no_grad():
+            outputs = model(image)#Asumo que es de a una imagen
+            #outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
+            for output,target in zip(outputs,targets):
+                if max_detections:
+                    scores_sort = torch.argsort(-output['scores'])[:max_detections]
+                    for k, v in output.items():
+                        output[k] = output[k][scores_sort,]
 
-        res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
-        evaluator_time = time.time()
-        coco_evaluator.update(res)
-        evaluator_time = time.time() - evaluator_time
-        metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+                pred_image_indices+=[target['image_id']]*len(output['boxes'])
+                pred_probs+=output['scores']
+                pred_labels+=output['labels']
+                pred_bboxes+=output['boxes']
+                target_image_indices+=[target['image_id']*len(target['boxes'])]
+                target_labels+=target['labels']
+                target_bboxes+=target['boxes']
+        del image, targets, outputs
+    #TODO: cambiar listas por tensores
+    mAP, APS = mean_average_precision(
+                                    pred_image_indices,
+                                    pred_probs,
+                                    pred_labels,
+                                    pred_bboxes,
+                                    target_image_indices,
+                                    target_labels,
+                                    target_bboxes,
+                                    iou_threshold=0.4,
+                                    ap_calculation='COCO'
+                                    )
+
+    """outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+    model_time = time.time() - model_time
+
+    #res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+    evaluator_time = time.time()
+    #coco_evaluator.update(res)
+    evaluator_time = time.time() - evaluator_time
 
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
@@ -127,5 +155,5 @@ def evaluate(model, data_loader, device, saving_path=None):
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     coco_evaluator.summarize()
-    torch.set_num_threads(n_threads)
+    torch.set_num_threads(n_threads)"""
     return coco_evaluator
