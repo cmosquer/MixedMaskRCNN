@@ -61,7 +61,7 @@ def main(args=None):
     #--Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin(['box','mask'])].reset_index()
 
-    """
+
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,#--->sources o label level? 
                                             test_size=0.1,random_state=42)
@@ -73,7 +73,7 @@ def main(args=None):
                                                                                                       len(train_idx),len(test_idx)))
     """
     csv_train = csv[:30000].reset_index()
-    csv_test = csv[30000:].reset_index()
+    csv_test = csv[30000:].reset_index() """
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))
 
