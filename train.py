@@ -31,7 +31,7 @@ def main(args=None):
                 "loss_objectness": 3,
                 "loss_rpn_box_reg": 3,
             }
-    image_ids = list(set(csv.file_name.values))
+
 
     csv['label_level'] = [None] * len(csv)
     for i, row in csv.iterrows():
@@ -61,7 +61,7 @@ def main(args=None):
     #--Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin(['box','mask'])].reset_index()
 
-
+    image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,#--->sources o label level? 
                                             test_size=0.1,random_state=42)
