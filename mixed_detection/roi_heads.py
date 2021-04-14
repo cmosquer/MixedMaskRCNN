@@ -305,89 +305,63 @@ class RoIHeads(nn.Module):
             image_shapes (List[Tuple[H, W]])
             targets (List[Dict])
         """
-        result: List[Dict[str, torch.Tensor]] = []
-        losses = {}
-        positive_no_boxes_images = []
-
         if targets is not None:
-            for j, target in enumerate(targets):
+            for t in targets:
                 # TODO: https://github.com/pytorch/pytorch/issues/26731
                 floating_point_types = (torch.float, torch.double, torch.half)
-                assert target["boxes"].dtype in floating_point_types, 'target boxes must of float type'
-                assert target["labels"].dtype == torch.int64, 'target labels must of int64 type'
+                assert t["boxes"].dtype in floating_point_types, 'target boxes must of float type'
+                assert t["labels"].dtype == torch.int64, 'target labels must of int64 type'
                 if self.has_keypoint():
-                    assert target["keypoints"].dtype == torch.float32, 'target keypoints must of float type'
-                if target['boxes'].numel() == 0:
-                    if target["labels"].numel() != 0:
-                        positive_no_boxes_images.append(j)
+                    assert t["keypoints"].dtype == torch.float32, 'target keypoints must of float type'
 
-        #Hago como si fuera inferencia
-        compute_loss_indices = [k for k in range(len(image_shapes)) if k not in positive_no_boxes_images]
+        if self.training:
+            proposals, matched_idxs, labels, regression_targets = self.select_training_samples(proposals, targets)
+        else:
+            labels = None
+            regression_targets = None
+            matched_idxs = None
 
-        matched_idxs = None
         box_features = self.box_roi_pool(features, proposals, image_shapes)
         box_features = self.box_head(box_features)
         class_logits, box_regression = self.box_predictor(box_features)
-        boxes, scores, labels = self.postprocess_detections(class_logits, box_regression, proposals, image_shapes)
-        num_images = len(boxes)
-        for i in range(num_images):
-            result.append(
-                {
-                    "boxes": boxes[i],
-                    "labels": labels[i],
-                    "scores": scores[i],
-                }
-            )
 
+        result: List[Dict[str, torch.Tensor]] = []
+        losses = {}
         if self.training:
-            image_level_loss = self.compute_image_level_loss(scores,labels,targets,
-                                                             num_foreground_classes=class_logits.shape[-1]-1)
-            if image_level_loss is not None:
-                losses = {"loss_image_level": image_level_loss}
-            else:
-                losses = {}
-            valid_proposals = [proposals[i] for i in compute_loss_indices]
-            valid_targets = [targets[i] for i in compute_loss_indices]
-            if len(valid_proposals)>0 and len(valid_targets)>0:
-                valid_proposals, valid_matched_idxs, \
-                valid_labels, regression_targets = self.select_training_samples(valid_proposals,valid_targets)
-
-                valid_features = dict(zip(features.keys(),
-                                             [feats[compute_loss_indices, :, :, :]
-                                              for feats in features.values()]))
-                image_shapes_for_loss = [image_shapes[i] for i in compute_loss_indices]
-
-                assert labels is not None and regression_targets is not None
-                box_features_for_loss = self.box_roi_pool(valid_features, valid_proposals, image_shapes_for_loss)
-                box_features_for_loss = self.box_head(box_features_for_loss)
-                class_logits_for_loss, box_regression_for_loss = self.box_predictor(box_features_for_loss)
-                loss_classifier, loss_box_reg = fastrcnn_loss(
-                    class_logits_for_loss, box_regression_for_loss,
-                    valid_labels, regression_targets)
-
-                losses["loss_classifier"] = loss_classifier
-                losses["loss_box_reg"] = loss_box_reg
-
+            assert labels is not None and regression_targets is not None
+            loss_classifier, loss_box_reg = fastrcnn_loss(
+                class_logits, box_regression, labels, regression_targets)
+            losses = {
+                "loss_classifier": loss_classifier,
+                "loss_box_reg": loss_box_reg
+            }
+        else:
+            boxes, scores, labels = self.postprocess_detections(class_logits, box_regression, proposals, image_shapes)
+            num_images = len(boxes)
+            for i in range(num_images):
+                result.append(
+                    {
+                        "boxes": boxes[i],
+                        "labels": labels[i],
+                        "scores": scores[i],
+                    }
+                )
 
         if self.has_mask():
             mask_proposals = [p["boxes"] for p in result]
-            if self.training and len(valid_proposals)>0:
-                assert valid_matched_idxs is not None
+            if self.training:
+                assert matched_idxs is not None
                 # during training, only focus on positive boxes
+                num_images = len(proposals)
                 mask_proposals = []
                 pos_matched_idxs = []
-                reindex = 0
                 for img_id in range(num_images):
                     pos = torch.where(labels[img_id] > 0)[0]
                     mask_proposals.append(proposals[img_id][pos])
-
-                    if img_id in compute_loss_indices:
-                        pos_matched_idxs.append(valid_matched_idxs[reindex][pos])
-                        reindex += 1
-                    else:
-                        pos_matched_idxs.append(None)
+                    pos_matched_idxs.append(matched_idxs[img_id][pos])
             else:
                 pos_matched_idxs = None
+
             if self.mask_roi_pool is not None:
                 mask_features = self.mask_roi_pool(features, mask_proposals, image_shapes)
                 mask_features = self.mask_head(mask_features)
@@ -395,30 +369,28 @@ class RoIHeads(nn.Module):
             else:
                 raise Exception("Expected mask_roi_pool to be not None")
 
-            if self.training and len(valid_proposals) > 0:
+            loss_mask = {}
+            if self.training:
                 assert targets is not None
                 assert pos_matched_idxs is not None
                 assert mask_logits is not None
 
                 gt_masks = [t["masks"] for t in targets]
                 gt_labels = [t["labels"] for t in targets]
-
                 rcnn_loss_mask = maskrcnn_loss(
                     mask_logits, mask_proposals,
                     gt_masks, gt_labels, pos_matched_idxs)
-
                 loss_mask = {
                     "loss_mask": rcnn_loss_mask
                 }
-                if rcnn_loss_mask is not None:
-                    losses.update(loss_mask)
-
             else:
                 labels = [r["labels"] for r in result]
                 masks_probs = maskrcnn_inference(mask_logits, labels)
                 for mask_prob, r in zip(masks_probs, result):
                     r["masks"] = mask_prob
 
+            if rcnn_loss_mask is not None:
+                losses.update(loss_mask)
 
         # keep none checks in if conditional so torchscript will conditionally
         # compile each branch
@@ -466,6 +438,7 @@ class RoIHeads(nn.Module):
             losses.update(loss_keypoint)
 
         return result, losses
+
 
 def fastrcnn_loss(class_logits, box_regression, labels, regression_targets):
     # type: (Tensor, Tensor, List[Tensor], List[Tensor]) -> Tuple[Tensor, Tensor]
