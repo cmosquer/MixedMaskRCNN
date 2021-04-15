@@ -78,7 +78,7 @@ def evaluate(model, data_loader, device, saving_path=None):
     if saving_path:
         torch.save(model.state_dict(),saving_path)
         print('Saved model to ',saving_path)
-        
+
     coco = get_coco_api_from_dataset(data_loader.dataset)
     iou_types = _get_iou_types(model)
     coco_evaluator = CocoEvaluator(coco, iou_types)

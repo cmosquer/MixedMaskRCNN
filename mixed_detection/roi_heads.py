@@ -369,7 +369,6 @@ class RoIHeads(nn.Module):
             else:
                 raise Exception("Expected mask_roi_pool to be not None")
 
-            loss_mask = {}
             if self.training:
                 assert targets is not None
                 assert pos_matched_idxs is not None
@@ -383,14 +382,16 @@ class RoIHeads(nn.Module):
                 loss_mask = {
                     "loss_mask": rcnn_loss_mask
                 }
+                if rcnn_loss_mask is not None:
+                    losses.update(loss_mask)
             else:
                 labels = [r["labels"] for r in result]
                 masks_probs = maskrcnn_inference(mask_logits, labels)
                 for mask_prob, r in zip(masks_probs, result):
                     r["masks"] = mask_prob
+                losses.update({})
 
-            if rcnn_loss_mask is not None:
-                losses.update(loss_mask)
+
 
         # keep none checks in if conditional so torchscript will conditionally
         # compile each branch
