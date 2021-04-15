@@ -9,7 +9,6 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         self.csv = csv
         self.class_numbers = class_numbers
         self.transforms = transforms
-        print(transforms)
         self.return_image_source = return_image_source
         assert pd.Series(['class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
