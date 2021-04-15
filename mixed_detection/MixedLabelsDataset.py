@@ -37,6 +37,10 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         else:
             return img, labels
 
+    def __len__(self):
+        return len(self.csv)
+
+    
 class MixedLabelsDataset(torch.utils.data.Dataset):
     def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
         self.csv = csv
