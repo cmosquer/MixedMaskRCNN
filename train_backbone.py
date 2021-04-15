@@ -104,7 +104,7 @@ def main(args=None):
 
 
 
-    backbone = resnet.resnet50(num_classes=num_classes,
+    backbone = resnet.resnet50(
         pretrained=True,
         norm_layer=misc_nn_ops.FrozenBatchNorm2d)
 
