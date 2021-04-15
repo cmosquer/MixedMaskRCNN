@@ -124,4 +124,9 @@ def main(args=None):
         lr_scheduler.step()
         # evaluate on the test dataset
         saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
-        evaluate_resnet(model, data_loader_test, device=device, saving_path=saving_path)
+        evaluate_resnet(backbone, data_loader_test, device=device, saving_path=saving_path)
+
+
+
+if __name__ == '__main__':
+    main()
