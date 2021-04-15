@@ -9,6 +9,7 @@ import os
 from torchvision.ops import misc as misc_nn_ops
 from torch import nn
 from torchvision.models import resnet
+from torchvision import transforms
 
 
 
@@ -77,9 +78,15 @@ def main(args=None):
     print(csv_train.image_source.value_counts(normalize=True))
     print('TEST SOURCES')
     print(csv_test.image_source.value_counts(normalize=True))
+    base_transform = [transforms.Resize((224, 224)),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                    ]
+    train_transform = base_transform.append(T.RandomHorizontalFlip(0.5))
 
-    dataset = ImageLabelsDataset(csv_train, class_numbers, get_transform(train=False))
-    dataset_test = ImageLabelsDataset(csv_test, class_numbers, get_transform(train=False))
+
+    dataset = ImageLabelsDataset(csv_train, class_numbers,transforms.Compose(train_transform) )
+    dataset_test = ImageLabelsDataset(csv_test, class_numbers, transforms.Compose(base_transform))
 
     # split the dataset in train and test set
     torch.manual_seed(1)
