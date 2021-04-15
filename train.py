@@ -71,6 +71,11 @@ def main(args=None):
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
     print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_test),
                                                                                                       len(train_idx),len(test_idx)))
+    print('TRAIN SOURCES:')
+    print(csv_train.image_source.value_counts(normalize=True))
+    print('TEST SOURCES')
+    print(csv_test.image_source.value_counts(normalize=True))
+
     """
     csv_train = csv[:30000].reset_index()
     csv_test = csv[30000:].reset_index() """
