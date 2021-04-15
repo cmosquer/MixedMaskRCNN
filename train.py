@@ -11,7 +11,7 @@ def main(args=None):
     print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
     experiment_dir = trx_dir+'Experiments/'
-    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210330-00_ubuntu.csv')
+    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     class_numbers = {
      'NoduloMasa': 1,
      'Consolidacion': 2,
@@ -49,7 +49,7 @@ def main(args=None):
                 csv.loc[i, 'label_level'] = 'nofinding'
         print('finished initialization: ')
         print(csv.label_level.value_counts())
-        csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-20210330-00_ubuntu_{experiment_id}.csv', index=False)
+        csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
 
 
 

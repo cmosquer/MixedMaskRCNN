@@ -1,20 +1,22 @@
 import torch
 import pandas as pd
 import torch.utils.data
-from mixed_detection.utils import get_transform,collate_fn
+from mixed_detection.utils import get_transform,collate_fn, create_resnet_head
 from mixed_detection.engine import train_one_epoch_resnet, evaluate_resnet
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import ImageLabelsDataset
 import os
 from torchvision.ops import misc as misc_nn_ops
-
+from torch import nn
 from torchvision.models import resnet
+
+
 
 def main(args=None):
     print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
     experiment_dir = trx_dir+'Experiments/'
-    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210330-00_ubuntu.csv')
+    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     class_numbers = {
      'NoduloMasa': 0,
      'Consolidacion': 1,
@@ -53,7 +55,7 @@ def main(args=None):
                 csv.loc[i, 'label_level'] = 'nofinding'
         print('finished initialization: ')
         print(csv.label_level.value_counts())
-        csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-20210330-00_ubuntu_{experiment_id}.csv', index=False)
+        csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
 
     # --Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin(['imagelabel', 'nofinding'])].reset_index()
@@ -99,9 +101,15 @@ def main(args=None):
 
     # our dataset has two classes only - background and person
     num_classes = 5
+
+
+
     backbone = resnet.resnet50(num_classes=num_classes,
         pretrained=True,
         norm_layer=misc_nn_ops.FrozenBatchNorm2d)
+
+    top_head = create_resnet_head(backbone.fc.in_features, num_classes)  # because ten classes
+    backbone.fc = top_head  # replace the fully connected layer
 
     backbone.to(device)
 
