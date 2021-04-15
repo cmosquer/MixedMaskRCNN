@@ -85,8 +85,8 @@ def main(args=None):
     train_transform = base_transform.append(transforms.RandomHorizontalFlip(0.5))
 
 
-    dataset = ImageLabelsDataset(csv_train, class_numbers,transforms.Compose(train_transform) )
-    dataset_test = ImageLabelsDataset(csv_test, class_numbers, transforms.Compose(base_transform))
+    dataset = ImageLabelsDataset(csv_train, class_numbers,[transforms.Compose(train_transform)] )
+    dataset_test = ImageLabelsDataset(csv_test, class_numbers, [transforms.Compose(base_transform)])
 
     # split the dataset in train and test set
     torch.manual_seed(1)
