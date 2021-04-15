@@ -82,7 +82,7 @@ def main(args=None):
                                     transforms.ToTensor(),
                                     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
                                     ]
-    train_transform = base_transform.append(T.RandomHorizontalFlip(0.5))
+    train_transform = base_transform.append(transforms.RandomHorizontalFlip(0.5))
 
 
     dataset = ImageLabelsDataset(csv_train, class_numbers,transforms.Compose(train_transform) )
