@@ -6,6 +6,8 @@ from torchvision.ops import misc as misc_nn_ops
 from torchvision.models._utils import IntermediateLayerGetter
 from torchvision.models import mobilenet
 from torchvision.models import resnet
+from ._utils import overwrite_eps
+from torchvision.models.utils import load_state_dict_from_url
 
 
 class BackboneWithFPN(nn.Module):
@@ -52,7 +54,8 @@ def resnet_fpn_backbone(
     norm_layer=misc_nn_ops.FrozenBatchNorm2d,
     trainable_layers=3,
     returned_layers=None,
-    extra_blocks=None
+    extra_blocks=None,
+    pretrained_state_dict=None
 ):
     """
     Constructs a specified ResNet backbone with FPN on top. Freezes the specified number of layers in the backbone.
@@ -89,10 +92,16 @@ def resnet_fpn_backbone(
             a new list of feature maps and their corresponding names. By
             default a ``LastLevelMaxPool`` is used.
     """
+
+    if pretrained_state_dict:
+            pretrained = False
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained,
         norm_layer=norm_layer)
-
+    if pretrained_state_dict:
+        state_dict = load_state_dict_from_url(pretrained_state_dict)
+        backbone.load_state_dict(state_dict)
+        overwrite_eps(backbone, 0.0)
     # select layers that wont be frozen
     assert 0 <= trainable_layers <= 5
     layers_to_train = ['layer4', 'layer3', 'layer2', 'layer1', 'conv1'][:trainable_layers]

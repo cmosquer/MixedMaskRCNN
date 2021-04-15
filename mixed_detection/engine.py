@@ -109,3 +109,76 @@ def evaluate(model, data_loader, device, saving_path=None):
     coco_evaluator.summarize()
     torch.set_num_threads(n_threads)
     return coco_evaluator
+
+
+def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epoch, print_freq):
+    model.train()
+
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
+    metric_logger.add_meter('lr', vision_utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
+    header = 'Epoch: [{}]'.format(epoch)
+    counter = 0
+    train_running_loss = 0
+    lr_scheduler = None
+    if epoch == 0:
+        warmup_factor = 1. / 1000
+        warmup_iters = min(1000, len(data_loader) - 1)
+
+        lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
+
+    for images, labels in metric_logger.log_every(data_loader, print_freq, header):
+        counter += 1
+        optimizer.zero_grad()
+        images = list(image.to(device) for image in images)
+        labels = list(label.to(device) for label in labels)
+
+        outputs = model(images)
+
+        loss = criterion(outputs,labels)
+
+        train_running_loss += loss.item()
+        loss.backward()
+        optimizer.step()
+
+        if lr_scheduler is not None:
+            lr_scheduler.step()
+
+        metric_logger.update(loss=loss)
+        metric_logger.update(lr=optimizer.param_groups[0]["lr"])
+
+    train_loss = train_running_loss / counter
+
+
+    return metric_logger,train_loss
+
+@torch.no_grad()
+def evaluate_resnet(model, dataloader, device, criterion, saving_path=None):
+    n_threads = torch.get_num_threads()
+    # FIXME remove this and make paste_masks_in_image run on the GPU
+    torch.set_num_threads(1)
+    cpu_device = torch.device("cpu")
+    model.eval()
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
+    header = 'Test:'
+    if saving_path:
+        torch.save(model.state_dict(),saving_path)
+        print('Saved model to ',saving_path)
+    counter = 0
+    val_running_loss = 0.0
+    for images, labels in metric_logger.log_every(dataloader, 100, header):
+        counter += 1
+        images = list(img.to(device) for img in images)
+
+        torch.cuda.synchronize()
+        model_time = time.time()
+        outputs = model(images)
+
+        outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+        model_time = time.time() - model_time
+
+
+        loss = criterion(outputs, labels)
+        val_running_loss += loss.item()
+        metric_logger.update(loss=loss, evaluator_time=model_time)
+    val_loss = val_running_loss / counter
+    return val_loss

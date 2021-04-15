@@ -1,11 +1,14 @@
 import torch
 import pandas as pd
 import torch.utils.data
-from mixed_detection.utils import get_instance_segmentation_model,get_transform,collate_fn
-from mixed_detection.engine import train_one_epoch, evaluate
+from mixed_detection.utils import get_transform,collate_fn
+from mixed_detection.engine import train_one_epoch_resnet, evaluate_resnet
 from sklearn.model_selection import train_test_split
-from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
+from mixed_detection.MixedLabelsDataset import ImageLabelsDataset
 import os
+from torchvision.ops import misc as misc_nn_ops
+
+from torchvision.models import resnet
 
 def main(args=None):
     print('starting training script')
@@ -13,17 +16,18 @@ def main(args=None):
     experiment_dir = trx_dir+'Experiments/'
     csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210330-00_ubuntu.csv')
     class_numbers = {
-     'NoduloMasa': 1,
-     'Consolidacion': 2,
-     'PatronIntersticial': 3,
-     'Atelectasia': 4,
-     'LesionesDeLaPared': 5
+     'NoduloMasa': 0,
+     'Consolidacion': 1,
+     'PatronIntersticial': 2,
+     'Atelectasia': 3,
+     'LesionesDeLaPared': 4
      }
-    num_epochs = 10
+    num_epochs = 1
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     experiment_id = '14-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir,exist_ok=True)
+
     if 'label_level' not in csv.columns:
         csv['label_level'] = [None] * len(csv)
         for i, row in csv.iterrows():
@@ -51,31 +55,29 @@ def main(args=None):
         print(csv.label_level.value_counts())
         csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-20210330-00_ubuntu_{experiment_id}.csv', index=False)
 
-
-
-    #--Only accept images with boxes or masks--#
-    csv = csv[csv.label_level.isin(['box','mask'])].reset_index()
+    # --Only accept images with boxes or masks--#
+    csv = csv[csv.label_level.isin(['imagelabel', 'nofinding'])].reset_index()
 
     image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,#--->sources o label level? 
-                                            test_size=0.1,random_state=42)
-    
+    train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,  # --->sources o label level?
+                                           test_size=0.1, random_state=42)
+
     csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index()
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
-    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_test),
-                                                                                                      len(train_idx),len(test_idx)))
+    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),
+                                                                                                        len(csv_train),
+                                                                                                        len(csv_test),
+                                                                                                        len(train_idx),
+                                                                                                        len(test_idx)))
     print('TRAIN SOURCES:')
     print(csv_train.image_source.value_counts(normalize=True))
     print('TEST SOURCES')
     print(csv_test.image_source.value_counts(normalize=True))
 
-    """
-    csv_train = csv[:30000].reset_index()
-    csv_test = csv[30000:].reset_index() """
-    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))
+    dataset = ImageLabelsDataset(csv_train, class_numbers, get_transform(train=False))
+    dataset_test = ImageLabelsDataset(csv_test, class_numbers, get_transform(train=False))
 
     # split the dataset in train and test set
     torch.manual_seed(1)
@@ -96,18 +98,15 @@ def main(args=None):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # our dataset has two classes only - background and person
-    num_classes = 6  #5 patologias + background
+    num_classes = 5
+    backbone = resnet.resnet50(num_classes=num_classes,
+        pretrained=True,
+        norm_layer=misc_nn_ops.FrozenBatchNorm2d)
 
-    # get the model using our helper function
-    model = get_instance_segmentation_model(num_classes)
-    if pretrained_checkpoint is not None:
-        model.load_state_dict(torch.load(pretrained_checkpoint))
-
-    # move model to the right device
-    model.to(device)
+    backbone.to(device)
 
     # construct an optimizer
-    params = [p for p in model.parameters() if p.requires_grad]
+    params = [p for p in backbone.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.01,
                                 momentum=0.9, weight_decay=0.0005)
 
@@ -116,17 +115,13 @@ def main(args=None):
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                    step_size=3,
                                                    gamma=0.1)
-
+    criterion = nn.BCEWithLogitsLoss()
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=10
+        train_one_epoch_resnet(backbone, criterion, optimizer, data_loader, device, epoch, print_freq=10
                         )
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
         saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
-        evaluate(model, data_loader_test, device=device, saving_path=saving_path)
-
-
-if __name__ == '__main__':
-    main()
+        evaluate_resnet(model, data_loader_test, device=device, saving_path=saving_path)

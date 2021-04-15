@@ -3,6 +3,40 @@ from PIL import Image
 import numpy as np
 import pandas as pd
 
+
+class ImageLabelsDataset(torch.utils.data.Dataset):
+    def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
+        self.csv = csv
+        self.class_numbers = class_numbers
+        self.transforms = transforms
+        self.return_image_source = return_image_source
+        assert pd.Series(['class_name','image_source',
+                          'file_name']).isin(self.csv.columns).all()
+
+    def __getitem__(self, idx):
+        img_path = self.csv.file_name.values[idx]
+
+        image_source = self.csv.image_source.values[idx]
+
+        img = Image.open(img_path.replace('\\','/')).convert("RGB")
+        img_rows = self.csv[self.csv.file_name == img_path]
+        labels = []
+        for i, row in img_rows.iterrows():
+            if isinstance(row['class_name'], str):
+                if len(row['class_name']) > 0:
+                    raw_labels = row['class_name'].split('-')
+                    labels += [self.class_numbers[c] for c in raw_labels]
+
+        if self.transforms is not None:
+            img = self.transforms(img)
+
+        labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
+        labels_tensor[labels] = torch.tensor(1,dtype=torch.int64)
+        if self.return_image_source:
+            return img, labels, image_source, img_path
+        else:
+            return img, labels
+
 class MixedLabelsDataset(torch.utils.data.Dataset):
     def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
         self.csv = csv
@@ -13,6 +47,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                           'x1','x2','y1','y2',
                           'class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
+
+
 
     def __getitem__(self, idx):
         img_path = self.csv.file_name.values[idx]
