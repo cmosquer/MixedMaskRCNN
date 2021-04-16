@@ -133,7 +133,7 @@ def main(args=None):
     criterion = nn.BCEWithLogitsLoss()
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch_resnet(backbone, criterion, optimizer, data_loader, device, epoch, print_freq=10
+        train_one_epoch_resnet(backbone, criterion, optimizer, data_loader, device, epoch, print_freq=200
                         )
         # update the learning rate
         lr_scheduler.step()
