@@ -125,7 +125,7 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-    for (images, labels) in tqdm(data_loader):
+    for images, labels in tqdm(data_loader):
         counter += 1
         optimizer.zero_grad()
         images = images.to(device)

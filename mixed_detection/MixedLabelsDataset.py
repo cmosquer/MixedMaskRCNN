@@ -31,12 +31,12 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
             img,tar = self.transforms(img,None)
 
         labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
-        labels_tensor[labels] = torch.tensor(1,dtype=torch.int64)
+        labels_tensor[labels] = 1
 
         if self.return_image_source:
-            return (img, labels_tensor, image_source, img_path)
+            return (img, labels_tensor.squeeze(), image_source, img_path)
         else:
-            return (img, labels_tensor)
+            return (img, labels_tensor.squeeze())
 
     def __len__(self):
         return len(self.csv)
