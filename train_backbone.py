@@ -26,7 +26,7 @@ def main(args=None):
      'Atelectasia': 3,
      'LesionesDeLaPared': 4
      }
-    num_epochs = 1
+    num_epochs = 10
     seed_all(27)
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     experiment_id = '16-04-21'
@@ -125,6 +125,7 @@ def main(args=None):
                                                    step_size=3,
                                                    gamma=0.1)
     criterion = nn.BCEWithLogitsLoss()
+    min_val_loss = 100000
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
         train_one_epoch_resnet(backbone, criterion, optimizer, data_loader, device, epoch, print_freq=200
@@ -134,8 +135,13 @@ def main(args=None):
         # evaluate on the test dataset
         model_saving_path = '{}/resnetBackbone-{}.pth'.format(output_dir,epoch)
         val_loss, val_loss_classes = evaluate_resnet(backbone, data_loader_test,
-                                                     device, criterion,
-                                                     model_saving_path=model_saving_path)
+                                                     device, criterion
+                                                     )
+        if val_loss < min_val_loss:
+            print('Val loss of {val_loss} is smaller than {min_val_loss}. Updating and saving model')
+            min_val_loss=val_loss
+            torch.save(backbone.state_dict(), model_saving_path)
+            print('Saved model to ', model_saving_path)
         print(f'Total validation loss {val_loss}')
         print(val_loss_classes)
         for name,c in class_numbers.items():
