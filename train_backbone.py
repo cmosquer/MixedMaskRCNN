@@ -140,8 +140,10 @@ def main(args=None):
         print(val_loss_classes)
         for name,c in class_numbers.items():
             loss = val_loss_classes[c-1].item()
-            print(f'{name}: {loss}')
-
+            try:
+                print(f'{name}: {loss:.2f}')
+            except:
+                pass
 
 
 if __name__ == '__main__':

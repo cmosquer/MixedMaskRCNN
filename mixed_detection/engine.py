@@ -128,8 +128,6 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
     for images, labels in tqdm(data_loader):
         counter += 1
-        if counter > 10:
-            break
         optimizer.zero_grad()
         images = images.to(device)
         labels=labels.to(device)
@@ -168,13 +166,9 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
 @torch.no_grad()
 def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None, num_classes=5):
-    n_threads = torch.get_num_threads()
-    # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
-    cpu_device = torch.device("cpu")
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
-    header = 'Test:'
     if model_saving_path:
         torch.save(model.state_dict(),model_saving_path)
         print('Saved model to ',model_saving_path)
@@ -198,7 +192,6 @@ def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None
             class_outputs,class_labels = outputs[:, c], labels[:, c]
             current_loss_class = criterion(class_outputs,class_labels)
             val_runninng_loss_per_class[c] += current_loss_class
-            print(c,current_loss_class,val_runninng_loss_per_class)
         loss = criterion(outputs, labels)
         val_running_loss += loss.item()
         metric_logger.update(loss=loss, evaluator_time=model_time)
