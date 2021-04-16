@@ -1,7 +1,7 @@
 import torch
 import pandas as pd
 import torch.utils.data
-from mixed_detection.utils import get_transform,collate_fn, create_resnet_head
+from mixed_detection.utils import get_transform,collate_fn, create_resnet_head, seed_all
 from mixed_detection.engine import train_one_epoch_resnet, evaluate_resnet
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import ImageLabelsDataset
@@ -26,6 +26,7 @@ def main(args=None):
      'LesionesDeLaPared': 4
      }
     num_epochs = 1
+    seed_all(27)
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     experiment_id = '14-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
@@ -78,42 +79,34 @@ def main(args=None):
     print(csv_train.image_source.value_counts(normalize=True))
     print('TEST SOURCES')
     print(csv_test.image_source.value_counts(normalize=True))
-    base_transform = [transforms.Resize((224, 224)),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-                                    ]
-    #train_transform = base_transform.append(transforms.RandomHorizontalFlip(0.5))
-    #train_transform = transforms.Compose(train_transform)
-    base_transform = transforms.Compose(base_transform)
-    dataset = ImageLabelsDataset(csv_train, class_numbers,base_transform)#get_transform(train=False))#
-    dataset_test = ImageLabelsDataset(csv_test, class_numbers,base_transform)
 
-    # split the dataset in train and test set
-    torch.manual_seed(1)
-    # train_sampler = MixedSampler(folds_distr_path, fold_id, non_empty_mask_proba)
-
-    # define training and validation data loaders
-    data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=16, shuffle=True, num_workers=0,
-        collate_fn=collate_fn,
-        #sampler=train_sampler
-         )
-
-    data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=16, shuffle=False, num_workers=0,
-        collate_fn=collate_fn)
-
-    print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_test)))
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+    data_transforms = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+    ])
+
+    dataset = ImageLabelsDataset(csv_train, class_numbers,data_transforms)#get_transform(train=False))#
+    data_loader = torch.utils.data.DataLoader(
+        dataset, batch_size=16, shuffle=True, num_workers=0,
+        #collate_fn=collate_fn,
+        #sampler=train_sampler
+         )
+    dataset_test = ImageLabelsDataset(csv_test, class_numbers,data_transforms)
+    data_loader_test = torch.utils.data.DataLoader(
+        dataset_test, batch_size=16, shuffle=False, num_workers=0)
+        #collate_fn=collate_fn)
+
+    print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_test)))
+
     # our dataset has two classes only - background and person
-    num_classes = 5
-
-
+    num_classes = len(class_numbers.keys())
 
     backbone = resnet.resnet50(
         pretrained=True,
-        norm_layer=misc_nn_ops.FrozenBatchNorm2d)
+        norm_layer=misc_nn_ops.FrozenBatchNorm2d
+        )
 
     top_head = create_resnet_head(backbone.fc.in_features, num_classes)  # because ten classes
     backbone.fc = top_head  # replace the fully connected layer

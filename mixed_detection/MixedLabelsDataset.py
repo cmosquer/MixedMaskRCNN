@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 
 
+
+
 class ImageLabelsDataset(torch.utils.data.Dataset):
     def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
         self.csv = csv
@@ -34,9 +36,10 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         labels_tensor[labels] = 1
 
         if self.return_image_source:
-            return (img, labels_tensor.squeeze(), image_source, img_path)
+            return (img, labels_tensor, image_source, img_path)
         else:
-            return (img, labels_tensor.squeeze())
+            return (img, labels_tensor)
+
 
     def __len__(self):
         return len(self.csv)

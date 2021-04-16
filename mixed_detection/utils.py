@@ -1,6 +1,6 @@
 from mixed_detection.faster_rcnn import FastRCNNPredictor
 from mixed_detection.mask_rcnn import MaskRCNNPredictor, maskrcnn_resnet50_fpn
-from mixed_detection import transforms as T
+from mixed_detection import vision_transforms as T
 
 from collections import Counter
 
@@ -11,7 +11,14 @@ try:
     from torchvision.ops import box_iou
 except ModuleNotFoundError:  # pragma: no-cover
     box_iou = None
-
+def seed_all(seed=27):
+    """https://pytorch.org/docs/stable/notes/randomness.html"""
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 def mean_average_precision(
     pred_image_indices: Tensor,

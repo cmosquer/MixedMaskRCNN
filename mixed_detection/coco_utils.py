@@ -8,7 +8,7 @@ import torchvision
 from pycocotools import mask as coco_mask
 from pycocotools.coco import COCO
 
-from mixed_detection import transforms as T
+from mixed_detection import vision_transforms as T
 
 
 class FilterAndRemapCocoCategories(object):
