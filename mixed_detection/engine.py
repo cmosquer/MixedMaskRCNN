@@ -180,20 +180,22 @@ def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None
         print('Saved model to ',model_saving_path)
     counter = 0
     val_running_loss = 0.0
-    for images, labels in metric_logger.log_every(dataloader, 100, header):
+    for images, labels in tqdm(dataloader):
         counter += 1
-        images = list(img.to(device) for img in images)
-
+        images = images.to(device)
+        labels=labels.to(device)
         torch.cuda.synchronize()
         model_time = time.time()
         outputs = model(images)
+        labels = labels.type_as(outputs)
 
-        outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+        #outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
 
         print('outputs type',type(outputs))
         try:
             print(outputs.shape)
+            print(torch.sum(outputs,axis=1))
         except:
             print('couldnt print shape')
 
