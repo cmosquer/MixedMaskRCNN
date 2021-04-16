@@ -139,7 +139,7 @@ def main(args=None):
         print(f'Total validation loss {val_loss}')
         print(val_loss_classes)
         for c,name in class_numbers.items():
-            loss = val_loss_classes[c].item()
+            loss = val_loss_classes[c-1].item()
             print(f'{name}: {loss}')
 
 
