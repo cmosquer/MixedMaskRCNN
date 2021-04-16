@@ -29,9 +29,13 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
         if self.transforms is not None:
             img,tar = self.transforms(img,None)
+        print(type(img))
 
         labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
         labels_tensor[labels] = torch.tensor(1,dtype=torch.int64)
+        print(type(labels_tensor))
+        print(img.shape)
+        print(labels_tensor.shape)
         if self.return_image_source:
             return img, labels_tensor, image_source, img_path
         else:
