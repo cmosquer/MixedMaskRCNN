@@ -18,7 +18,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
         image_source = self.csv.image_source.values[idx]
 
-        img = Image.open(img_path.replace('\\','/'))#.convert("RGB")
+        img = Image.open(img_path.replace('\\','/')).convert("RGB")
         img_rows = self.csv[self.csv.file_name == img_path]
         labels = []
         for i, row in img_rows.iterrows():
