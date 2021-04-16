@@ -168,10 +168,12 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 
 def main(args=None):
     print('starting test script')
-    save_as_files = False
+    save_as_files = True
     view_in_window = False
     evaluate_coco = True
-    loop = False
+    loop = True
+
+
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     # use our dataset and defined transformations
@@ -192,7 +194,6 @@ def main(args=None):
                                            test_size=0.1,
                                            random_state=42)
     csv_test = csv[csv.file_name.isin(list(test_idx))]
-    #csv_test = csv_test[csv_test.image_source=='hiba'].reset_index()
 
 
     print('{} images to evaluate'.format(len(csv_test)))
@@ -205,7 +206,7 @@ def main(args=None):
      }
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=True)
     torch.manual_seed(1)
-    num_classes = 6
+    num_classes = len(class_numbers.keys())+1
     model = get_instance_segmentation_model(num_classes)
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
@@ -221,7 +222,14 @@ def main(args=None):
                  results_file=results_coco_file)
 
 
+    #Redefinir solo las que quiero guardar la imagen
+    csv_test = csv_test[csv_test.image_source=='hiba'].reset_index()
+    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=True)
+    data_loader_test = torch.utils.data.DataLoader(
+        dataset_test, batch_size=1, shuffle=False, num_workers=0,
+        collate_fn=collate_fn)
     tqdm_loader = tqdm(data_loader_test)
+
     if save_as_files:
         while saveAsFiles(tqdm_loader, model, save_fig_dir=save_fig_dir, max_detections=4):
             pass
