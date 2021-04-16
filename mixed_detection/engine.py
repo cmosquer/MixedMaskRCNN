@@ -198,10 +198,11 @@ def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None
             class_outputs,class_labels = outputs[:, c], labels[:, c]
             current_loss_class = criterion(class_outputs,class_labels)
             val_runninng_loss_per_class[c] += current_loss_class
-
+            print(c,current_loss_class,val_runninng_loss_per_class)
         loss = criterion(outputs, labels)
         val_running_loss += loss.item()
         metric_logger.update(loss=loss, evaluator_time=model_time)
     val_loss = val_running_loss / counter
     val_loss_per_class = val_runninng_loss_per_class / counter
+    
     return val_loss, val_loss_per_class
