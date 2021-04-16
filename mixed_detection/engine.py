@@ -1,13 +1,13 @@
 import math
 import time, sys
 import torch
-from tqdm import tqdm
 import torchvision.models.detection.mask_rcnn
 
 from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
 from mixed_detection import vision_utils
 from mixed_detection.utils import mean_average_precision
+from tqdm import tqdm_notebook as tqdm
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
@@ -125,7 +125,7 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-    for images, labels in tqdm(data_loader):
+    for images, labels in tqdm(data_loader,disable=True):
         counter += 1
         optimizer.zero_grad()
         images = images.to(device)
@@ -142,7 +142,14 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
         #print(images.shape,labels.shape)
 
         outputs = model(images)
-
+        print('output type',type(outputs))
+        print('labels type',type(labels))
+        try:
+            print(outputs.shape)
+            print(labels.shape)
+        except:
+            print('could get shape')
+        print(type(criterion(outputs,labels)))
         loss = criterion(outputs,labels)
 
         train_running_loss += loss.item()

@@ -13,6 +13,7 @@ from torchvision import transforms
 
 
 
+
 def main(args=None):
     print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
