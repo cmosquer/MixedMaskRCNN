@@ -142,14 +142,8 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
         #print(images.shape,labels.shape)
 
         outputs = model(images)
-        print('output type',type(outputs))
-        print('labels type',type(labels))
-        try:
-            print(outputs.shape)
-            print(labels.shape)
-        except:
-            print('could get shape')
-        print(type(criterion(outputs,labels)))
+        labels = labels.type_as(outputs)
+
         loss = criterion(outputs,labels)
 
         train_running_loss += loss.item()

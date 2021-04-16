@@ -32,7 +32,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         if self.transforms is not None:
             img = self.transforms(img)
 
-        labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
+        labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.float32)
         labels_tensor[labels] = 1
 
         if self.return_image_source:
