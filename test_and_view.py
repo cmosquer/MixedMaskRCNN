@@ -193,7 +193,7 @@ def main(args=None):
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,
                                            test_size=0.1,
                                            random_state=42)
-    csv_test = csv[csv.file_name.isin(list(test_idx))]
+    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
 
 
     print('{} images to evaluate'.format(len(csv_test)))
