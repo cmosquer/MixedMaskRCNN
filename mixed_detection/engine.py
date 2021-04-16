@@ -133,8 +133,8 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
         #images = list(image.to(device) for image in images)
         #labels = list(label.to(device) for label in labels)
-        images = images.to(device)
-        labels = labels.to(device)
+        images = tuple(image.to(device) for image in images)
+        labels = tuple(label.to(device) for label in labels)
         #print(images.shape,labels.shape)
 
         outputs = model(images)
