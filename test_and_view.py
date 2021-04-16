@@ -176,13 +176,13 @@ def main(args=None):
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     # use our dataset and defined transformations
     csv = pd.read_csv(
-        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210308-03_ubuntu.csv')
+        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-03_ubuntu.csv')
     output_dir = baseDir +'TRx-v2/Experiments'
-    chosen_experiment = '09-04-21'
+    chosen_experiment = '14-04-21'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test/'
     os.makedirs(save_fig_dir,exist_ok=True)
     print('Created dir')
-    chosen_epoch = 0
+    chosen_epoch = 9
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
 
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
