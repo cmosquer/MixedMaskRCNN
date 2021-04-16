@@ -33,7 +33,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
         labels_tensor[labels] = torch.tensor(1,dtype=torch.int64)
         if self.return_image_source:
-            return img, labels, image_source, img_path
+            return img, labels_tensor, image_source, img_path
         else:
             return img, labels
 
