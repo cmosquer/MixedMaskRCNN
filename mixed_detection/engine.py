@@ -117,8 +117,7 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
     #metric_logger = vision_utils.MetricLogger(delimiter="  ")
     #metric_logger.add_meter('lr', vision_utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     counter = 0
-    if counter>10:
-        break
+
     train_running_loss = 0
     lr_scheduler = None
     if epoch == 0:
@@ -129,6 +128,8 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
     for images, labels in tqdm(data_loader):
         counter += 1
+        if counter > 10:
+            break
         optimizer.zero_grad()
         images = images.to(device)
         labels=labels.to(device)
