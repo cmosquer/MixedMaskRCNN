@@ -167,7 +167,7 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
     return train_loss
 
 @torch.no_grad()
-def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None):
+def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None, num_classes=5):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -180,6 +180,8 @@ def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None
         print('Saved model to ',model_saving_path)
     counter = 0
     val_running_loss = 0.0
+
+    val_runninng_loss_per_class = torch.zeros(num_classes,device=device,dtype=torch.float32)
     for images, labels in tqdm(dataloader):
         counter += 1
         images = images.to(device)
@@ -192,12 +194,12 @@ def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None
         #outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
 
-        print('outputs type',type(outputs))
-        try:
-            print(outputs.shape)
-            print(torch.sum(outputs,axis=1))
-        except:
-            print('couldnt print shape')
+        for c in range(outputs.shape[1]): #Cantidad de classes
+            class_outputs,class_labels = outputs[:, c], labels[:, c]
+            print('shapes: ',class_outputs.shape,class_labels.shape)
+            current_loss_class = criterion(class_outputs,class_labels)
+            print(c,'loss',current_loss_class)
+            val_runninng_loss_per_class[c] += current_loss_class
 
         loss = criterion(outputs, labels)
         val_running_loss += loss.item()
