@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations
 from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
-
+from mixed_detection.engine import evaluate
 def label_to_name(label):
     labels = {1:'NoduloMasa',
      2:'Consolidacion',
@@ -107,6 +107,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
 
 def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
         image_source = image_sources[0]
@@ -167,9 +168,10 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 
 def main(args=None):
     print('starting test script')
-    save_as_files = True
+    save_as_files = False
     view_in_window = False
-    loop = True
+    evaluate_coco = True
+    loop = False
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     # use our dataset and defined transformations
@@ -181,6 +183,8 @@ def main(args=None):
     os.makedirs(save_fig_dir,exist_ok=True)
     print('Created dir')
     chosen_epoch = 0
+    results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
+
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
     image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name==idx]['image_source'].values[0] for idx in image_ids]
@@ -188,7 +192,7 @@ def main(args=None):
                                            test_size=0.1,
                                            random_state=42)
     csv_test = csv[csv.file_name.isin(list(test_idx))]
-    csv_test = csv_test[csv_test.image_source=='hiba'].reset_index()
+    #csv_test = csv_test[csv_test.image_source=='hiba'].reset_index()
 
 
     print('{} images to evaluate'.format(len(csv_test)))
@@ -212,6 +216,11 @@ def main(args=None):
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
+    if evaluate_coco:
+        evaluate(model, data_loader_test, device=device,
+                 results_file=results_coco_file)
+
+
     tqdm_loader = tqdm(data_loader_test)
     if save_as_files:
         while saveAsFiles(tqdm_loader, model, save_fig_dir=save_fig_dir, max_detections=4):

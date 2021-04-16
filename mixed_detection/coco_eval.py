@@ -52,11 +52,18 @@ class CocoEvaluator(object):
         for coco_eval in self.coco_eval.values():
             coco_eval.accumulate()
 
-    def summarize(self):
+    def summarize(self,saving_file_path=None):
+        if saving_file_path:
+            f = open(saving_file_path,'w')
         for iou_type, coco_eval in self.coco_eval.items():
             print("IoU metric: {}".format(iou_type))
-            coco_eval.summarize()
+            stats = coco_eval.summarize()
+            if saving_file_path:
+                f.write(f'IOU: {iou_type}')
+                f.writelines(stats)
 
+        if saving_file_path:
+            f.close()
     def prepare(self, predictions, iou_type):
         if iou_type == "bbox":
             return self.prepare_for_coco_detection(predictions)

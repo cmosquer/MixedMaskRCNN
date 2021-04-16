@@ -67,7 +67,7 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, saving_path=None):
+def evaluate(model, data_loader, device, model_saving_path=None, results_file=None):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -75,9 +75,9 @@ def evaluate(model, data_loader, device, saving_path=None):
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
-    if saving_path:
-        torch.save(model.state_dict(),saving_path)
-        print('Saved model to ',saving_path)
+    if model_saving_path:
+        torch.save(model.state_dict(),model_saving_path)
+        print('Saved model to ',model_saving_path)
 
     coco = get_coco_api_from_dataset(data_loader.dataset)
     iou_types = _get_iou_types(model)
@@ -106,7 +106,7 @@ def evaluate(model, data_loader, device, saving_path=None):
 
     # accumulate predictions from all images
     coco_evaluator.accumulate()
-    coco_evaluator.summarize()
+    coco_evaluator.summarize(saving_file_path=results_file)
     torch.set_num_threads(n_threads)
     return coco_evaluator
 
