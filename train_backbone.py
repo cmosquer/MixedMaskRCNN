@@ -138,7 +138,7 @@ def main(args=None):
                                                      model_saving_path=model_saving_path)
         print(f'Total validation loss {val_loss}')
         print(val_loss_classes)
-        for c,name in class_numbers.items():
+        for name,c in class_numbers.items():
             loss = val_loss_classes[c-1].item()
             print(f'{name}: {loss}')
 
