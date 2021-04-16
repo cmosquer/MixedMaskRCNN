@@ -132,8 +132,8 @@ def main(args=None):
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
-        evaluate_resnet(backbone, data_loader_test, device=device, saving_path=saving_path)
+        model_saving_path = '{}/resnetBackbone-{}.pth'.format(output_dir,epoch)
+        evaluate_resnet(backbone, data_loader_test, device, criterion, model_saving_path=model_saving_path)
 
 
 

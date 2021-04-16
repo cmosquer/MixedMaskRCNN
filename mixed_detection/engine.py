@@ -117,6 +117,8 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
     #metric_logger = vision_utils.MetricLogger(delimiter="  ")
     #metric_logger.add_meter('lr', vision_utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     counter = 0
+    if counter>10:
+        break
     train_running_loss = 0
     lr_scheduler = None
     if epoch == 0:
@@ -164,7 +166,7 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
     return train_loss
 
 @torch.no_grad()
-def evaluate_resnet(model, dataloader, device, criterion, saving_path=None):
+def evaluate_resnet(model, dataloader, device, criterion, model_saving_path=None):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -172,9 +174,9 @@ def evaluate_resnet(model, dataloader, device, criterion, saving_path=None):
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
-    if saving_path:
-        torch.save(model.state_dict(),saving_path)
-        print('Saved model to ',saving_path)
+    if model_saving_path:
+        torch.save(model.state_dict(),model_saving_path)
+        print('Saved model to ',model_saving_path)
     counter = 0
     val_running_loss = 0.0
     for images, labels in metric_logger.log_every(dataloader, 100, header):
@@ -188,6 +190,11 @@ def evaluate_resnet(model, dataloader, device, criterion, saving_path=None):
         outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
 
+        print('outputs type',type(outputs))
+        try:
+            print(outputs.shape)
+        except:
+            print('couldnt print shape')
 
         loss = criterion(outputs, labels)
         val_running_loss += loss.item()
