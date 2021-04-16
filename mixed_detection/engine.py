@@ -7,7 +7,7 @@ from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
 from mixed_detection import vision_utils
 from mixed_detection.utils import mean_average_precision
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
@@ -125,7 +125,7 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-    for images, labels in tqdm(data_loader):#,disable=True):
+    for images, labels in tqdm(data_loader):
         counter += 1
         optimizer.zero_grad()
         images = images.to(device)
@@ -152,7 +152,9 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
         if lr_scheduler is not None:
             lr_scheduler.step()
-
+        if counter%10==0:
+            currloss = train_running_loss/counter
+            print(f'{counter} step -- Loss: {currloss}')
         #metric_logger.update(loss=loss)
         #metric_logger.update(lr=optimizer.param_groups[0]["lr"])
     lr = optimizer.param_groups[0]["lr"]
