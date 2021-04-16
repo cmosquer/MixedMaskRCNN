@@ -204,7 +204,7 @@ def main(args=None):
      'Atelectasia': 4,
      'LesionesDeLaPared': 5
      }
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=True)
+    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=False)
     torch.manual_seed(1)
     num_classes = len(class_numbers.keys())+1
     model = get_instance_segmentation_model(num_classes)
@@ -215,7 +215,7 @@ def main(args=None):
     # define data loader
     print('Model loaded')
     data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, shuffle=False, num_workers=0,
+        dataset_test, batch_size=16, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     if evaluate_coco:
         evaluate(model, data_loader_test, device=device,
@@ -223,22 +223,22 @@ def main(args=None):
 
 
     #Redefinir solo las que quiero guardar la imagen
-    csv_test = csv_test[csv_test.image_source=='hiba'].reset_index()
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=True)
-    data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, shuffle=False, num_workers=0,
+    csv_test_files = csv_test[csv_test.image_source=='hiba'].reset_index()
+    dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers, get_transform(train=False), return_image_source=True)
+    data_loader_test_files = torch.utils.data.DataLoader(
+        dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
-    tqdm_loader = tqdm(data_loader_test)
+    tqdm_loader_files = tqdm(data_loader_test_files)
 
     if save_as_files:
-        while saveAsFiles(tqdm_loader, model, save_fig_dir=save_fig_dir, max_detections=4):
+        while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir, max_detections=4):
             pass
     if view_in_window:
         if loop:
-            while visualize(tqdm_loader,model,max_detections=4):
+            while visualize(tqdm_loader_files,model,max_detections=4):
                 pass
         else:
-            visualize(tqdm_loader,model)
+            visualize(tqdm_loader_files,model)
 
 
 if __name__ == '__main__':
