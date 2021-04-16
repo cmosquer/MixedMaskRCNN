@@ -84,7 +84,7 @@ def main(args=None):
                                     ]
     #train_transform = base_transform.append(transforms.RandomHorizontalFlip(0.5))
     #train_transform = transforms.Compose(train_transform)
-    #base_transform = transforms.Compose(base_transform)
+    base_transform = transforms.Compose(base_transform)
     dataset = ImageLabelsDataset(csv_train, class_numbers,base_transform)#get_transform(train=False))#
     dataset_test = ImageLabelsDataset(csv_test, class_numbers,base_transform)
 
