@@ -34,9 +34,9 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         labels_tensor[labels] = torch.tensor(1,dtype=torch.int64)
 
         if self.return_image_source:
-            return img, labels_tensor, image_source, img_path
+            return (img, labels_tensor, image_source, img_path)
         else:
-            return img, labels_tensor
+            return (img, labels_tensor)
 
     def __len__(self):
         return len(self.csv)

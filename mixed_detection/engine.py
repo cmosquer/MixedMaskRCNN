@@ -1,7 +1,7 @@
 import math
 import time, sys
 import torch
-
+from tqdm import tqdm
 import torchvision.models.detection.mask_rcnn
 
 from mixed_detection.coco_utils import get_coco_api_from_dataset
@@ -125,13 +125,15 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
-    for images, labels in data_loader:
+    for (images, labels) in tqdm(data_loader):
         counter += 1
         optimizer.zero_grad()
+        images = images.to(device)
+        labels=labels.to(device)
         #print(images,labels)
         #print(type(images[0]))
-        images = torch.tensor(images,dtype=torch.float32,device=device)
-        labels = torch.tensor(labels,device=device)
+        #images = torch.tensor(images,dtype=torch.float32,device=device)
+        #labels = torch.tensor(labels,device=device)
 
         #images = list(image.to(device) for image in images)
         #labels = list(label.to(device) for label in labels)
