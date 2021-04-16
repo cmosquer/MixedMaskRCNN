@@ -176,7 +176,7 @@ def main(args=None):
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     # use our dataset and defined transformations
     csv = pd.read_csv(
-        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-03_ubuntu.csv')
+        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     output_dir = baseDir +'TRx-v2/Experiments'
     chosen_experiment = '14-04-21'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test/'
