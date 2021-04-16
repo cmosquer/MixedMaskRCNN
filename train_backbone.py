@@ -133,7 +133,13 @@ def main(args=None):
         lr_scheduler.step()
         # evaluate on the test dataset
         model_saving_path = '{}/resnetBackbone-{}.pth'.format(output_dir,epoch)
-        evaluate_resnet(backbone, data_loader_test, device, criterion, model_saving_path=model_saving_path)
+        val_loss, val_loss_classes = evaluate_resnet(backbone, data_loader_test,
+                                                     device, criterion,
+                                                     model_saving_path=model_saving_path)
+        print(f'Total validation loss {val_loss}')
+        for c,name in class_numbers.items():
+            loss = val_loss_classes[c].item()
+            print(f'{name}: {loss}')
 
 
 
