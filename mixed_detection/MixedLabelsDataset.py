@@ -28,7 +28,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
                     labels += [self.class_numbers[c] for c in raw_labels]
 
         if self.transforms is not None:
-            img = self.transforms(img)
+            img,tar = self.transforms(img,None)
 
         labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
         labels_tensor[labels] = torch.tensor(1,dtype=torch.int64)

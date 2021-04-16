@@ -78,15 +78,15 @@ def main(args=None):
     print(csv_train.image_source.value_counts(normalize=True))
     print('TEST SOURCES')
     print(csv_test.image_source.value_counts(normalize=True))
-    base_transform = [transforms.Resize((224, 224)),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-                                    ]
-    train_transform = base_transform.append(transforms.RandomHorizontalFlip(0.5))
-    train_transform = transforms.Compose(train_transform)
-    base_transform = transforms.Compose(base_transform)
-    dataset = ImageLabelsDataset(csv_train, class_numbers)#,train_transform)
-    dataset_test = ImageLabelsDataset(csv_test, class_numbers)#,base_transform)
+    #base_transform = [transforms.Resize((224, 224)),
+    #                                transforms.ToTensor(),
+    #                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    #                                ]
+    #train_transform = base_transform.append(transforms.RandomHorizontalFlip(0.5))
+    #train_transform = transforms.Compose(train_transform)
+    #base_transform = transforms.Compose(base_transform)
+    dataset = ImageLabelsDataset(csv_train, class_numbers,get_transform(train=False))#,train_transform)
+    dataset_test = ImageLabelsDataset(csv_test, class_numbers,get_transform(train=False))#,base_transform)
 
     # split the dataset in train and test set
     torch.manual_seed(1)
@@ -94,13 +94,13 @@ def main(args=None):
 
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=2, shuffle=True, num_workers=0,
+        dataset, batch_size=16, shuffle=True, num_workers=0,
         collate_fn=collate_fn,
         #sampler=train_sampler
          )
 
     data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, shuffle=False, num_workers=0,
+        dataset_test, batch_size=16, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
 
     print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_test)))
