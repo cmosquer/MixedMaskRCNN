@@ -130,8 +130,8 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
         optimizer.zero_grad()
         #print(images,labels)
         #print(type(images[0]))
-        images = torch.tensor(images,dtype=images[0].dtype,device=device)
-        labels = torch.tensor(labels,dtype=labels[0].dtype,device=device)
+        images = torch.tensor(images,dtype=torch.float32,device=device)
+        labels = torch.tensor(labels,device=device)
 
         #images = list(image.to(device) for image in images)
         #labels = list(label.to(device) for label in labels)
