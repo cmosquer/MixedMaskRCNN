@@ -18,7 +18,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
         image_source = self.csv.image_source.values[idx]
 
-        img = Image.open(img_path.replace('\\','/')).convert("RGB")
+        img = Image.open(img_path.replace('\\','/'))#.convert("RGB")
         img_rows = self.csv[self.csv.file_name == img_path]
         labels = []
         for i, row in img_rows.iterrows():
@@ -28,7 +28,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
                     labels += [self.class_numbers[c] for c in raw_labels]
 
         if self.transforms is not None:
-            img,tar = self.transforms(img,None)
+            img = self.transforms(img)
 
         labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.int64)
         labels_tensor[labels] = 1
