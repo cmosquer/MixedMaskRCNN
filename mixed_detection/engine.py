@@ -129,7 +129,8 @@ def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epo
     for images, labels in metric_logger.log_every(data_loader, print_freq, header):
         counter += 1
         optimizer.zero_grad()
-        print(images.shape,labels.shape)
+        print(images,labels)
+        print(type(images[0]))
 
         #images = list(image.to(device) for image in images)
         #labels = list(label.to(device) for label in labels)
