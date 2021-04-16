@@ -215,7 +215,7 @@ def main(args=None):
     # define data loader
     print('Model loaded')
     data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=16, shuffle=False, num_workers=0,
+        dataset_test, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     if evaluate_coco:
         evaluate(model, data_loader_test, device=device,
