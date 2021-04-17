@@ -57,11 +57,13 @@ def main(args=None):
     csv = csv[csv.label_level.isin(['box','mask'])].reset_index()
 
     image_ids = list(set(csv.file_name.values))
+    print(len(image_ids))
+    random.Random(4).shuffle(image_ids)
+    print(len(image_ids))
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(random.Random(4).shuffle(image_ids) ,stratify=image_sources,
+    train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,
                                            test_size=0.1,
                                            random_state=42)
-    
     csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index()
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
