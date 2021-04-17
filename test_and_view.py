@@ -188,6 +188,7 @@ def main(args=None):
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
 
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
+    """
     image_ids = list(set(csv.file_name.values))
     print(len(image_ids))
     random.Random(4).shuffle(image_ids)
@@ -197,8 +198,9 @@ def main(args=None):
                                            test_size=0.1,
                                            random_state=42)
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
+    """
 
-
+    csv_test = csv[:30].reset_index()
     print('{} images to evaluate'.format(len(csv_test)))
 
     class_numbers = {'NoduloMasa': 1,

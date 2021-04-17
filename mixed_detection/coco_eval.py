@@ -60,6 +60,8 @@ class CocoEvaluator(object):
             stats = coco_eval.summarize()
             if saving_file_path:
                 f.write(f'IOU: {iou_type}')
+                print(type(coco_eval.stats))
+                print(coco_eval.stats)
                 f.writelines(coco_eval.stats)
 
         if saving_file_path:
