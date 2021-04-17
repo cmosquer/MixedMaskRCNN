@@ -20,11 +20,11 @@ def main(args=None):
     experiment_dir = trx_dir+'Experiments/'
     csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     class_numbers = {
-     'NoduloMasa': 0,
+     #'NoduloMasa': 1,
      'Consolidacion': 1,
-     'PatronIntersticial': 2,
-     'Atelectasia': 3,
-     'LesionesDeLaPared': 4
+     #'PatronIntersticial': 3,
+     'Atelectasia': 2,
+     'LesionesDeLaPared': 3
      }
     num_epochs = 10
     seed_all(27)
