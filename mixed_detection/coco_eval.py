@@ -13,6 +13,19 @@ from collections import defaultdict
 
 from mixed_detection import vision_utils
 
+COCO_STATS_KEYS = [
+ "Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ]",
+ "Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] ",
+ "Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] ",
+ "Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] ",
+ "Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] ",
+ "Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] ",
+ "Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] ",
+ "Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] ",
+ "Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] ",
+ "Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] ",
+ "Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] ",
+ "Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] "]
 
 class CocoEvaluator(object):
     def __init__(self, coco_gt, iou_types):
@@ -57,12 +70,11 @@ class CocoEvaluator(object):
             f = open(saving_file_path,'w')
         for iou_type, coco_eval in self.coco_eval.items():
             print("IoU metric: {}".format(iou_type))
-            stats = coco_eval.summarize()
+            coco_eval.summarize()
             if saving_file_path:
                 f.write(f'IOU: {iou_type}')
-                print(type(coco_eval.stats))
-                print(coco_eval.stats)
-                f.writelines(coco_eval.stats)
+                results_list = [name + str(stat) for name,stat in zip(COCO_STATS_KEYS,list(coco_eval.stats))]
+                f.writelines(results_list)
 
         if saving_file_path:
             f.close()

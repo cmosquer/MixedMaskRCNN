@@ -92,14 +92,16 @@ def main(args=None):
     ])
 
     dataset = ImageLabelsDataset(csv_train, class_numbers,data_transforms)#get_transform(train=False))#
-    print('TRAIN:\n ',dataset.quantifyClasses())
+    print('TRAIN: ')
+    dataset.quantifyClasses()
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=16, shuffle=True, num_workers=0,
         #collate_fn=collate_fn,
         #sampler=train_sampler
          )
     dataset_test = ImageLabelsDataset(csv_test, class_numbers,data_transforms)
-    print('TEST:\n ',dataset_test.quantifyClasses())
+    print('TEST: ')
+    dataset_test.quantifyClasses()
 
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=16, shuffle=False, num_workers=0)
