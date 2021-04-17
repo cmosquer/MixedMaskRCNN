@@ -15,7 +15,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
         assert pd.Series(['class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
     def quantifyClasses(self):
-        all_labels_strings = '-'.join(self.csv.class_name.values)
+        all_labels_strings = '-'.join(list(self.csv.class_name))
         all_labels = all_labels_strings.split('-')
         for name,c in self.class_numbers.items():
             print('N de {}: {} ({:.2f}%)'.format(name,all_labels.count(name),100*all_labels.count(name)/len(all_labels)))
