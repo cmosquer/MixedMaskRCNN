@@ -107,7 +107,7 @@ def main(args=None):
         dataset_test, batch_size=16, shuffle=False, num_workers=0)
         #collate_fn=collate_fn)
 
-    print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_test)))
+    print('N train: {}. N test: {}'.format(len(dataset),len(dataset_test)))
 
     # our dataset has two classes only - background and person
     num_classes = len(class_numbers.keys())
