@@ -203,11 +203,12 @@ def main(args=None):
     """
     print('{} images to evaluate'.format(len(csv_test)))
 
-    class_numbers = {'NoduloMasa': 1,
-     'Consolidacion': 2,
-     'PatronIntersticial': 3,
-     'Atelectasia': 4,
-     'LesionesDeLaPared': 5
+    class_numbers = {
+     #'NoduloMasa': 1,
+     'Consolidacion': 1,
+     #'PatronIntersticial': 3,
+     'Atelectasia': 2,
+     'LesionesDeLaPared': 3
      }
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=False)
     torch.manual_seed(1)
