@@ -23,6 +23,7 @@ def main(args=None):
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     experiment_id = '14-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
+
     os.makedirs(output_dir,exist_ok=True)
     if 'label_level' not in csv.columns:
         csv['label_level'] = [None] * len(csv)
