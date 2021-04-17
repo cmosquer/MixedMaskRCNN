@@ -5,7 +5,7 @@ from mixed_detection.utils import get_instance_segmentation_model,get_transform,
 from mixed_detection.engine import train_one_epoch, evaluate
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
-import os
+import os, random
 
 def main(args=None):
     print('starting training script')
@@ -58,8 +58,9 @@ def main(args=None):
 
     image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,#--->sources o label level? 
-                                            test_size=0.1,random_state=42)
+    train_idx, test_idx = train_test_split(random.Random(4).shuffle(image_ids) ,stratify=image_sources,
+                                           test_size=0.1,
+                                           random_state=42)
     
     csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index()
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()

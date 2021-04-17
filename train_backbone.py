@@ -5,7 +5,7 @@ from mixed_detection.utils import get_transform,collate_fn, create_resnet_head, 
 from mixed_detection.engine import train_one_epoch_resnet, evaluate_resnet
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import ImageLabelsDataset
-import os
+import os, random
 from torchvision.ops import misc as misc_nn_ops
 from torch import nn
 from torchvision.models import resnet
@@ -29,7 +29,7 @@ def main(args=None):
     num_epochs = 10
     seed_all(27)
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
-    experiment_id = '16-04-21'
+    experiment_id = '17-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir,exist_ok=True)
 
@@ -65,9 +65,9 @@ def main(args=None):
 
     image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,  # --->sources o label level?
-                                           test_size=0.1, random_state=42)
-
+    train_idx, test_idx = train_test_split(random.Random(4).shuffle(image_ids) ,stratify=image_sources,
+                                           test_size=0.1,
+                                           random_state=42)
     csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index()
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
@@ -89,12 +89,15 @@ def main(args=None):
     ])
 
     dataset = ImageLabelsDataset(csv_train, class_numbers,data_transforms)#get_transform(train=False))#
+    print('TRAIN:\n ',dataset.quantifyClasses())
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=16, shuffle=True, num_workers=0,
         #collate_fn=collate_fn,
         #sampler=train_sampler
          )
     dataset_test = ImageLabelsDataset(csv_test, class_numbers,data_transforms)
+    print('TEST:\n ',dataset_test.quantifyClasses())
+
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=16, shuffle=False, num_workers=0)
         #collate_fn=collate_fn)
