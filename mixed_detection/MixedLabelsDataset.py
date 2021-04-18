@@ -53,6 +53,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
+
     def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
         self.csv = csv
         self.class_numbers = class_numbers
@@ -63,8 +64,15 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                           'class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
 
+    def quantifyClasses(self):
+        all_labels_strings = '-'.join([c if isinstance(c, str) else 'no_finding' for c in self.csv.class_name])
+        all_labels = all_labels_strings.split('-')
+        for name, c in self.class_numbers.items():
+            print('N de {}: {} ({:.2f}%)'.format(name, all_labels.count(name),
+                                                 100 * all_labels.count(name) / len(all_labels)))
 
-
+        print('N de {}: {} ({:.2f}%)'.format('no_finding', all_labels.count('no_finding'),
+                                             100 * all_labels.count('no_finding') / len(all_labels)))
     def __getitem__(self, idx):
         img_path = self.csv.file_name.values[idx]
 
