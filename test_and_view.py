@@ -186,7 +186,7 @@ def main(args=None):
     output_dir = baseDir +'TRx-v2/Experiments'
     chosen_experiment = '14-04-21'
     print('Created dir')
-    chosen_epoch = 5
+    chosen_epoch = 9
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     os.makedirs(save_fig_dir,exist_ok=True)
 
