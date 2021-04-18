@@ -98,8 +98,19 @@ def resnet_fpn_backbone(
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained,
         norm_layer=norm_layer)
+    print(backbone)
     if pretrained_state_dict:
-        backbone.load_state_dict(torch.load(pretrained_state_dict))
+        dict = torch.load(pretrained_state_dict)
+        print(dict.keys())
+        dict["fc.weight"] = dict["fc.0.weight"]
+        dict["fc.bias"] = dict["fc.0.bias"]
+        for key in ["fc.0.weight", "fc.0.bias", "fc.2.weight", "fc.2.bias", "fc.2.running_mean",
+                                             "fc.2.running_var", "fc.2.num_batches_tracked", "fc.4.weight",
+                                             "fc.4.bias", "fc.6.weight", "fc.6.bias",
+                                            "fc.6.running_mean", "fc.6.running_var",
+                                             "fc.6.num_batches_tracked", "fc.8.weight", "fc.8.bias"]:
+            dict.pop(key)
+        backbone.load_state_dict(dict)
         overwrite_eps(backbone, 0.0)
     # select layers that wont be frozen
     assert 0 <= trainable_layers <= 5
