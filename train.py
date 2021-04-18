@@ -21,6 +21,7 @@ def main(args=None):
      }
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
+    pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     experiment_id = '14-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
@@ -103,7 +104,7 @@ def main(args=None):
     num_classes = 6  #5 patologias + background
 
     # get the model using our helper function
-    model = get_instance_segmentation_model(num_classes)
+    model = get_instance_segmentation_model(num_classes, pretrained_backbone=pretrained_backbone_path)
     if pretrained_checkpoint is not None:
         model.load_state_dict(torch.load(pretrained_checkpoint))
 
