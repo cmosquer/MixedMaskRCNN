@@ -1,7 +1,8 @@
 import torch
 import pandas as pd
 import torch.utils.data
-from mixed_detection.utils import get_transform,collate_fn, create_resnet_head, seed_all
+from mixed_detection.utils import get_transform,collate_fn, seed_all
+from mixed_detection.backbone_utils import create_resnet_head
 from mixed_detection.engine import train_one_epoch_resnet, evaluate_resnet
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import ImageLabelsDataset
