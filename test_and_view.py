@@ -63,7 +63,8 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         ax[1].spines["bottom"].set_visible(False)
         ax[1].spines["left"].set_visible(False)
         if len(outputs['labels']) > 0:
-
+            print(outputs.keys())
+            print(outputs['boxes'].shape)
             colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
             colorimage[:,:,0]=image
             colorimage[:,:,1]=image
