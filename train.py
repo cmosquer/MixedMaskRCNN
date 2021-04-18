@@ -107,7 +107,7 @@ def main(args=None):
     num_classes = 6  #5 patologias + background
 
     # get the model using our helper function
-    model = get_instance_segmentation_model(num_classes,pretrained_on_coco=True,
+    model = get_instance_segmentation_model(num_classes,pretrained_on_coco=False,
                                             pretrained_backbone=pretrained_backbone_path)
     if pretrained_checkpoint is not None:
         model.load_state_dict(torch.load(pretrained_checkpoint))
