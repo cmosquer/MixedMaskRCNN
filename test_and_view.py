@@ -49,7 +49,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         #plt.imshow(image, cmap=cmap)
         #if plt.waitforbuttonpress():
         #    return False
-        fig,ax = plt.subplots(1,2,figsize=(10,5))
+        fig,ax = plt.subplots(1,2,figsize=(20,10))
         ax[0].set_xticks([])
         ax[0].set_yticks([])
         ax[1].set_xticks([])
@@ -235,7 +235,8 @@ def main(args=None):
     tqdm_loader_files = tqdm(data_loader_test_files)
 
     if save_as_files:
-        while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir, max_detections=4):
+        while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
+                          max_detections=5):
             pass
     if view_in_window:
         if loop:
