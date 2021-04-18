@@ -6,6 +6,7 @@ import pandas as pd
 import torch.utils.data
 from tqdm import tqdm
 import cv2
+from PIL import Image
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations
 from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
@@ -49,6 +50,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         #plt.imshow(image, cmap=cmap)
         #if plt.waitforbuttonpress():
         #    return False
+        """
         fig,ax = plt.subplots(1,2,figsize=(20,10))
         ax[0].set_xticks([])
         ax[0].set_yticks([])
@@ -61,7 +63,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         ax[1].spines["top"].set_visible(False)
         ax[1].spines["right"].set_visible(False)
         ax[1].spines["bottom"].set_visible(False)
-        ax[1].spines["left"].set_visible(False)
+        ax[1].spines["left"].set_visible(False)"""
         if len(outputs['labels']) > 0:
             colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
             colorimage[:,:,0]=image
@@ -78,9 +80,9 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
             else:
                 # draw annotations in red
                 draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
-            ax[0].imshow(colorimage)
+            #ax[0].imshow(colorimage)
 
-
+        """
         if len(targets['masks'])+len(outputs['masks']) > 0:
             ax[1].imshow(colorimage)
             for mask in targets['masks']:
@@ -90,14 +92,23 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
                 ax[1].imshow(np.squeeze(mask), alpha=0.2, cmap='Greens')
         else:
             ax[1].imshow(image,cmap='gray')
-        plt.tight_layout()
+        plt.tight_layout()"""
         try:
             saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
             print(saving_path)
-            plt.savefig(saving_path)
+            try:
+                cv2.imwrite(saving_path,colorimage)
+            except:
+                print('could save cv2')
+            try:
+                Image.fromarray(colorimage).save(saving_path)
+            except:
+                print('could save pil')
+            #plt.savefig(saving_path)
         except:
             print('COULD SAVE ',saving_path)
-        del fig, ax, outputs,targets, image
+        #del fig, ax
+        del outputs,targets, image
 
 
 
