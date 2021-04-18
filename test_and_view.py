@@ -178,7 +178,6 @@ def main(args=None):
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     output_dir = baseDir +'TRx-v2/Experiments'
     chosen_experiment = '14-04-21'
-    print('Created dir')
     chosen_epoch = 9
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     os.makedirs(save_fig_dir,exist_ok=True)
@@ -188,9 +187,7 @@ def main(args=None):
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
 
     image_ids = list(set(csv.file_name.values))
-    print(len(image_ids))
     random.Random(4).shuffle(image_ids)
-    print(len(image_ids))
     image_sources = [csv[csv.file_name==idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,
                                            test_size=0.1,
@@ -222,6 +219,8 @@ def main(args=None):
         dataset_test, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     if evaluate_coco:
+        print('DATASET FOR COCO:')
+        dataset_test.quantifyClasses()
         evaluate(model, data_loader_test, device=device,
                  results_file=results_coco_file)
 
@@ -233,7 +232,8 @@ def main(args=None):
         dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     tqdm_loader_files = tqdm(data_loader_test_files)
-
+    print('DATASET FOR FIGURES:')
+    print(dataset_test_files.quantifyClasses())
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
                           max_detections=5):
