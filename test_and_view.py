@@ -63,8 +63,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         ax[1].spines["bottom"].set_visible(False)
         ax[1].spines["left"].set_visible(False)
         if len(outputs['labels']) > 0:
-            print(outputs.keys())
-            print(outputs['boxes'].shape)
             colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
             colorimage[:,:,0]=image
             colorimage[:,:,1]=image
@@ -73,18 +71,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
 
             # draw annotations on the image
         if len(targets)>0:
-            print('boxes: ',len(targets['boxes']))
             if len(targets['boxes'])==0:
                 caption = 'Image GT: '+','.join([label_to_name(lbl) for lbl in targets['labels']])
-                print('caption',caption)
                 cv2.putText(colorimage, caption,
                         (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
             else:
                 # draw annotations in red
                 draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
             ax[0].imshow(colorimage)
-
-        print('finished drawing')
 
 
         if len(targets['masks'])+len(outputs['masks']) > 0:
@@ -95,7 +89,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
             for mask in outputs['masks']:
                 ax[1].imshow(np.squeeze(mask), alpha=0.2, cmap='Greens')
         else:
-            print('no boxes')
             ax[1].imshow(image,cmap='gray')
         plt.tight_layout()
         try:
@@ -135,8 +128,6 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
         #    return False
 
         if len(outputs['labels']) > 0:
-            print(outputs.keys())
-            print(outputs['boxes'].shape)
 
             colorimage = np.zeros((image.shape[0],image.shape[1],3))
             colorimage[:,:,0]=image

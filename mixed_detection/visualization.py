@@ -201,5 +201,8 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
         label   = annotations['labels'][i]
         c       = color if color is not None else label_color(label)
         caption = '{}'.format(label_to_name(label) if label_to_name else label)
+        if 'scores' in annotations.keys():
+            score = annotations['scores'][i]
+            caption += '-{:.2f}'.format(score)
         draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
         draw_box(image, annotations['boxes'][i], color=c)
