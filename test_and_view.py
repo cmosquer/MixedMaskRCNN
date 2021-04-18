@@ -97,6 +97,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
             plt.savefig(saving_path)
         except:
             print('COULD SAVE ',saving_path)
+        del fig, ax, outputs,targets, image
 
 
 
