@@ -97,10 +97,12 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
             print('no boxes')
             ax[1].imshow(image,cmap='gray')
         plt.tight_layout()
-        saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path))
-        print(saving_path)
-        plt.savefig(saving_path)
-        print('finished')
+        try:
+            saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
+            print(saving_path)
+            plt.savefig(saving_path)
+        except:
+            print('COULD SAVE ',saving_path)
 
 
 
@@ -181,10 +183,11 @@ def main(args=None):
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     output_dir = baseDir +'TRx-v2/Experiments'
     chosen_experiment = '14-04-21'
-    save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test/'
     os.makedirs(save_fig_dir,exist_ok=True)
     print('Created dir')
     chosen_epoch = 5
+    save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
+
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
 
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)

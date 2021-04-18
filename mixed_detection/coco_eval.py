@@ -73,8 +73,10 @@ class CocoEvaluator(object):
             coco_eval.summarize()
             if saving_file_path:
                 f.write(f'IOU: {iou_type}')
-                results_list = [name + str(stat)+'\n' for name,stat in zip(COCO_STATS_KEYS,list(coco_eval.stats))]
-                f.writelines(results_list)
+                results_list = [f'{name}:{stat:.4f}' for name,stat in zip(COCO_STATS_KEYS,list(coco_eval.stats))]
+                for line in results_list:
+                    f.write(line)
+                    f.write('\n')
 
         if saving_file_path:
             f.close()
