@@ -34,7 +34,7 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
             if isinstance(row['class_name'], str):
                 if len(row['class_name']) > 0:
                     raw_labels = row['class_name'].split('-')
-                    labels += [self.class_numbers[c] for c in raw_labels]
+                    labels += [self.class_numbers[c] for c in raw_labels if c in self.class_numbers.keys()]
 
         if self.transforms is not None:
             img = self.transforms(img)
