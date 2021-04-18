@@ -21,7 +21,7 @@ def main(args=None):
      }
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
-    pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth'
+    pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     experiment_id = '18-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
@@ -107,7 +107,8 @@ def main(args=None):
     num_classes = 6  #5 patologias + background
 
     # get the model using our helper function
-    model = get_instance_segmentation_model(num_classes, pretrained_backbone=pretrained_backbone_path)
+    model = get_instance_segmentation_model(num_classes,pretrained_on_coco=True,
+                                            pretrained_backbone=pretrained_backbone_path)
     if pretrained_checkpoint is not None:
         model.load_state_dict(torch.load(pretrained_checkpoint))
 
@@ -121,16 +122,16 @@ def main(args=None):
 
     # and a learning rate scheduler which decreases the learning rate by
     # 10x every 3 epochs
-    #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-    #                                               step_size=3,
-    #                                               gamma=0.1)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                   step_size=3,
+                                                   gamma=0.1)
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=20
+        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500
                         )
         # update the learning rate
-        #lr_scheduler.step()
+        lr_scheduler.step()
         # evaluate on the test dataset
         saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)

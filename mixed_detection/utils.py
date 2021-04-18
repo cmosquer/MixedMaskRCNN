@@ -132,9 +132,10 @@ def get_transform(train):
         transforms.append(T.RandomHorizontalFlip(0.5))
     return T.Compose(transforms)
 
-def get_instance_segmentation_model(num_classes, pretrained_backbone=None):
+def get_instance_segmentation_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False):
     # load an instance segmentation model pre-trained on COCO
-    model = maskrcnn_resnet50_fpn(pretrained_coco=False,pretrained_backbone_checkpoint=pretrained_backbone)
+    model = maskrcnn_resnet50_fpn(pretrained_coco=pretrained_on_coco,
+                                  pretrained_backbone_checkpoint=pretrained_backbone)
 
     # get the number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
