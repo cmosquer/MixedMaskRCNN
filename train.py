@@ -121,16 +121,16 @@ def main(args=None):
 
     # and a learning rate scheduler which decreases the learning rate by
     # 10x every 3 epochs
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                   step_size=3,
-                                                   gamma=0.1)
+    #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+    #                                               step_size=3,
+    #                                               gamma=0.1)
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
         train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=20
                         )
         # update the learning rate
-        lr_scheduler.step()
+        #lr_scheduler.step()
         # evaluate on the test dataset
         saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)

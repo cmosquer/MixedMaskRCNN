@@ -66,9 +66,9 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         ax[1].spines["left"].set_visible(False)"""
         if len(outputs['labels']) > 0:
             colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
-            colorimage[:,:,0]=image
-            colorimage[:,:,1]=image
-            colorimage[:,:,2]=image
+            colorimage[:,:,0]=255*image
+            colorimage[:,:,1]=255*image
+            colorimage[:,:,2]=255*image
             draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
 
             # draw annotations on the image
