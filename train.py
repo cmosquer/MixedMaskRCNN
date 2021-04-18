@@ -81,7 +81,9 @@ def main(args=None):
     csv_test = csv[30000:].reset_index() """
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))
+    print('TRAIN:')
     dataset.quantifyClasses()
+    print('\nTEST:')
     dataset_test.quantifyClasses()
     # split the dataset in train and test set
     torch.manual_seed(1)
