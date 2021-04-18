@@ -134,6 +134,8 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
         #    return False
 
         if len(outputs['labels']) > 0:
+            print(outputs.keys())
+            print(outputs['boxes'].shape)
 
             colorimage = np.zeros((image.shape[0],image.shape[1],3))
             colorimage[:,:,0]=image
@@ -183,10 +185,10 @@ def main(args=None):
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     output_dir = baseDir +'TRx-v2/Experiments'
     chosen_experiment = '14-04-21'
-    os.makedirs(save_fig_dir,exist_ok=True)
     print('Created dir')
     chosen_epoch = 5
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
+    os.makedirs(save_fig_dir,exist_ok=True)
 
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
 
