@@ -109,6 +109,7 @@ def resnet_fpn_backbone(
                                              "fc.4.bias", "fc.6.weight", "fc.6.bias",
                                             "fc.6.running_mean", "fc.6.running_var",
                                              "fc.6.num_batches_tracked", "fc.8.weight", "fc.8.bias"]:
+            print(key, dict[key].shape)
             dict.pop(key)
         backbone.load_state_dict(dict)
         overwrite_eps(backbone, 0.0)
