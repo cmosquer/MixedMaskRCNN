@@ -174,7 +174,7 @@ def main(args=None):
     print('starting test script')
     save_as_files = True
     view_in_window = False
-    evaluate_coco = True
+    evaluate_coco = False
     loop = True
 
 
