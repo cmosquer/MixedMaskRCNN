@@ -1,7 +1,7 @@
 import warnings
 from torch import nn
 from torchvision.ops.feature_pyramid_network import FeaturePyramidNetwork, LastLevelMaxPool
-
+import torch
 from torchvision.ops import misc as misc_nn_ops
 from torchvision.models._utils import IntermediateLayerGetter
 from torchvision.models import mobilenet
@@ -99,8 +99,7 @@ def resnet_fpn_backbone(
         pretrained=pretrained,
         norm_layer=norm_layer)
     if pretrained_state_dict:
-        state_dict = load_state_dict_from_url(pretrained_state_dict)
-        backbone.load_state_dict(state_dict)
+        backbone.load_state_dict(torch.load(pretrained_state_dict))
         overwrite_eps(backbone, 0.0)
     # select layers that wont be frozen
     assert 0 <= trainable_layers <= 5
