@@ -22,7 +22,7 @@ def main(args=None):
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '14-04-21'
+    experiment_id = '18-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
