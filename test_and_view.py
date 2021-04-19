@@ -178,10 +178,9 @@ def main(args=None):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     # use our dataset and defined transformations
-    csv = pd.read_csv(
-        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+
     output_dir = baseDir +'TRx-v2/Experiments'
-    chosen_experiment = '14-04-21'
+    chosen_experiment = '19-04-21'
     chosen_epoch = 9
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     os.makedirs(save_fig_dir,exist_ok=True)
@@ -189,16 +188,18 @@ def main(args=None):
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
 
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
-
+    """csv = pd.read_csv(
+        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
     image_ids = list(set(csv.file_name.values))
     image_sources = [csv[csv.file_name==idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,
                                            test_size=0.1,
                                            random_state=42)
-    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
-    """
-    csv_test = csv[:30].reset_index()
-    """
+    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()"""
+
+    csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv').reset_index()
+    #csv_test = csv[:30].reset_index()
+
     print('{} images to evaluate'.format(len(csv_test)))
 
     class_numbers = {'NoduloMasa': 1,
