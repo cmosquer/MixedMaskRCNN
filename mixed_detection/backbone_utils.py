@@ -105,32 +105,17 @@ def resnet_fpn_backbone(
             default a ``LastLevelMaxPool`` is used.
     """
 
-    if pretrained_state_dict:
+    if pretrained_state_dict is not None:
             pretrained = False
+
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained,
         norm_layer=norm_layer)
 
-
-    print(backbone)
-    if pretrained_state_dict:
+    if pretrained_state_dict is not None:
         dict = torch.load(pretrained_state_dict)
         top_head = create_resnet_head(backbone.fc.in_features, dict["fc.8.bias"].shape[0])  # because ten classes
         backbone.fc = top_head
-        print(backbone)
-
-        #dict["fc.weight"] = dict["fc.0.weight"]
-        #dict["fc.bias"] = dict["fc.0.bias"]
-        """for key in ["fc.0.weight", "fc.0.bias", "fc.2.weight", "fc.2.bias", "fc.2.running_mean",
-                                             "fc.2.running_var", "fc.2.num_batches_tracked", "fc.4.weight",
-                                             "fc.4.bias", "fc.6.weight", "fc.6.bias",
-                                            "fc.6.running_mean", "fc.6.running_var",
-                                             "fc.6.num_batches_tracked", "fc.8.weight", "fc.8.bias"]:
-            print(key, dict[key].shape)
-            dict.pop(key)"""
-
-
-
         backbone.load_state_dict(dict)
         overwrite_eps(backbone, 0.0)
     # select layers that wont be frozen

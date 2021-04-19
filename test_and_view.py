@@ -6,7 +6,6 @@ import pandas as pd
 import torch.utils.data
 from tqdm import tqdm
 import cv2
-from PIL import Image
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations
 from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
@@ -95,16 +94,10 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         plt.tight_layout()"""
         try:
             saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
-            print(saving_path)
-            try:
-                cv2.imwrite(saving_path,colorimage)
-            except:
-                print('could save cv2')
-            try:
-                Image.fromarray(colorimage).save(saving_path)
-            except:
-                print('could save pil')
-            #plt.savefig(saving_path)
+            cv2.imwrite(saving_path,colorimage)
+
+            print('Saved ',saving_path)
+
         except:
             print('COULD SAVE ',saving_path)
         #del fig, ax
