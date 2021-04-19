@@ -191,7 +191,6 @@ def main(args=None):
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
 
     image_ids = list(set(csv.file_name.values))
-    random.Random(4).shuffle(image_ids)
     image_sources = [csv[csv.file_name==idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,
                                            test_size=0.1,

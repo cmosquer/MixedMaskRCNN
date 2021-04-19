@@ -73,10 +73,10 @@ class RoIHeads(nn.Module):
         self.keypoint_head = keypoint_head
         self.keypoint_predictor = keypoint_predictor
 
-        self.max_scores_used_for_linear = 4
-        self.image_level_linear = nn.Linear(self.max_scores_used_for_linear,1)
-        self.sigmoid = nn.Sigmoid()
-        self.image_level_criterion = nn.BCELoss()
+        #self.max_scores_used_for_linear = 4
+        #self.image_level_linear = nn.Linear(self.max_scores_used_for_linear,1)
+        #self.sigmoid = nn.Sigmoid()
+        #self.image_level_criterion = nn.BCELoss()
 
     def has_mask(self):
         if self.mask_roi_pool is None:
@@ -196,7 +196,7 @@ class RoIHeads(nn.Module):
 
         regression_targets = self.box_coder.encode(matched_gt_boxes, proposals)
         return proposals, matched_idxs, labels, regression_targets
-
+    """
     def compute_image_level_loss(self,
                                 batch_scores,
                                 batch_labels,
@@ -233,7 +233,7 @@ class RoIHeads(nn.Module):
 
         else:
             return self.image_level_criterion(pred_tensor, target_tensor)
-
+    """
     def postprocess_detections(self,
                                class_logits,    # type: Tensor
                                box_regression,  # type: Tensor
