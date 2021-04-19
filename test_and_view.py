@@ -197,7 +197,7 @@ def main(args=None):
                                            random_state=42)
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()"""
 
-    csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv').reset_index()
+    csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv')
     #csv_test = csv[:30].reset_index()
 
     print('{} images to evaluate'.format(len(csv_test)))
