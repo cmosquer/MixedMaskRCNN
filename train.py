@@ -79,6 +79,8 @@ def main(args=None):
     """
     csv_train = csv[:30000].reset_index()
     csv_test = csv[30000:].reset_index() """
+    csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
+    csv_test.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))
     print('TRAIN:')
