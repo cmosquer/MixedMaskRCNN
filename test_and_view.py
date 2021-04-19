@@ -196,8 +196,10 @@ def main(args=None):
                                            test_size=0.1,
                                            random_state=42)
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()"""
-
-    csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv')
+    csv = pd.read_csv(
+        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+    csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
+    csv_test = csv[~csv.file_name.isin(csv_train.file_name)].reset_index(drop=True)
     #csv_test = csv[:30].reset_index()
 
     print('{} images to evaluate'.format(len(csv_test)))
