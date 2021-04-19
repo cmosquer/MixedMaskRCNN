@@ -20,7 +20,7 @@ def label_to_name(label):
      }
     return labels[label]
 
-def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
+def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_threshold=None):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     j = 0
     for image, targets,image_sources,image_paths in tqdm_loader:
@@ -36,6 +36,20 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None):
         outputs = model(image)
         print('finished outputs')
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
+        if isinstance(min_score_threshold,float):
+            high_scores = np.argwhere(outputs['scores']>min_score_threshold)
+            for k,v in outputs.items():
+                outputs[k] = outputs[k][high_scores,]
+        if isinstance(min_score_threshold,dict):
+            valid_detections_idx = []
+            for clss_idx,th in min_score_threshold.items():
+                idxs_clss = np.argwhere(outputs['labels']==clss_idx)
+                high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)
+                valid_detections_idx.append(list(high_scores))
+            valid_detections_idx = np.array(set(valid_detections_idx))
+            for k,v in outputs.items():
+                outputs[k] = outputs[k][valid_detections_idx,]
+
         if max_detections:
             scores_sort = np.argsort(-outputs['scores'])[:max_detections]
             for k,v in outputs.items():
@@ -180,7 +194,7 @@ def main(args=None):
     # use our dataset and defined transformations
 
     output_dir = baseDir +'TRx-v2/Experiments'
-    chosen_experiment = '19-04-21'
+    chosen_experiment = '18-04-21'
     chosen_epoch = 9
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     os.makedirs(save_fig_dir,exist_ok=True)
@@ -255,9 +269,17 @@ def main(args=None):
     tqdm_loader_files = tqdm(data_loader_test_files)
     print('DATASET FOR FIGURES:')
     print(dataset_test_files.quantifyClasses())
+
+    min_score_thresholds = {1: 0.25, #'NoduloMasa',
+       2: 0.6 , #'Consolidacion',
+       3: 0.6, #'PatronIntersticial',
+       4: 0.5, #'Atelectasia',
+       5: 0.5 #'LesionesDeLaPared'
+       }
+
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
-                          max_detections=5):
+                          max_detections=8):
             pass
     if view_in_window:
         if loop:
