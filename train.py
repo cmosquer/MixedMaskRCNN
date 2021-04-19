@@ -6,6 +6,7 @@ from mixed_detection.engine import train_one_epoch, evaluate
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
 import os, random
+import numpy as np
 
 def main(args=None):
     print('starting training script')
@@ -22,7 +23,7 @@ def main(args=None):
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '18-04-21'
+    experiment_id = '19-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
@@ -59,9 +60,8 @@ def main(args=None):
     csv = csv[csv.label_level.isin(['box','mask'])].reset_index()
 
     image_ids = list(set(csv.file_name.values))
-    print(len(image_ids))
-    random.Random(4).shuffle(image_ids)
-    print(len(image_ids))
+    np.random.seed(42)
+    np.random.shuffle(image_ids)
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,
                                            test_size=0.1,
@@ -107,7 +107,7 @@ def main(args=None):
     num_classes = 6  #5 patologias + background
 
     # get the model using our helper function
-    model = get_instance_segmentation_model(num_classes,pretrained_on_coco=True,
+    model = get_instance_segmentation_model(num_classes,pretrained_on_coco=False,
                                             pretrained_backbone=pretrained_backbone_path)
     if pretrained_checkpoint is not None:
         model.load_state_dict(torch.load(pretrained_checkpoint))
