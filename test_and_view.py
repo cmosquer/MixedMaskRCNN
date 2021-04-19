@@ -44,7 +44,9 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_thr
             valid_detections_idx = []
             for clss_idx,th in min_score_threshold.items():
                 idxs_clss = np.argwhere(outputs['labels']==clss_idx)
+                print('idxs clss',idxs_clss)
                 high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)
+                print('idxs high scores',high_scores)
                 valid_detections_idx.append(list(high_scores))
             valid_detections_idx = np.array(set(valid_detections_idx))
             for k,v in outputs.items():
@@ -279,7 +281,7 @@ def main(args=None):
 
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
-                          max_detections=8):
+                          max_detections=8, min_score_threshold=min_score_thresholds):
             pass
     if view_in_window:
         if loop:
