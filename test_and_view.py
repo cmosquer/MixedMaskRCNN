@@ -208,7 +208,7 @@ def main(args=None):
      'Atelectasia': 4,
      'LesionesDeLaPared': 5
      }
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False), return_image_source=False)
+
 
     torch.manual_seed(1)
     num_classes = len(class_numbers.keys())+1
@@ -219,10 +219,13 @@ def main(args=None):
     model.eval()
     # define data loader
     print('Model loaded')
-    data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, shuffle=False, num_workers=0,
-        collate_fn=collate_fn)
+
     if evaluate_coco:
+        dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                          return_image_source=False)
+        data_loader_test = torch.utils.data.DataLoader(
+            dataset_test, batch_size=1, shuffle=False, num_workers=0,
+            collate_fn=collate_fn)
         print('DATASET FOR COCO:')
         dataset_test.quantifyClasses()
         evaluate(model, data_loader_test, device=device,
@@ -230,7 +233,13 @@ def main(args=None):
 
 
     #Redefinir solo las que quiero guardar la imagen
-    csv_test_files = csv_test[csv_test.image_source=='hiba'].reset_index()
+    try:
+        csv_test_files = csv_test[csv_test.image_source=='hiba'].reset_index()
+    except ValueError as e:
+        print(e)
+        print('Not reseting index')
+        csv_test_files = csv_test[csv_test.image_source == 'hiba']
+
     dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers, get_transform(train=False), return_image_source=True)
     data_loader_test_files = torch.utils.data.DataLoader(
         dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
