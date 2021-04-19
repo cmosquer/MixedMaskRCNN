@@ -62,7 +62,7 @@ def main(args=None):
         csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
 
     # --Only accept images with boxes or masks--#
-    csv = csv[csv.label_level.isin(['imagelabel', 'nofinding'])].reset_index()
+    csv = csv[csv.label_level.isin(['imagelabel', 'nofinding'])].reset_index(drop=True)
 
     image_ids = list(set(csv.file_name.values))
     print(len(image_ids))
@@ -72,8 +72,8 @@ def main(args=None):
     train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,
                                            test_size=0.1,
                                            random_state=42)
-    csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index()
-    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()
+    csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
+    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index(drop=True)
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
     print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),
                                                                                                         len(csv_train),

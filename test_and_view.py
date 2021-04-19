@@ -234,7 +234,7 @@ def main(args=None):
 
     #Redefinir solo las que quiero guardar la imagen
     try:
-        csv_test_files = csv_test[csv_test.image_source=='hiba'].reset_index()
+        csv_test_files = csv_test[csv_test.image_source=='hiba'].reset_index(drop=True)
     except ValueError as e:
         print(e)
         print('Not reseting index')
