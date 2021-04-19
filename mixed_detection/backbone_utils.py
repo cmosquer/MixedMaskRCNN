@@ -113,6 +113,7 @@ def resnet_fpn_backbone(
         norm_layer=norm_layer)
 
     if pretrained_state_dict is not None:
+        print('loading checkpoint for backbone')
         dict = torch.load(pretrained_state_dict)
         top_head = create_resnet_head(backbone.fc.in_features, dict["fc.8.bias"].shape[0])  # because ten classes
         backbone.fc = top_head
