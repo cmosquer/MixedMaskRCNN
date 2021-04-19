@@ -60,8 +60,8 @@ def main(args=None):
     csv = csv[csv.label_level.isin(['box','mask'])].reset_index()
 
     image_ids = list(set(csv.file_name.values))
-    np.random.seed(42)
-    np.random.shuffle(image_ids)
+    #np.random.seed(42)
+    #np.random.shuffle(image_ids)
     image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
     train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,
                                            test_size=0.1,
