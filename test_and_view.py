@@ -198,8 +198,13 @@ def main(args=None):
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()"""
     csv = pd.read_csv(
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+    image_ids = set(csv.file_name.values)
     csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
-    csv_test = csv[~csv.file_name.isin(csv_train.file_name)].reset_index(drop=True)
+    image_ids_train = set(csv_train.file_name.values)
+    image_ids_test = image_ids.difference(image_ids_train)
+    print('Len total: {}, len train: {}, len test:{}'.format(len(image_ids),len(image_ids_train),len(image_ids_test)))
+
+    csv_test = csv[csv.file_name.isin(list(image_ids_test))].reset_index(drop=True)
     #csv_test = csv[:30].reset_index()
 
     print('{} images to evaluate'.format(len(csv_test)))
