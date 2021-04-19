@@ -198,6 +198,7 @@ def main(args=None):
     csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()"""
     csv = pd.read_csv(
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+
     image_ids = set(csv.file_name.values)
     csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
     image_ids_train = set(csv_train.file_name.values)
@@ -241,7 +242,7 @@ def main(args=None):
 
     #Redefinir solo las que quiero guardar la imagen
     try:
-        csv_test_files = csv_test[csv_test.image_source=='hiba'].reset_index(drop=True)
+        csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled']).reset_index(drop=True)
     except ValueError as e:
         print(e)
         print('Not reseting index')
