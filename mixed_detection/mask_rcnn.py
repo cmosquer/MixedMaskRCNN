@@ -328,7 +328,7 @@ def maskrcnn_resnet50_fpn(pretrained_coco=False, progress=True,
         # no need to download the backbone if pretrained is set
         pretrained_imagenet_backbone = False
 
-    backbone = resnet_fpn_backbone('resnet50', pretrained_imagenet_backbone=True,
+    backbone = resnet_fpn_backbone('resnet50', pretrained=True,
                                    trainable_layers=trainable_backbone_layers,
                                    pretrained_state_dict=pretrained_backbone_checkpoint)
 
