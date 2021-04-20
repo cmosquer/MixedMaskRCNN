@@ -20,9 +20,15 @@ def label_to_name(label):
      }
     return labels[label]
 
-def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_threshold=None):
+def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
+                min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
+                save_csv=None #If not None, should be a str with filepath where to save dataframe with targets and predictions
+                ):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     j = 0
+    if save_csv is not None:
+        df = pd.DataFrame(columns=['image_name','box_type','label','score','area'])
+
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
         j+=1
@@ -34,7 +40,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_thr
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         torch.cuda.synchronize()
         outputs = model(image)
-        print('finished outputs')
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
         if isinstance(min_score_threshold,float):
             high_scores = np.argwhere(outputs['scores']>min_score_threshold)
@@ -48,7 +53,8 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_thr
                 high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)
                 print('idxs high scores',high_scores)
                 valid_detections_idx.append(list(high_scores))
-            valid_detections_idx = list(set(valid_detections_idx))
+            valid_detections_idx = set(valid_detections_idx)
+            valid_detections_idx = list(valid_detections_idx)
             print('final idxs',valid_detections_idx)
 
             valid_detections_idx = np.array(valid_detections_idx)
@@ -64,24 +70,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_thr
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
 
-        cmap = 'gray'
-        #plt.imshow(image, cmap=cmap)
-        #if plt.waitforbuttonpress():
-        #    return False
-        """
-        fig,ax = plt.subplots(1,2,figsize=(20,10))
-        ax[0].set_xticks([])
-        ax[0].set_yticks([])
-        ax[1].set_xticks([])
-        ax[1].set_yticks([])
-        ax[0].spines["top"].set_visible(False)
-        ax[0].spines["right"].set_visible(False)
-        ax[0].spines["bottom"].set_visible(False)
-        ax[0].spines["left"].set_visible(False)
-        ax[1].spines["top"].set_visible(False)
-        ax[1].spines["right"].set_visible(False)
-        ax[1].spines["bottom"].set_visible(False)
-        ax[1].spines["left"].set_visible(False)"""
         if len(outputs['labels']) > 0:
             colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
             colorimage[:,:,0]=255*image
@@ -98,19 +86,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_thr
             else:
                 # draw annotations in red
                 draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
-            #ax[0].imshow(colorimage)
 
-        """
-        if len(targets['masks'])+len(outputs['masks']) > 0:
-            ax[1].imshow(colorimage)
-            for mask in targets['masks']:
-                ax[1].imshow(np.squeeze(mask), alpha=0.2, cmap='Reds')
-
-            for mask in outputs['masks']:
-                ax[1].imshow(np.squeeze(mask), alpha=0.2, cmap='Greens')
-        else:
-            ax[1].imshow(image,cmap='gray')
-        plt.tight_layout()"""
         try:
             saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
             cv2.imwrite(saving_path,colorimage)
@@ -119,8 +95,31 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,min_score_thr
 
         except:
             print('COULD SAVE ',saving_path)
-        #del fig, ax
+
+        if save_csv is not None:
+            results_list = []
+
+            for i,label in enumerate(outputs['labels']):
+                result = {'image_name':os.path.basename(image_path),
+                          'box_type':'prediction',
+                          'label':label_to_name(label),
+                          'area':outputs['areas'][i],
+                          'score':outputs['scores'][i]}
+                results_list.append(result)
+
+            for i, label in enumerate(targets['labels']):
+                result = {'image_name': os.path.basename(image_path),
+                          'box_type': 'ground-truth',
+                          'label': label_to_name(label),
+                          'area': targets['areas'][i],
+                          }
+                results_list.append(result)
+
+            df = df.append(results_list,ignore_index=True)
+
         del outputs,targets, image
+    if save_csv is not None:
+        df.to_csv(save_csv,index=False)
 
 
 
@@ -148,8 +147,6 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 
         cmap = 'gray'
         plt.imshow(image, cmap=cmap)
-        #if plt.waitforbuttonpress():
-        #    return False
 
         if len(outputs['labels']) > 0:
 
@@ -184,15 +181,12 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
             return False
 
 
-
-
 def main(args=None):
     print('starting test script')
     save_as_files = True
     view_in_window = False
     evaluate_coco = False
     loop = True
-
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
@@ -203,18 +197,11 @@ def main(args=None):
     chosen_epoch = 9
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     os.makedirs(save_fig_dir,exist_ok=True)
-
+    output_csv_path = f'{output_dir}/{chosen_experiment}/targets_and_predictions_table-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
 
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
-    """csv = pd.read_csv(
-        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
-    image_ids = list(set(csv.file_name.values))
-    image_sources = [csv[csv.file_name==idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(image_ids,stratify=image_sources,
-                                           test_size=0.1,
-                                           random_state=42)
-    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index()"""
+
     csv = pd.read_csv(
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
 
@@ -284,7 +271,8 @@ def main(args=None):
 
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
-                          max_detections=8, min_score_threshold=min_score_thresholds):
+                          max_detections=8, min_score_threshold=min_score_thresholds,
+                          save_csv=output_csv_path):
             pass
     if view_in_window:
         if loop:
