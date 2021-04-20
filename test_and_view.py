@@ -53,7 +53,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                 high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)
                 print('idxs high scores',high_scores)
                 valid_detections_idx.append(list(high_scores))
-            valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
+            #valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
             print('final idxs',valid_detections_idx)
 
             valid_detections_idx = np.array(valid_detections_idx)
