@@ -27,7 +27,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     j = 0
     if save_csv is not None:
-        df = pd.DataFrame(columns=['image_name','box_type','label','score','area'])
+        df = pd.DataFrame(columns=['image_name','box_type','label','score'])
 
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
@@ -106,7 +106,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                 result = {'image_name':os.path.basename(image_path),
                           'box_type':'prediction',
                           'label':label_to_name(label),
-                          'area':outputs['areas'][i],
                           'score':outputs['scores'][i]}
                 results_list.append(result)
 
@@ -114,7 +113,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                 result = {'image_name': os.path.basename(image_path),
                           'box_type': 'ground-truth',
                           'label': label_to_name(label),
-                          'area': targets['areas'][i],
                           }
                 results_list.append(result)
 
