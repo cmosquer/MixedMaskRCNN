@@ -31,8 +31,8 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
 
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
-        j+=1
-        if j<15:
+        j += 1
+        if j < 15:
             continue
         image_source = image_sources[0]
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
@@ -46,13 +46,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
             for k,v in outputs.items():
                 outputs[k] = outputs[k][high_scores,]
         if isinstance(min_score_threshold,dict):
-            valid_detections_idx = []
+            valid_detections_idx = np.array([])
             for clss_idx,th in min_score_threshold.items():
-                idxs_clss = np.argwhere(outputs['labels']==clss_idx)
+                idxs_clss = np.argwhere(outputs['labels']==clss_idx)[0]
                 print('idxs clss',idxs_clss)
-                high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)
+                high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)[0]
                 print('idxs high scores',high_scores)
-                valid_detections_idx.append(list(high_scores))
+                if high_scores.shape[0]>0:
+                    valid_detections_idx = np.concatenate(high_scores)
             #valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
             print('final idxs',valid_detections_idx)
 
