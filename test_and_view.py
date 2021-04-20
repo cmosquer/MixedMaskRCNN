@@ -56,7 +56,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                     print('idxs high scores',high_scores)
                     if high_scores.shape[0]>0:
                         print(high_scores[0])
-                        valid_detections_idx = np.concatenate(valid_detections_idx,high_scores[0])
+                        valid_detections_idx = np.concatenate((valid_detections_idx,high_scores[0]))
             #valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
             print('final idxs',valid_detections_idx)
 
