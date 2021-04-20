@@ -48,12 +48,13 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
         if isinstance(min_score_threshold,dict):
             valid_detections_idx = np.array([])
             for clss_idx,th in min_score_threshold.items():
-                idxs_clss = np.argwhere(outputs['labels']==clss_idx)[0]
+                idxs_clss = np.argwhere(outputs['labels']==clss_idx)
                 print('idxs clss',idxs_clss)
-                high_scores = np.argwhere(outputs['scores'][idxs_clss]>th)[0]
-                print('idxs high scores',high_scores)
-                if high_scores.shape[0]>0:
-                    valid_detections_idx = np.concatenate(high_scores)
+                if idxs_clss.shape[0]>0:
+                    high_scores = np.argwhere(outputs['scores'][idxs_clss[0]]>th)
+                    print('idxs high scores',high_scores)
+                    if high_scores.shape[0]>0:
+                        valid_detections_idx = np.concatenate(valid_detections_idx,high_scores[0])
             #valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
             print('final idxs',valid_detections_idx)
 
