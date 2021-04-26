@@ -22,8 +22,8 @@ def main(args=None):
      }
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
-    pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '26-04-21'
+    pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
+    experiment_id = '26-04-21_masksAndBoxs_binary'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
@@ -57,13 +57,19 @@ def main(args=None):
 
 
     #--Only accept images with boxes or masks--#
-    csv = csv[csv.label_level.isin(['box','mask'])].reset_index(drop=True)
+    csv = csv[csv.label_level.isin([
+        'box',
+        'mask'])].reset_index(drop=True)
 
     image_ids = list(set(csv.file_name.values))
     #np.random.seed(42)
     #np.random.shuffle(image_ids)
-    image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    train_idx, test_idx = train_test_split(image_ids, stratify=image_sources,
+    #image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
+    class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
+    csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
+    stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
+
+    train_idx, test_idx = train_test_split(image_ids, stratify=stratification,
                                            test_size=0.1,
                                            random_state=42)
     csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
@@ -73,16 +79,19 @@ def main(args=None):
                                                                                                       len(train_idx),len(test_idx)))
     print('TRAIN SOURCES:')
     print(csv_train.image_source.value_counts(normalize=True))
+    print(csv_train.label_level.value_counts(normalize=True))
+
     print('TEST SOURCES')
     print(csv_test.image_source.value_counts(normalize=True))
+    print(csv_test.label_level.value_counts(normalize=True))
 
     """
     csv_train = csv[:30000].reset_index()
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_test.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
-    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))
+    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=True)
+    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),binary_opacity=True)
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nTEST:')
@@ -106,13 +115,15 @@ def main(args=None):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # our dataset has two classes only - background and person
-    num_classes = 6  #5 patologias + background
+    num_classes = 2   #5 patologias + background
 
     # get the model using our helper function
     model = get_instance_segmentation_model(num_classes,
-                                            pretrained_on_coco=False,
-                                            #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros en 23/04
-                                            pretrained_backbone=pretrained_backbone_path,trainable_layers=0)
+                                            pretrained_on_coco=True,
+                                            #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
+                                            pretrained_backbone=pretrained_backbone_path,
+                                            #trainable_layers=0
+                                            )
     if pretrained_checkpoint is not None:
         model.load_state_dict(torch.load(pretrained_checkpoint))
 
