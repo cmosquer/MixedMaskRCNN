@@ -12,7 +12,7 @@ def main(args=None):
     print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
     experiment_dir = trx_dir+'Experiments/'
-    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210423-00_ubuntu.csv')
     class_numbers = {
      'NoduloMasa': 1,
      'Consolidacion': 2,
@@ -22,8 +22,8 @@ def main(args=None):
      }
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
-    pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '19-04-21'
+    pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth'
+    experiment_id = '26-04-21'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
@@ -109,8 +109,10 @@ def main(args=None):
     num_classes = 6  #5 patologias + background
 
     # get the model using our helper function
-    model = get_instance_segmentation_model(num_classes,pretrained_on_coco=False,
-                                            pretrained_backbone=pretrained_backbone_path)
+    model = get_instance_segmentation_model(num_classes,
+                                            pretrained_on_coco=False,
+                                            #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros en 23/04
+                                            pretrained_backbone=pretrained_backbone_path,trainable_layers=0)
     if pretrained_checkpoint is not None:
         model.load_state_dict(torch.load(pretrained_checkpoint))
 
@@ -119,8 +121,7 @@ def main(args=None):
 
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=0.01,
-                                momentum=0.9, weight_decay=0.0005)
+    optimizer = torch.optim.Adam(params, lr=0.01)
 
     # and a learning rate scheduler which decreases the learning rate by
     # 10x every 3 epochs

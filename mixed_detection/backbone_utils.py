@@ -139,7 +139,9 @@ def resnet_fpn_backbone(
     in_channels_stage2 = backbone.inplanes // 8
     in_channels_list = [in_channels_stage2 * 2 ** (i - 1) for i in returned_layers]
     out_channels = 256
-    return BackboneWithFPN(backbone, return_layers, in_channels_list, out_channels, extra_blocks=extra_blocks)
+    model = BackboneWithFPN(backbone, return_layers, in_channels_list, out_channels, extra_blocks=extra_blocks)
+
+    return model
 
 
 def _validate_trainable_layers(pretrained, trainable_backbone_layers, max_value, default_value):

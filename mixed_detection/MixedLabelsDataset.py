@@ -95,8 +95,13 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             masks = mask == obj_ids[:, None, None]
             raw_labels = [self.class_numbers[c] for c in self.csv.class_name.values[idx].split('-')]
             # get bounding box coordinates for each mask
+
             num_objs = len(obj_ids)
-            for i in range(num_objs):
+            if len(raw_labels) < num_objs:
+                print(mask_path,raw_labels)
+            if num_objs!=len(raw_labels):
+                print('ERROR IN IMAGE {} with {} objects in mask and {} labels'.format(mask_path,num_objs,len(raw_labels)))
+            for i in range(min(num_objs,len(raw_labels))):
                 pos = np.where(masks[i])
                 xmin = np.min(pos[1])
                 xmax = np.max(pos[1])

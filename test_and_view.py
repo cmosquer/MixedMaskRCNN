@@ -27,16 +27,15 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     j = 0
     if save_csv is not None:
-        df = pd.DataFrame(columns=['image_name','box_type','label','score'])
+        df = pd.DataFrame(columns=['image_name','box_type','box_id','label','score'])
 
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
         j += 1
-        if j < 15:
-            continue
         image_source = image_sources[0]
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
+        print('Processing ',os.path.basename(image_path))
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         torch.cuda.synchronize()
         outputs = model(image)
@@ -49,18 +48,11 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
             valid_detections_idx = np.array([],dtype=np.int64)
             for clss_idx,th in min_score_threshold.items():
                 idxs_clss = np.argwhere(outputs['labels']==clss_idx).flatten()
-                print('class id: ',clss_idx, 'idxs clss',idxs_clss)
                 if idxs_clss.shape[0]>0:
-                    print(idxs_clss)
                     high_scores = np.argwhere(outputs['scores'][idxs_clss]>th).flatten()
-                    print('idxs high scores',high_scores)
                     if high_scores.shape[0]>0:
-                        print('th',th,'allclassscores',
-                              outputs['scores'][idxs_clss],
-                              'highscores idx',high_scores)
                         valid_detections_idx = np.concatenate((valid_detections_idx,high_scores)).astype(np.int64)
             #valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
-            print('final idxs',valid_detections_idx)
             for k,v in outputs.items():
                 outputs[k] = outputs[k][valid_detections_idx,]
 
@@ -72,20 +64,23 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
+        colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
+        colorimage[:, :, 0] = 255 * image
+        colorimage[:, :, 1] = 255 * image
+        colorimage[:, :, 2] = 255 * image
 
         if len(outputs['labels']) > 0:
-            colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
-            colorimage[:,:,0]=255*image
-            colorimage[:,:,1]=255*image
-            colorimage[:,:,2]=255*image
             draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
 
             # draw annotations on the image
         if len(targets)>0:
             if len(targets['boxes'])==0:
-                caption = 'Image GT: '+','.join([label_to_name(lbl) for lbl in targets['labels']])
+                if len(targets['labels'])>0:
+                    caption = 'Image GT: '+','.join([label_to_name(lbl) for lbl in targets['labels']])
+                else:
+                    caption = 'Image GT: Sin hallazgos'
                 cv2.putText(colorimage, caption,
-                        (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
+                            (10, 50), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
             else:
                 # draw annotations in red
                 draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
@@ -97,29 +92,38 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
             print('Saved ',saving_path)
 
         except:
-            print('COULD SAVE ',saving_path)
+            print('COULDNT SAVE ',saving_path)
 
         if save_csv is not None:
             results_list = []
 
-            for i,label in enumerate(outputs['labels']):
-                result = {'image_name':os.path.basename(image_path),
+            for j,label in enumerate(outputs['labels']):
+                result = {'image_name':os.path.basename(saving_path),
                           'box_type':'prediction',
+                          'box_id': str(j),
                           'label':label_to_name(label),
-                          'score':outputs['scores'][i]}
+                          'score':outputs['scores'][j]}
                 results_list.append(result)
 
             for i, label in enumerate(targets['labels']):
-                result = {'image_name': os.path.basename(image_path),
+                result = {'image_name': os.path.basename(saving_path),
                           'box_type': 'ground-truth',
+                          'box_id': str(i),
                           'label': label_to_name(label),
                           }
                 results_list.append(result)
+            if len(results_list)>0:
+                results_list.append({'image_name': os.path.basename(saving_path),
+                          'box_type': '',
+                          'box_id':'',
+                          'label': '',
+                          })
 
             df = df.append(results_list,ignore_index=True)
 
         del outputs,targets, image
     if save_csv is not None:
+        print('Saving df of len ',len(df))
         df.to_csv(save_csv,index=False)
 
 
@@ -185,8 +189,9 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 def main(args=None):
     print('starting test script')
     save_as_files = True
-    view_in_window = False
     evaluate_coco = False
+
+    view_in_window = False
     loop = True
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -254,7 +259,7 @@ def main(args=None):
         print(e)
         print('Not reseting index')
         csv_test_files = csv_test[csv_test.image_source == 'hiba']
-
+    print(csv_test_files.image_source.value_counts())
     dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers, get_transform(train=False), return_image_source=True)
     data_loader_test_files = torch.utils.data.DataLoader(
         dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
@@ -272,7 +277,8 @@ def main(args=None):
 
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
-                          max_detections=8, min_score_threshold=min_score_thresholds,
+                          max_detections=10,
+                          #min_score_threshold=min_score_thresholds,
                           save_csv=output_csv_path):
             pass
     if view_in_window:

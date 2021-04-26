@@ -560,9 +560,9 @@ def maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs
         if mask_targets.numel() == 0:
             mask_loss = mask_logits.sum() * 0
             return mask_loss
-
+        mask_logits_current = mask_logits[torch.arange(labels.shape[0], device=labels.device), labels]
         mask_loss = F.binary_cross_entropy_with_logits(
-            mask_logits[torch.arange(labels.shape[0], device=labels.device), labels], mask_targets
+            mask_logits_current, mask_targets
         )
         return mask_loss
 
