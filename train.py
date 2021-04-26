@@ -23,7 +23,8 @@ def main(args=None):
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '26-04-21_masksAndBoxs_binary'
+    experiment_id = '27-04-21_masks_binary'
+    existing_test_set = '26-04-21_masksAndBoxs_binary/testCSV.csv'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
@@ -58,22 +59,29 @@ def main(args=None):
 
     #--Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin([
-        'box',
+        #'box',
         'mask'])].reset_index(drop=True)
 
-    image_ids = list(set(csv.file_name.values))
-    #np.random.seed(42)
-    #np.random.shuffle(image_ids)
-    #image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
-    class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
-    csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
-    stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
 
-    train_idx, test_idx = train_test_split(image_ids, stratify=stratification,
-                                           test_size=0.1,
-                                           random_state=42)
-    csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
-    csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index(drop=True)
+
+    if existing_test_set:
+        csv_test = pd.read_csv(existing_test_set)
+        test_image_ids = list(set(csv_test.file_name.values))
+        csv_train = csv[~csv.file_name.isin(test_image_ids)].reset_index(drop=True)
+    else:
+        image_ids = list(set(csv.file_name.values))
+        #np.random.seed(42)
+        #np.random.shuffle(image_ids)
+        #image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
+        class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
+        csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
+        stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
+
+        train_idx, test_idx = train_test_split(image_ids, stratify=stratification,
+                                               test_size=0.1,
+                                               random_state=42)
+        csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
+        csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index(drop=True)
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
     print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_test),
                                                                                                       len(train_idx),len(test_idx)))
