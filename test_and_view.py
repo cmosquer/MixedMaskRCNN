@@ -103,14 +103,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
             results_list = []
 
             for i,label in enumerate(outputs['labels']):
-                result = {'image_name':os.path.basename(image_path),
+                result = {'image_name':"{}_{}".format(image_source,os.path.basename(image_path)),
                           'box_type':'prediction',
                           'label':label_to_name(label),
                           'score':outputs['scores'][i]}
                 results_list.append(result)
 
             for i, label in enumerate(targets['labels']):
-                result = {'image_name': os.path.basename(image_path),
+                result = {'image_name': "{}_{}".format(image_source,os.path.basename(image_path)),
                           'box_type': 'ground-truth',
                           'label': label_to_name(label),
                           }
