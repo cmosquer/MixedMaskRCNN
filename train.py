@@ -21,6 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
+    num_classes = 6 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     experiment_id = '27-04-21_masks'
@@ -124,7 +125,7 @@ def main(args=None):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # our dataset has two classes only - background and person
-    num_classes = 2   #5 patologias + background
+
 
     # get the model using our helper function
     model = get_instance_segmentation_model(num_classes,
