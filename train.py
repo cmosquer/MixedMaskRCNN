@@ -24,7 +24,7 @@ def main(args=None):
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     experiment_id = '27-04-21_masks_binary'
-    existing_test_set = '26-04-21_masksAndBoxs_binary/testCSV.csv'
+    existing_test_set = '{}/{}/'.format(experiment_dir,'26-04-21_masksAndBoxs_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
