@@ -21,7 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
-    num_classes = 6 #patologias + background
+    num_classes = 5 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     experiment_id = '27-04-21_masks'
