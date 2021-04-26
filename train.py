@@ -23,7 +23,7 @@ def main(args=None):
     num_epochs = 10
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '27-04-21_masks_binary'
+    experiment_id = '27-04-21_masks'
     existing_test_set = '{}/{}'.format(experiment_dir,'26-04-21_masksAndBoxs_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
@@ -99,8 +99,8 @@ def main(args=None):
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_test.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
-    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=True)
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),binary_opacity=True)
+    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False))#,binary_opacity=True)
+    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False))#,binary_opacity=True)
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nTEST:')
