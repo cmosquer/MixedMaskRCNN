@@ -66,8 +66,9 @@ def main(args=None):
 
     if existing_test_set:
         csv_test = pd.read_csv(existing_test_set)
-        test_image_ids = list(set(csv_test.file_name.values))
-        csv_train = csv[~csv.file_name.isin(test_image_ids)].reset_index(drop=True)
+        test_idx = list(set(csv_test.file_name.values))
+        csv_train = csv[~csv.file_name.isin(test_idx)].reset_index(drop=True)
+        train_idx = list(set(csv_train.file_name.values))
     else:
         image_ids = list(set(csv.file_name.values))
         #np.random.seed(42)
