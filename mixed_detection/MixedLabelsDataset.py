@@ -54,11 +54,12 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
 
-    def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
+    def __init__(self, csv, class_numbers, transforms=None, return_image_source=False,binary_opacity=False):
         self.csv = csv
         self.class_numbers = class_numbers
         self.transforms = transforms
         self.return_image_source = return_image_source
+        self.binary = binary_opacity
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
                           'class_name','image_source',
@@ -95,8 +96,13 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             masks = mask == obj_ids[:, None, None]
             raw_labels = [self.class_numbers[c] for c in self.csv.class_name.values[idx].split('-')]
             # get bounding box coordinates for each mask
+
             num_objs = len(obj_ids)
-            for i in range(num_objs):
+            if len(raw_labels) < num_objs:
+                print(mask_path,raw_labels)
+            if num_objs!=len(raw_labels):
+                print('ERROR IN IMAGE {} with {} objects in mask and {} labels'.format(mask_path,num_objs,len(raw_labels)))
+            for i in range(min(num_objs,len(raw_labels))):
                 pos = np.where(masks[i])
                 xmin = np.min(pos[1])
                 xmax = np.max(pos[1])
@@ -104,7 +110,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 ymax = np.max(pos[0])
                 if ymax > ymin and xmax > xmin:
                     boxes.append([xmin, ymin, xmax, ymax])
-                    labels.append(raw_labels[i])
+                    if self.binary:
+                        labels.append(1)
+                    else:
+                        labels.append(raw_labels[i])
             masks = torch.as_tensor(masks, dtype=torch.uint8)
 
         else:
@@ -120,7 +129,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 if isinstance(row['class_name'],str):
                     if len(row['class_name'])>0:
                         raw_labels = row['class_name'].split('-')
-                        labels += [self.class_numbers[c] for c in raw_labels]
+                        if self.binary:
+                            labels += [1]*len(raw_labels)
+                        else:
+                            labels += [self.class_numbers[c] for c in raw_labels]
 
             img_shape = np.array(img).shape
             masks = torch.as_tensor(np.zeros((len(boxes),img_shape[0],img_shape[1])),
