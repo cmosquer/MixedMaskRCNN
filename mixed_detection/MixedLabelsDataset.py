@@ -114,6 +114,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                         labels.append(1)
                     else:
                         labels.append(raw_labels[i])
+                        print('labels',labels)
             masks = torch.as_tensor(masks, dtype=torch.uint8)
 
         else:

@@ -12,7 +12,7 @@ def main(args=None):
     print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
     experiment_dir = trx_dir+'Experiments/'
-    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210423-00_ubuntu.csv')
     class_numbers = {
      'NoduloMasa': 1,
      'Consolidacion': 2,
@@ -24,8 +24,8 @@ def main(args=None):
     num_classes = 6 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '27-04-21_masks'
-    existing_test_set = '{}/{}'.format(experiment_dir,'26-04-21_masksAndBoxs_binary/testCSV.csv')
+    experiment_id = '27-04-21_masksAndBoxs'
+    existing_test_set = None #'{}/{}'.format(experiment_dir,'26-04-21_masksAndBoxs/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     os.makedirs(output_dir,exist_ok=True)
@@ -60,7 +60,7 @@ def main(args=None):
 
     #--Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin([
-        #'box',
+        'box',
         'mask'])].reset_index(drop=True)
 
 
@@ -142,7 +142,8 @@ def main(args=None):
 
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.Adam(params, lr=0.01)
+    optimizer = torch.optim.SGD(params, lr=0.01,
+                                momentum=0.9, weight_decay=0.0005)
 
     # and a learning rate scheduler which decreases the learning rate by
     # 10x every 3 epochs
