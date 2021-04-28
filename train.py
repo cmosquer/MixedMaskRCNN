@@ -28,11 +28,17 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '27-04-21_masksAndBoxs'
+    experiment_id = '27-04-21_masksOnly'
     if binary:
         experiment_id+='_binary'
-    existing_test_set = None #'{}/{}'.format(experiment_dir,'26-04-21_masksAndBoxs/testCSV.csv')
+    existing_test_set = '{}/{}'.format(experiment_dir,'27-04-21_masksAndBoxs_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
+
+    # --Only accept images with boxes or masks--#
+    csv = csv[csv.label_level.isin([
+        #'box',
+        'mask'])].reset_index(drop=True)
+
 
     os.makedirs(output_dir,exist_ok=True)
     if 'label_level' not in csv.columns:
@@ -63,14 +69,6 @@ def main(args=None):
         csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
 
 
-
-    #--Only accept images with boxes or masks--#
-    csv = csv[csv.label_level.isin([
-        'box',
-        'mask'])].reset_index(drop=True)
-
-
-
     if existing_test_set:
         csv_test = pd.read_csv(existing_test_set)
         test_idx = list(set(csv_test.file_name.values))
@@ -78,9 +76,6 @@ def main(args=None):
         train_idx = list(set(csv_train.file_name.values))
     else:
         image_ids = list(set(csv.file_name.values))
-        #np.random.seed(42)
-        #np.random.shuffle(image_ids)
-        #image_sources = [csv[csv.file_name == idx]['image_source'].values[0] for idx in image_ids]
         class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
         csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
         stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
@@ -114,7 +109,6 @@ def main(args=None):
     dataset_test.quantifyClasses()
     # split the dataset in train and test set
     torch.manual_seed(1)
-    # train_sampler = MixedSampler(folds_distr_path, fold_id, non_empty_mask_proba)
 
     # define training and validation data loaders
     data_loader = torch.utils.data.DataLoader(
@@ -129,8 +123,6 @@ def main(args=None):
 
     print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_test)))
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
-    # our dataset has two classes only - background and person
 
 
     # get the model using our helper function
