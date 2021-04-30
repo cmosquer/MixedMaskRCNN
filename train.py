@@ -32,7 +32,7 @@ def main(args=None):
     experiment_id = '30-04-21_masksOnly'
     if binary:
         experiment_id+='_binary'
-    existing_test_set =  '{}/{}'.format(experiment_dir,'30-04-21_masksAndBoxs_binary/testCSV.csv')
+    existing_test_set =  '{}/{}'.format(experiment_dir,'30-04-21_masksAndBoxs_binary_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
