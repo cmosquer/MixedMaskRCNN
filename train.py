@@ -21,6 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
+    random_seed = 30
     binary = True
     if binary:
         num_classes = 2
@@ -28,15 +29,15 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '27-04-21_masksOnly'
+    experiment_id = '30-04-21_masksAndBoxs_binary'
     if binary:
         experiment_id+='_binary'
-    existing_test_set = '{}/{}'.format(experiment_dir,'27-04-21_masksAndBoxs_binary/testCSV.csv')
+    existing_test_set = None# '{}/{}'.format(experiment_dir,'27-04-21_masksAndBoxs_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin([
-        #'box',
+        'box',
         'mask'])].reset_index(drop=True)
 
 
@@ -82,7 +83,7 @@ def main(args=None):
 
         train_idx, test_idx = train_test_split(image_ids, stratify=stratification,
                                                test_size=0.1,
-                                               random_state=42)
+                                               random_state=random_seed)
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index(drop=True)
     assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
