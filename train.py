@@ -21,7 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
-    random_seed = 30
+    random_seed = 40
     binary = True
     if binary:
         num_classes = 2
@@ -29,15 +29,15 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-    experiment_id = '30-04-21_masksAndBoxs_binary'
+    experiment_id = '06-05-21_masksOnly_binary'
     if binary:
         experiment_id+='_binary'
-    existing_test_set =  None #'{}/{}'.format(experiment_dir,'30-04-21_masksAndBoxs_binary/testCSV.csv')
+    existing_test_set =  '{}/{}'.format(experiment_dir,'06-05-21_masksAndBoxs_binary_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin([
-        'box',
+        #'box',
         'mask'])].reset_index(drop=True)
 
 
