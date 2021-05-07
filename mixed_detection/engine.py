@@ -108,6 +108,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 if area_gt>0:
                     intersection = torch.sum(output_all[target_all.bool()])
                     dice = intersection * 2. / (area_gt + area_det)
+                    dice = dice.item()
                 else:
                     dice = 0
             print(type(dice),dice)
@@ -126,7 +127,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     coco_evaluator.summarize(saving_file_path=results_file)
-    dice_avg = torch.mean(total_dice)
+    dice_avg = np.mean(total_dice)
     print('AVG DICE {:.2f}'.format(dice_avg))
     if results_file:
         with open(results_file, 'w') as f:
