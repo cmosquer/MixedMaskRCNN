@@ -29,7 +29,11 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
+<<<<<<< HEAD
     experiment_id = '06-05-21_masksOnly_binary'
+=======
+    experiment_id = '06-05-21_masksAndBoxs_binary'
+>>>>>>> 74a7a52ca4b15ccf7c652fb0269dc3a969fc2ea8
     if binary:
         experiment_id+='_binary'
     existing_test_set =  '{}/{}'.format(experiment_dir,'06-05-21_masksAndBoxs_binary_binary/testCSV.csv')

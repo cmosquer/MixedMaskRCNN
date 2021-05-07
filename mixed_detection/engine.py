@@ -2,7 +2,7 @@ import math
 import time, sys
 import torch
 import torchvision.models.detection.mask_rcnn
-
+import numpy as np
 from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
 from mixed_detection import vision_utils
@@ -24,6 +24,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
+
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -84,7 +85,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     if "segm" not in iou_types:
         iou_types.append("segm")
     coco_evaluator = CocoEvaluator(coco, iou_types)
-
+    total_dice = []
     for images, targets in metric_logger.log_every(data_loader, 100, header):
         images = list(img.to(device) for img in images)
 
@@ -94,7 +95,23 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
         outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
+        if data_loader.dataset.binary:
+            dice = 0
+            for output,target in zip(outputs,targets):
+                output_all = torch.sum(output['masks'],axis=0)
+                print(target['masks'].max())
+                area_gt = torch.sum(target['masks'])
+                print('sum target',area_gt )
+                area_det = torch.sum(output_all)
+                print('sum output', area_det)
+                if area_gt>0:
+                    intersection = torch.sum(output_all[target['masks']==1])
+                    print('inters', intersection)
+                    dice = intersection * 2. / (area_gt + area_det)
+                else:
+                    dice = 0
 
+            total_dice.append(dice)
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
         evaluator_time = time.time()
         coco_evaluator.update(res)
@@ -109,6 +126,11 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     coco_evaluator.summarize(saving_file_path=results_file)
+    dice_avg = total_dice.mean()
+    print('AVG DICE {:.2f}'.format(dice_avg))
+    if results_file:
+        with open(results_file, 'w') as f:
+            f.write(f'DICE: {dice_avg}')
     torch.set_num_threads(n_threads)
     return coco_evaluator
 

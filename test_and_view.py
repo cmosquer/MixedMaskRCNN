@@ -263,11 +263,11 @@ def main(args=None):
     print('DATASET FOR FIGURES:')
     print(dataset_test_files.quantifyClasses())
 
-    min_score_thresholds = {1: 0.25, #'NoduloMasa',
-       2: 0.6 , #'Consolidacion',
-       3: 0.6, #'PatronIntersticial',
-       4: 0.5, #'Atelectasia',
-       5: 0.5 #'LesionesDeLaPared'
+    min_score_thresholds = {1: 0.25, #'NoduloMasa', #NUEVO 0.35
+       2: 0.25 , #'Consolidacion',
+       3: 0.25, #'PatronIntersticial',
+       4: 0.25, #'Atelectasia',
+       5: 0.25 #'LesionesDeLaPared'
        }
 
     if save_as_files:
