@@ -231,6 +231,13 @@ def main(args=None):
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
     model.to(device)
+
+    #Change model parameters?
+    model.box_score_thresh = 0.05
+    model.box_nms_thresh = 0.3
+    model.box_detections_per_img = 100
+    model.rpn_nms_thresh = 0.5
+
     model.eval()
     # define data loader
     print('Model loaded')
@@ -269,6 +276,7 @@ def main(args=None):
        4: 0.25, #'Atelectasia',
        5: 0.25 #'LesionesDeLaPared'
        }
+    #min_box_area =
 
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,

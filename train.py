@@ -21,7 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
-    random_seed = 40
+    random_seed = 'revisedSet'
     binary = True
     if binary:
         num_classes = 2
@@ -30,16 +30,28 @@ def main(args=None):
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
-    experiment_id = '06-05-21_masksAndBoxs'
+    experiment_number = '06-05-21'
+    experiment_type = 'masksAndBoxs' #'masksOnly'
+    experiment_id = experiment_number+'_'+experiment_type
     if binary:
         experiment_id+='_binary'
-    existing_test_set =  None #'{}/{}'.format(experiment_dir,'06-05-21_masksAndBoxs_binary/testCSV.csv')
+
+    if random_seed == 'revisedSet':
+        existing_test_set = '{}/{}'.format(experiment_dir,'18-04-21/testCSV.csv')
+    else:
+        pretest = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)
+        if os.path.exists(pretest):
+            existing_test_set = pretest
+        else:
+            existing_test_set = None
+            random_seed = 40
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
-    csv = csv[csv.label_level.isin([
-        'box',
-        'mask'])].reset_index(drop=True)
+    if experiment_type=='masksOnly':
+        csv = csv[csv.label_level.isin(['mask'])].reset_index(drop=True)
+    else:
+        csv = csv[csv.label_level.isin(['box', 'mask'])].reset_index(drop=True)
 
 
     os.makedirs(output_dir,exist_ok=True)
@@ -104,7 +116,7 @@ def main(args=None):
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_test.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=binary)
-    dataset_test = MixedLabelsDataset(csv_test[:30], class_numbers, get_transform(train=False),binary_opacity=binary)
+    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),binary_opacity=binary)
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nTEST:')

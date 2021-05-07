@@ -22,12 +22,8 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         warmup_iters = min(1000, len(data_loader) - 1)
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
-    k=0
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
-        if k>20:
-            break
-        else:
-            k+=1
+
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -111,7 +107,6 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                     dice = dice.item()
                 else:
                     dice = 0
-            print(type(dice),dice)
             total_dice.append(dice)
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
         evaluator_time = time.time()
