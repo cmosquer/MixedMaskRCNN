@@ -140,7 +140,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
         print('AVG DICE {:.5f}'.format(dice_avg))
         if results_file:
-            with open(results_file, 'w') as f:
+            with open(results_file, 'a') as f:
                 f.write(f'DICE: {dice_avg}')
 
 def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epoch, print_freq):
