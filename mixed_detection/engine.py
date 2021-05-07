@@ -123,7 +123,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     coco_evaluator.accumulate()
     coco_evaluator.summarize(saving_file_path=results_file)
     dice_avg = np.mean(total_dice)
-    print('AVG DICE {:.2f}'.format(dice_avg))
+    print('AVG DICE {:.5f}'.format(dice_avg))
     if results_file:
         with open(results_file, 'w') as f:
             f.write(f'DICE: {dice_avg}')

@@ -21,7 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
-    random_seed = 'revisedSet'
+    random_seed = 40#'revisedSet'
     binary = True
     if binary:
         num_classes = 2
@@ -44,7 +44,6 @@ def main(args=None):
             existing_test_set = pretest
         else:
             existing_test_set = None
-            random_seed = 40
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
