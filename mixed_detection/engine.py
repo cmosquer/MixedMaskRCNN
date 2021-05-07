@@ -101,7 +101,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if data_loader.dataset.binary:
             dice = 0
             for output,target in zip(outputs,targets):
-                output_all = (torch.sum(output['masks'],axis=0)>0).int()
+                output_all = torch.squeeze((torch.sum(output['masks'],axis=0)>0).int())
                 target_all = (torch.sum(target['masks'],axis=0)>0).int()
 
                 print(' shape',target_all.shape,output_all.shape)
