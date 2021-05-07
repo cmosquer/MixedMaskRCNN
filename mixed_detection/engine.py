@@ -103,10 +103,12 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 area_det = torch.sum(output_all)
                 if area_gt>0:
                     intersection = torch.sum(output_all[target_all.bool()])
-                    dice = intersection * 2. / (area_gt + area_det)
-                    dice = dice.item()
+                    dice_tensor = intersection * 2. / (area_gt + area_det)
+                    dice = dice_tensor.item()
+                    del dice_tensor, intersection
                 else:
                     dice = 0
+                del output_all, target_all, area_det, area_gt
             total_dice.append(dice)
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
         evaluator_time = time.time()
