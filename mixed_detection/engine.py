@@ -101,20 +101,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if data_loader.dataset.binary:
             dice = 0
             for output,target in zip(outputs,targets):
-                print('output raw max',output['masks'].max())
                 output_all = (torch.sum(output['masks'],axis=0)>0).int()
-                print('output all max', output_all.max())
                 target_all = (torch.sum(target['masks'],axis=0)>0).int()
-                print('target raw max', target['masks'].max())
 
-                print('target_all max', target_all.max())
-
+                print(' shape',target_all.shape,output_all.shape)
                 area_gt = torch.sum(target['masks'])
-                print('sum target',area_gt )
                 area_det = torch.sum(output_all)
-                print('sum output', area_det)
                 if area_gt>0:
-                    intersection = torch.sum(output_all[target_all == 1])
+                    intersection = torch.sum(output_all[target_all.bool()])
                     print('inters', intersection)
                     dice = intersection * 2. / (area_gt + area_det)
                 else:
