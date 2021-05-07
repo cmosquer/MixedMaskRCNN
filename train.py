@@ -29,19 +29,16 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
-<<<<<<< HEAD
-    experiment_id = '06-05-21_masksOnly_binary'
-=======
-    experiment_id = '06-05-21_masksAndBoxs_binary'
->>>>>>> 74a7a52ca4b15ccf7c652fb0269dc3a969fc2ea8
+    #experiment_id = '06-05-21_masksOnly'
+    experiment_id = '06-05-21_masksAndBoxs'
     if binary:
         experiment_id+='_binary'
-    existing_test_set =  '{}/{}'.format(experiment_dir,'06-05-21_masksAndBoxs_binary_binary/testCSV.csv')
+    existing_test_set =  None #'{}/{}'.format(experiment_dir,'06-05-21_masksAndBoxs_binary/testCSV.csv')
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
     csv = csv[csv.label_level.isin([
-        #'box',
+        'box',
         'mask'])].reset_index(drop=True)
 
 
@@ -107,7 +104,7 @@ def main(args=None):
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_test.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=binary)
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),binary_opacity=binary)
+    dataset_test = MixedLabelsDataset(csv_test[:30], class_numbers, get_transform(train=False),binary_opacity=binary)
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nTEST:')
@@ -161,7 +158,7 @@ def main(args=None):
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
+        saving_path = None#'{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
         evaluate(model, data_loader_test, device=device, model_saving_path=saving_path,results_file=results_coco_file)
 

@@ -22,9 +22,12 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         warmup_iters = min(1000, len(data_loader) - 1)
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
-
+    k=0
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
-
+        if k>20:
+            break
+        else:
+            k+=1
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -98,14 +101,20 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if data_loader.dataset.binary:
             dice = 0
             for output,target in zip(outputs,targets):
-                output_all = torch.sum(output['masks'],axis=0)
-                print(target['masks'].max())
+                print('output raw max',output['masks'].max())
+                output_all = (torch.sum(output['masks'],axis=0)>0).int()
+                print('output all max', output_all.max())
+                target_all = (torch.sum(target['masks'],axis=0)>0).int()
+                print('target raw max', target['masks'].max())
+
+                print('target_all max', target_all.max())
+
                 area_gt = torch.sum(target['masks'])
                 print('sum target',area_gt )
                 area_det = torch.sum(output_all)
                 print('sum output', area_det)
                 if area_gt>0:
-                    intersection = torch.sum(output_all[target['masks']==1])
+                    intersection = torch.sum(output_all[target_all == 1])
                     print('inters', intersection)
                     dice = intersection * 2. / (area_gt + area_det)
                 else:
