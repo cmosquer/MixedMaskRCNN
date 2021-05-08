@@ -16,6 +16,7 @@ limitations under the License.
 
 import cv2
 import numpy as np
+from matplotlib import colors, cm
 
 import warnings
 
@@ -206,3 +207,41 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
             caption += '-{:.2f}'.format(score)
         draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
         draw_box(image, annotations['boxes'][i], color=c)
+
+
+def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None):
+    """ Draws annotations in an image.
+
+    # Arguments
+        image         : The image to draw on.
+        annotations   : A [N, 5] matrix (x1, y1, x2, y2, label) or dictionary containing bboxes (shaped [N, 4]) and labels (shaped [N]).
+        color         : The color of the boxes. By default the color from keras_retinanet.utils.colors.label_color will be used.
+        label_to_name : (optional) Functor for mapping a label to a name.
+    """
+
+    assert('masks' in annotations)
+    assert('labels' in annotations)
+    assert(annotations['masks'].shape[0] == annotations['labels'].shape[0])
+    labels_cm = {1:cm.Greens,
+     2:cm.Reds,
+     3:cm.Blues,
+     4:cm.PuRd,
+     5:cm.Oranges
+     }
+    for i in range(annotations['masks'].shape[0]):
+        label   = annotations['labels'][i]
+        c       = color if color is not None else label_color(label)
+        caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
+        if 'scores' in annotations.keys():
+            score = annotations['scores'][i]
+            caption += '-{:.2f}'.format(score)
+        draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
+        mask = np.squeeze(annotations['masks'][i])
+        print(mask.shape, image.shape)
+        norm = colors.normalize()
+        cmap = labels_cm[label]
+        colored_mask = cmap(norm(mask))
+        print(colored_mask.shape)
+        image = cv2.addWeighted(image, 0.8, colored_mask, 0.2, 0)
+        #overlap = cv2.addWeighted(overlap, 1, right_lung, 1, 0)
+        #plt.imshow(np.squeeze(mask), alpha=0.2, cmap='Greens')

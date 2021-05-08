@@ -7,7 +7,7 @@ import torch.utils.data
 from tqdm import tqdm
 import cv2
 from matplotlib import pyplot as plt
-from mixed_detection.visualization import draw_annotations
+from mixed_detection.visualization import draw_annotations, draw_masks
 from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate
@@ -22,6 +22,7 @@ def label_to_name(label):
 
 def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
+                min_box_proportionArea=None, draw='boxes',
                 save_csv=None #If not None, should be a str with filepath where to save dataframe with targets and predictions
                 ):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -41,6 +42,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
         torch.cuda.synchronize()
         outputs = model(image)
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
+
+        if min_box_proportionArea:
+            total_area = image.shape[0]*image.shape[1]
+            minimum_area = total_area*min_box_proportionArea
+            outputs['areas'] = [(x2-x1)*(y2-y1) for x1,x2,y1,y2 in outputs['boxes']]
+            bigBoxes = np.argwhere(outputs['areas']>minimum_area)
+            for k,v in outputs.items():
+                outputs[k] = outputs[k][bigBoxes,]
         if isinstance(min_score_threshold,float):
             high_scores = np.argwhere(outputs['scores']>min_score_threshold)
             for k,v in outputs.items():
@@ -78,7 +87,10 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
             colorimage[:,:,0]=255*image
             colorimage[:,:,1]=255*image
             colorimage[:,:,2]=255*image
-            draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
+            if draw=='boxes':
+                draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
+            if draw=='masks':
+                draw_masks(colorimage, outputs, label_to_name=label_to_name)
 
             # draw annotations on the image
         if len(targets)>0:
@@ -88,7 +100,10 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                         (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
             else:
                 # draw annotations in red
-                draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
+                if draw=='boxes':
+                    draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
+                #if draw=='masks':
+                #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
 
         try:
             saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
@@ -276,11 +291,12 @@ def main(args=None):
        4: 0.25, #'Atelectasia',
        5: 0.25 #'LesionesDeLaPared'
        }
-    #min_box_area =
+    min_box_proportionArea = 1/50 #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_as_files:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
                           max_detections=8, min_score_threshold=min_score_thresholds,
+                          min_box_proportionArea=min_box_proportionArea,
                           save_csv=output_csv_path):
             pass
     if view_in_window:

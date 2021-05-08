@@ -67,81 +67,82 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, model_saving_path=None, results_file=None):
+def evaluate(model, data_loader, device, model_saving_path=None, results_file=None,coco=True,dice=False):
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
     cpu_device = torch.device("cpu")
     model.eval()
-    metric_logger = vision_utils.MetricLogger(delimiter="  ")
-    header = 'Test:'
-    if model_saving_path:
-        torch.save(model.state_dict(),model_saving_path)
-        print('Saved model to ',model_saving_path)
+    if coco:
+        metric_logger = vision_utils.MetricLogger(delimiter="  ")
+        header = 'Test:'
+        if model_saving_path:
+            torch.save(model.state_dict(),model_saving_path)
+            print('Saved model to ',model_saving_path)
 
-    coco = get_coco_api_from_dataset(data_loader.dataset)
-    iou_types = _get_iou_types(model)
-    if "segm" not in iou_types:
-        iou_types.append("segm")
-    coco_evaluator = CocoEvaluator(coco, iou_types)
-    total_dice = []
-    for images, targets in metric_logger.log_every(data_loader, 100, header):
-        images = list(img.to(device) for img in images)
-
-        torch.cuda.synchronize()
-        model_time = time.time()
-        outputs = model(images)
-
-        outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
-        model_time = time.time() - model_time
-
-        res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
-        evaluator_time = time.time()
-        coco_evaluator.update(res)
-        evaluator_time = time.time() - evaluator_time
-        metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
-        del images,targets,outputs
-    # gather the stats from all processes
-    metric_logger.synchronize_between_processes()
-    print("Averaged stats:", metric_logger)
-    coco_evaluator.synchronize_between_processes()
-
-    # accumulate predictions from all images
-    coco_evaluator.accumulate()
-    coco_evaluator.summarize(saving_file_path=results_file)
-
-    torch.set_num_threads(n_threads)
-    del coco_evaluator
-
-    if data_loader.dataset.binary:
+        coco = get_coco_api_from_dataset(data_loader.dataset)
+        iou_types = _get_iou_types(model)
+        if "segm" not in iou_types:
+            iou_types.append("segm")
+        coco_evaluator = CocoEvaluator(coco, iou_types)
+        total_dice = []
         for images, targets in metric_logger.log_every(data_loader, 100, header):
             images = list(img.to(device) for img in images)
+
+            torch.cuda.synchronize()
+            model_time = time.time()
             outputs = model(images)
 
             outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
-            dice = 0
-            for output, target in zip(outputs, targets):
-                output_all = torch.squeeze((torch.sum(output['masks'], axis=0) > 0).int())
-                target_all = (torch.sum(target['masks'], axis=0) > 0).int()
-                area_gt = torch.sum(target['masks'])
-                area_det = torch.sum(output_all)
-                if area_gt > 0:
-                    intersection = torch.sum(output_all[target_all.bool()])
-                    dice_tensor = intersection * 2. / (area_gt + area_det)
-                    dice = dice_tensor.item()
-                    del dice_tensor, intersection
-                else:
-                    dice = 0
-                del output_all, target_all, area_det, area_gt
-            total_dice.append(dice)
-            del images, targets, outputs
+            model_time = time.time() - model_time
 
-        dice_avg = np.mean(total_dice)
+            res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+            evaluator_time = time.time()
+            coco_evaluator.update(res)
+            evaluator_time = time.time() - evaluator_time
+            metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+            del images,targets,outputs
+        # gather the stats from all processes
+        metric_logger.synchronize_between_processes()
+        print("Averaged stats:", metric_logger)
+        coco_evaluator.synchronize_between_processes()
 
-        print('AVG DICE {:.5f}'.format(dice_avg))
-        if results_file:
-            with open(results_file, 'a') as f:
-                f.write(f'DICE: {dice_avg}')
+        # accumulate predictions from all images
+        coco_evaluator.accumulate()
+        coco_evaluator.summarize(saving_file_path=results_file)
+
+        torch.set_num_threads(n_threads)
+        del coco_evaluator
+    if dice:
+        if data_loader.dataset.binary:
+            for images, targets in metric_logger.log_every(data_loader, 100, header):
+                images = list(img.to(device) for img in images)
+                outputs = model(images)
+
+                outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+                dice = 0
+                for output, target in zip(outputs, targets):
+                    output_all = torch.squeeze((torch.sum(output['masks'], axis=0) > 0).int())
+                    target_all = (torch.sum(target['masks'], axis=0) > 0).int()
+                    area_gt = torch.sum(target['masks'])
+                    area_det = torch.sum(output_all)
+                    if area_gt > 0:
+                        intersection = torch.sum(output_all[target_all.bool()])
+                        dice_tensor = intersection * 2. / (area_gt + area_det)
+                        dice = dice_tensor.item()
+                        del dice_tensor, intersection
+                    else:
+                        dice = 0
+                    del output_all, target_all, area_det, area_gt
+                total_dice.append(dice)
+                del images, targets, outputs
+
+            dice_avg = np.mean(total_dice)
+
+            print('AVG DICE {:.5f}'.format(dice_avg))
+            if results_file:
+                with open(results_file, 'a') as f:
+                    f.write(f'DICE: {dice_avg}')
 
 def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epoch, print_freq):
     model.train()

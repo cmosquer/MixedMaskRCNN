@@ -31,7 +31,7 @@ def main(args=None):
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
     experiment_number = '06-05-21'
-    experiment_type = 'masksOnly' #'masksAndBoxs' 
+    experiment_type = 'masksOnly' #'masksAndBoxs'
     experiment_id = experiment_number+'_'+experiment_type
     if binary:
         experiment_id+='_binary'
@@ -172,6 +172,7 @@ def main(args=None):
         saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
         evaluate(model, data_loader_test, device=device, model_saving_path=saving_path,results_file=results_coco_file)
+        evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
 
 
 if __name__ == '__main__':
