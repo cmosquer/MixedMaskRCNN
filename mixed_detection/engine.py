@@ -73,8 +73,9 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     torch.set_num_threads(1)
     cpu_device = torch.device("cpu")
     model.eval()
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
     if coco:
-        metric_logger = vision_utils.MetricLogger(delimiter="  ")
+
         header = 'Test:'
         if model_saving_path:
             torch.save(model.state_dict(),model_saving_path)
