@@ -74,9 +74,10 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     cpu_device = torch.device("cpu")
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
+    header = 'Test:'
     if coco:
 
-        header = 'Test:'
+
         if model_saving_path:
             torch.save(model.state_dict(),model_saving_path)
             print('Saved model to ',model_saving_path)
