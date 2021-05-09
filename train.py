@@ -38,6 +38,7 @@ def main(args=None):
 
     if random_seed == 'revisedSet':
         existing_test_set = '{}/{}'.format(experiment_dir,'18-04-21/testCSV.csv')
+
     else:
         pretest = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)
         if os.path.exists(pretest):
@@ -84,6 +85,9 @@ def main(args=None):
 
     if existing_test_set:
         csv_test = pd.read_csv(existing_test_set)
+        if random_seed=='revisedSet':
+            csv_test = csv_test[csv_test.image_source.isin(['hiba', 'jsrt', 'mimic_relabeled'])].reset_index(
+            drop=True)
         test_idx = list(set(csv_test.file_name.values))
         csv_train = csv[~csv.file_name.isin(test_idx)].reset_index(drop=True)
         train_idx = list(set(csv_train.file_name.values))
