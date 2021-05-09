@@ -94,22 +94,24 @@ def main(args=None):
             tasks = {}
             tasks['bbox'] = txt.split('IOU: segm')[0]
             tasks['segm'] = txt.split('IOU: segm')[-1]
-            for task,txt_ in tasks.items():
+            for task, txt_ in tasks.items():
+                txt_ = txt_.replace(']:', '] :')
+                sp = txt_.split('] :')
+                vals = [float(f[:6]) for f in sp[1:]]
+                precisions['precision_iou50-95'][epoch] = vals[0]
+                precisions['precision_iou50'][epoch] = vals[1]
+                precisions['precision_iou75'][epoch] = vals[2]
+                precisions['precision_iou50-95_small'][epoch] = vals[3]
+                precisions['precision_iou50-95_medium'][epoch] = vals[4]
+                precisions['precision_iou50-95_large'][epoch] = vals[5]
 
-                vals = [float(f[:6]) for f in txt_.split('] :')[1:]]
-                precisions[task]['precision_iou50-95'][epoch] = float(txt_.split(']:')[-1][:6])
-                precisions[task]['precision_iou50'][epoch] = vals[0]
-                precisions[task]['precision_iou75'][epoch] = vals[1]
-                precisions[task]['precision_iou50-95_small'][epoch] = vals[2]
-                precisions[task]['precision_iou50-95_medium'][epoch] = vals[3]
-                precisions[task]['precision_iou50-95_large'][epoch] = vals[4]
+                recalls['recall_1det'][epoch] = vals[6]
+                recalls['recall_10det'][epoch] = vals[7]
+                recalls['recall_100det'][epoch] = vals[8]
+                recalls['recall_100det_small'][epoch] = vals[9]
+                recalls['recall_100det_medium'][epoch] = vals[10]
+                recalls['recall_100det_large'][epoch] = vals[11]
 
-                recalls[task]['recall_1det'][epoch] = vals[5]
-                recalls[task]['recall_10det'][epoch] = vals[6]
-                recalls[task]['recall_100det'][epoch] = vals[7]
-                recalls[task]['recall_100det_small'][epoch] = vals[8]
-                recalls[task]['recall_100det_medium'][epoch] = vals[9]
-                recalls[task]['recall_100det_large'][epoch] = vals[10]
         for task in ['bbox','segm']:
             lines = ['-', '--', '-.', ':', '--', '-']
             widths = [2, 2, 1, 1, 1, 1]
