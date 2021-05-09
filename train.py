@@ -21,7 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
-    random_seed = 40#'revisedSet'
+    random_seed = 'revisedSet'
     binary = True
     if binary:
         num_classes = 2
@@ -30,7 +30,7 @@ def main(args=None):
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
-    experiment_number = '06-05-21'
+    experiment_number = '09-05-21'
     experiment_type = 'masksAndBoxs' #'masksOnly'#
     experiment_id = experiment_number+'_'+experiment_type
     if binary:

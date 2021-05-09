@@ -10,7 +10,7 @@ from mixed_detection.utils import mean_average_precision
 from tqdm import tqdm
 
 
-def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
+def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None):
     model.train()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', vision_utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
@@ -22,8 +22,14 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq):
         warmup_iters = min(1000, len(data_loader) - 1)
 
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
-    for images, targets in metric_logger.log_every(data_loader, print_freq, header):
 
+    step = 0
+    for images, targets in metric_logger.log_every(data_loader, print_freq, header):
+        if breaking_step:
+            if step > breaking_step:
+                break
+            else:
+                step+=1
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
