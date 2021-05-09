@@ -43,13 +43,13 @@ def main(args=None):
     Nepochs = 10
     torch.manual_seed(1)
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
-                                      return_image_source=False)
+                                      return_image_source=False,binary_opacity=True)
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     print('DATASET FOR COCO:')
     dataset_test.quantifyClasses()
-    num_classes = len(class_numbers.keys()) + 1
+    num_classes = 2
     model = get_instance_segmentation_model(num_classes)
     #PRIMERO COMPUTAR DICES
     overall_fig, overall_ax = plt.subplots(1, 1, figsize=(15, 8))
@@ -125,7 +125,6 @@ def main(args=None):
                 ax.plot(range(Nepochs), val, label=name, color='red', ls=lines[j], lw=widths[j])
                 j += 1
             ax.legend()
-            ax.set_ylim((0, 0.35))
 
             fig.savefig(f'{expDir}/detailed{task}.jpg')
 
