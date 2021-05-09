@@ -87,7 +87,6 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if "segm" not in iou_types:
             iou_types.append("segm")
         coco_evaluator = CocoEvaluator(coco, iou_types)
-        total_dice = []
         for images, targets in metric_logger.log_every(data_loader, 100, header):
             images = list(img.to(device) for img in images)
 
@@ -117,6 +116,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         del coco_evaluator
     if dice:
         if data_loader.dataset.binary:
+            total_dice = []
             for images, targets in metric_logger.log_every(data_loader, 100, header):
                 images = list(img.to(device) for img in images)
                 outputs = model(images)
