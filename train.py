@@ -37,7 +37,7 @@ def main(args=None):
         experiment_id+='_binary'
 
     if random_seed == 'revisedSet':
-        existing_test_set = '{}/{}'.format(experiment_dir,'18-04-21/testCSV.csv')
+        existing_test_set = '{}/{}'.format(experiment_dir,'18-04-21/targets_and_predictions_table-epoch9.csv')
 
     else:
         pretest = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)
@@ -85,6 +85,7 @@ def main(args=None):
 
     if existing_test_set:
         csv_test = pd.read_csv(existing_test_set)
+        print(len(csv_test))
         if random_seed=='revisedSet':
             csv_test = csv_test[csv_test.image_source.isin(['hiba', 'jsrt', 'mimic_relabeled'])].reset_index(
             drop=True)
