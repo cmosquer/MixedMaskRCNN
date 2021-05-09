@@ -86,7 +86,7 @@ def main(args=None):
                    'recall_100det_large': np.zeros((Nepochs)),
                    }
         for epoch in range(Nepochs):
-            results_coco_file = f'{expDir}/cocoStats-test-epoch_{epoch}.txt'
+            results_coco_file = f'{expDir}/cocoStats-{epoch}.txt'
 
 
             with open(results_coco_file, 'r') as f:
