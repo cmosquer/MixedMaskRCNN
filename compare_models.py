@@ -53,7 +53,7 @@ def main(args=None):
     model = get_instance_segmentation_model(num_classes)
     #PRIMERO COMPUTAR DICES
     overall_fig, overall_ax = plt.subplots(1, 1, figsize=(15, 8))
-    for j,dir in enumerate(modelsForCompare):
+    for exp,dir in enumerate(modelsForCompare):
         expDir = output_dir+dir
         precisions={}
         precisions['bbox'] = {'precision_iou50-95': np.zeros((Nepochs)),
@@ -98,19 +98,19 @@ def main(args=None):
                 txt_ = txt_.replace(']:', '] :')
                 sp = txt_.split('] :')
                 vals = [float(f[:6]) for f in sp[1:]]
-                precisions['precision_iou50-95'][epoch] = vals[0]
-                precisions['precision_iou50'][epoch] = vals[1]
-                precisions['precision_iou75'][epoch] = vals[2]
-                precisions['precision_iou50-95_small'][epoch] = vals[3]
-                precisions['precision_iou50-95_medium'][epoch] = vals[4]
-                precisions['precision_iou50-95_large'][epoch] = vals[5]
+                precisions[task]['precision_iou50-95'][epoch] = vals[0]
+                precisions[task]['precision_iou50'][epoch] = vals[1]
+                precisions[task]['precision_iou75'][epoch] = vals[2]
+                precisions[task]['precision_iou50-95_small'][epoch] = vals[3]
+                precisions[task]['precision_iou50-95_medium'][epoch] = vals[4]
+                precisions[task]['precision_iou50-95_large'][epoch] = vals[5]
 
-                recalls['recall_1det'][epoch] = vals[6]
-                recalls['recall_10det'][epoch] = vals[7]
-                recalls['recall_100det'][epoch] = vals[8]
-                recalls['recall_100det_small'][epoch] = vals[9]
-                recalls['recall_100det_medium'][epoch] = vals[10]
-                recalls['recall_100det_large'][epoch] = vals[11]
+                recalls[task]['recall_1det'][epoch] = vals[6]
+                recalls[task]['recall_10det'][epoch] = vals[7]
+                recalls[task]['recall_100det'][epoch] = vals[8]
+                recalls[task]['recall_100det_small'][epoch] = vals[9]
+                recalls[task]['recall_100det_medium'][epoch] = vals[10]
+                recalls[task]['recall_100det_large'][epoch] = vals[11]
 
         for task in ['bbox','segm']:
             lines = ['-', '--', '-.', ':', '--', '-']
@@ -131,14 +131,14 @@ def main(args=None):
 
 
         overall_ax.plot(range(Nepochs),precisions['bbox']['precision_iou50-95'],label=f'{dir}-precision-boxes',
-                        color='red',ls=lines[j],width=1)
+                        color='red',ls=lines[exp],width=1)
         overall_ax.plot(range(Nepochs), precisions['segm']['precision_iou50-95'], label=f'{dir}-precision-segm',
-                        color='red',ls=lines[j],width=2)
+                        color='red',ls=lines[exp],width=2)
 
         overall_ax.plot(range(Nepochs),precisions['bbox']['recall_100det'],label=f'{dir}-recall-boxes',
-                        color='blue',ls=lines[j],width=1)
+                        color='blue',ls=lines[exp],width=1)
         overall_ax.plot(range(Nepochs), precisions['segm']['recall_100det'], label=f'{dir}-recall-segm',
-                        color='blue',ls=lines[j],width=2)
+                        color='blue',ls=lines[exp],width=2)
 
         dices = np.zeros((Nepochs))
         for epoch in range(Nepochs):
@@ -155,7 +155,8 @@ def main(args=None):
             dices[epoch]=dice_avg
 
         overall_ax.plot(range(Nepochs), dices, label=f'{dir}-DICE',
-                        color='green',ls=lines[j],width=2)
+                        color='green',ls=lines[exp],width=2)
+    overall_ax.legend()
     overall_fig.savefig(output_dir+'overall_fig.svg')
 
 if __name__ == '__main__':
