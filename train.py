@@ -84,12 +84,13 @@ def main(args=None):
 
 
     if existing_test_set:
-        csv_test = pd.read_csv(existing_test_set)
-        print(len(csv_test))
         if random_seed=='revisedSet':
-            csv_test = csv_test[csv_test.image_source.isin(['hiba', 'jsrt', 'mimic_relabeled'])].reset_index(
-            drop=True)
-        test_idx = list(set(csv_test.file_name.values))
+            csv_revised = pd.read_csv(existing_test_set)
+            test_idx = list(set(csv_revised.image_name.values))
+            csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index(drop=True)
+        else:
+            csv_test = pd.read_csv(existing_test_set)
+            test_idx = list(set(csv_test.file_name.values))
         csv_train = csv[~csv.file_name.isin(test_idx)].reset_index(drop=True)
         train_idx = list(set(csv_train.file_name.values))
     else:
