@@ -86,11 +86,11 @@ def main(args=None):
     if existing_test_set:
         if random_seed=='revisedSet':
             csv_revised = pd.read_csv(existing_test_set)
-            test_idx = list(set(csv_revised.image_name.values))
-            csv['image_name'] = ["{}_{}".format(source,os.path.basename(file)) for source,file in zip(csv.image_source,csv.file_name)]
-            inter = set(test_idx).intersection(set(csv['image_name'].values))
+            test_basenames = [''.join(p.split('_')[1:]) for p in list(set(csv_revised.image_name.values))]
+            csv['base_name'] = [os.path.basename(file) for file in csv.file_name]
+            inter = set(test_basenames).intersection(set(csv['base_name'].values))
             print(len(inter))
-            csv_test = csv[csv.image_name.isin(list(test_idx))].reset_index(drop=True)
+            csv_test = csv[csv.base_name.isin(list(test_basenames))].reset_index(drop=True)
             test_idx = list(set(csv_test.file_name.values))
         else:
             csv_test = pd.read_csv(existing_test_set)
