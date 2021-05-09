@@ -145,6 +145,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             if results_file:
                 with open(results_file, 'a') as f:
                     f.write(f'DICE: {dice_avg}')
+            return dice_avg
 
 def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epoch, print_freq):
     model.train()
