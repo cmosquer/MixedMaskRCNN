@@ -131,14 +131,14 @@ def main(args=None):
 
 
         overall_ax.plot(range(Nepochs),precisions['bbox']['precision_iou50-95'],label=f'{dir}-precision-boxes',
-                        color='red',ls=lines[exp],width=1)
+                        color='red',ls=lines[exp],lw=1)
         overall_ax.plot(range(Nepochs), precisions['segm']['precision_iou50-95'], label=f'{dir}-precision-segm',
-                        color='red',ls=lines[exp],width=2)
+                        color='red',ls=lines[exp],lw=2)
 
         overall_ax.plot(range(Nepochs),precisions['bbox']['recall_100det'],label=f'{dir}-recall-boxes',
-                        color='blue',ls=lines[exp],width=1)
+                        color='blue',ls=lines[exp],lw=1)
         overall_ax.plot(range(Nepochs), precisions['segm']['recall_100det'], label=f'{dir}-recall-segm',
-                        color='blue',ls=lines[exp],width=2)
+                        color='blue',ls=lines[exp],lw=2)
 
         dices = np.zeros((Nepochs))
         for epoch in range(Nepochs):
