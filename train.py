@@ -173,7 +173,7 @@ def main(args=None):
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
+        saving_path = None#'{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
         evaluate(model, data_loader_test, device=device, model_saving_path=saving_path,results_file=results_coco_file)
         #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
