@@ -117,11 +117,11 @@ def main(args=None):
             widths = [2, 2, 1, 1, 1, 1]
             fig, ax = plt.subplots(1, 1, figsize=(15, 8))
             j = 0
-            for name, val in recalls.items():
+            for name, val in recalls[task].items():
                 ax.plot(range(Nepochs), val, label=name, color='blue', ls=lines[j], lw=widths[j])
                 j += 1
             j = 0
-            for name, val in precisions.items():
+            for name, val in precisions[task].items():
                 ax.plot(range(Nepochs), val, label=name, color='red', ls=lines[j], lw=widths[j])
                 j += 1
             ax.legend()
