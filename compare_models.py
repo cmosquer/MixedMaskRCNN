@@ -30,7 +30,7 @@ def main(args=None):
     output_dir = baseDir +'TRx-v2/Experiments/'
     chosen_experiment = '06-05-21'
     modelsForCompare = [chosen_experiment+'_masksOnly_binary',chosen_experiment+'_masksAndBoxs_binary']
-    existing_test_set = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(output_dir,modelsForCompare[1])
+    existing_test_set = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(output_dir,chosen_experiment)
     csv_test = pd.read_csv(existing_test_set)
     print('{} images to evaluate'.format(len(set(csv_test.file_name))))
 
