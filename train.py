@@ -88,6 +88,8 @@ def main(args=None):
             csv_revised = pd.read_csv(existing_test_set)
             test_idx = list(set(csv_revised.image_name.values))
             csv['image_name'] = ["{}_{}".format(source,os.path.basename(file)) for source,file in zip(csv.image_source,csv.file_name)]
+            print(test_idx)
+            print(csv['image_name'])
             csv_test = csv[csv.image_name.isin(list(test_idx))].reset_index(drop=True)
         else:
             csv_test = pd.read_csv(existing_test_set)
