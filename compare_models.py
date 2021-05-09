@@ -28,7 +28,7 @@ def main(args=None):
     # use our dataset and defined transformations
 
     output_dir = baseDir +'TRx-v2/Experiments/'
-    chosen_experiment = '18-04-21'
+    chosen_experiment = '06-05-21'
     modelsForCompare = [chosen_experiment+'_masksOnly_binary',chosen_experiment+'_masksAndBoxs_binary']
     existing_test_set = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(output_dir,modelsForCompare[1])
     csv_test = pd.read_csv(existing_test_set)
