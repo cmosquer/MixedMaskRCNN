@@ -42,14 +42,13 @@ def main(args=None):
      }
     Nepochs = 10
     torch.manual_seed(1)
-    """
     dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
                                       return_image_source=False,binary_opacity=True)
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     print('DATASET FOR COCO:')
-    dataset_test.quantifyClasses()"""
+    dataset_test.quantifyClasses()
     num_classes = 2
     model = get_instance_segmentation_model(num_classes)
     #PRIMERO COMPUTAR DICES
@@ -139,7 +138,7 @@ def main(args=None):
                         color='blue',ls=lines[exp],lw=1)
         overall_ax.plot(range(Nepochs), recalls['segm']['recall_100det'], label=f'{dir}-recall-segm',
                         color='blue',ls=lines[exp],lw=2)
-        """
+
         dices = np.zeros((Nepochs))
         for epoch in range(Nepochs):
             trainedModelPath = "{}/mixedMaskRCNN-{}.pth".format(expDir,epoch)
@@ -155,7 +154,7 @@ def main(args=None):
             dices[epoch]=dice_avg
 
         overall_ax.plot(range(Nepochs), dices, label=f'{dir}-DICE',
-                        color='green',ls=lines[exp],width=2)"""
+                        color='green',ls=lines[exp],width=2)
     overall_ax.legend()
     overall_fig.savefig(output_dir+'overall_fig.svg')
 
