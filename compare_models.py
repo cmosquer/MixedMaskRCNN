@@ -6,94 +6,113 @@ import pandas as pd
 import torch.utils.data
 from tqdm import tqdm
 import cv2
+import sys
+import argparse
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
-from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
+from mixed_detection.utils import get_transform, get_instance_segmentation_model, collate_fn
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate
+
+
 def label_to_name(label):
-    labels = {1:'NoduloMasa',
-     2:'Consolidacion',
-     3:'PatronIntersticial',
-     4:'Atelectasia',
-     5:'LesionesDeLaPared'
-     }
+    labels = {1: 'NoduloMasa',
+              2: 'Consolidacion',
+              3: 'PatronIntersticial',
+              4: 'Atelectasia',
+              5: 'LesionesDeLaPared'
+              }
     return labels[label]
 
 
+def parse_args(args):
+    """ Parse the arguments.
+    """
+    parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--dice', help='Compute dice and added to coco file of the epoch', action='store_true')
+    group.add_argument('--experimentID', help='que carpeta usar', type=str)
+    group.add_argument('--epoch', help='que epoch usar', type=int)
+
+    return parser.parse_args(args)
+
+
 def main(args=None):
+    # parse arguments
+    if args is None:
+        args = sys.argv[1:]
+    args = parse_args(args)
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     # use our dataset and defined transformations
 
-    output_dir = baseDir +'TRx-v2/Experiments/'
-    chosen_experiment = '06-05-21'
-    modelsForCompare = [chosen_experiment+'_masksOnly_binary',chosen_experiment+'_masksAndBoxs_binary']
-    existing_test_set = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(output_dir,chosen_experiment)
+    output_dir = baseDir + 'TRx-v2/Experiments/'
+    chosen_experiment = args.experimentID
+    modelsForCompare = [chosen_experiment + '_masksOnly_binary', chosen_experiment + '_masksAndBoxs_binary']
+    existing_test_set = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(output_dir, chosen_experiment)
     csv_test = pd.read_csv(existing_test_set)
     print('{} images to evaluate'.format(len(set(csv_test.file_name))))
 
     class_numbers = {'NoduloMasa': 1,
-     'Consolidacion': 2,
-     'PatronIntersticial': 3,
-     'Atelectasia': 4,
-     'LesionesDeLaPared': 5
-     }
+                     'Consolidacion': 2,
+                     'PatronIntersticial': 3,
+                     'Atelectasia': 4,
+                     'LesionesDeLaPared': 5
+                     }
     Nepochs = 10
-    torch.manual_seed(1)
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
-                                      return_image_source=False,binary_opacity=True)
-    data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, shuffle=False, num_workers=0,
-        collate_fn=collate_fn)
-    print('DATASET FOR COCO:')
-    dataset_test.quantifyClasses()
+
     num_classes = 2
-    model = get_instance_segmentation_model(num_classes)
-    #PRIMERO COMPUTAR DICES
+
+    # PRIMERO COMPUTAR DICES
     overall_fig, overall_ax = plt.subplots(1, 1, figsize=(15, 8))
-    for exp,dir in enumerate(modelsForCompare):
-        expDir = output_dir+dir
-        precisions={}
+    for exp, dir in enumerate(modelsForCompare):
+        expDir = output_dir + dir
+        precisions = {}
         precisions['bbox'] = {'precision_iou50-95': np.zeros((Nepochs)),
-                      'precision_iou50': np.zeros((Nepochs)),
-                      'precision_iou75': np.zeros((Nepochs)),
-                      'precision_iou50-95_small': np.zeros((Nepochs)),
-                      'precision_iou50-95_medium': np.zeros((Nepochs)),
-                      'precision_iou50-95_large': np.zeros((Nepochs)),
-                      }
+                              'precision_iou50': np.zeros((Nepochs)),
+                              'precision_iou75': np.zeros((Nepochs)),
+                              'precision_iou50-95_small': np.zeros((Nepochs)),
+                              'precision_iou50-95_medium': np.zeros((Nepochs)),
+                              'precision_iou50-95_large': np.zeros((Nepochs)),
+                              }
         precisions['segm'] = {'precision_iou50-95': np.zeros((Nepochs)),
-                      'precision_iou50': np.zeros((Nepochs)),
-                      'precision_iou75': np.zeros((Nepochs)),
-                      'precision_iou50-95_small': np.zeros((Nepochs)),
-                      'precision_iou50-95_medium': np.zeros((Nepochs)),
-                      'precision_iou50-95_large': np.zeros((Nepochs)),
-                      }
-        recalls={}
+                              'precision_iou50': np.zeros((Nepochs)),
+                              'precision_iou75': np.zeros((Nepochs)),
+                              'precision_iou50-95_small': np.zeros((Nepochs)),
+                              'precision_iou50-95_medium': np.zeros((Nepochs)),
+                              'precision_iou50-95_large': np.zeros((Nepochs)),
+                              }
+        recalls = {}
         recalls['bbox'] = {'recall_100det': np.zeros((Nepochs)),
-                   'recall_1det': np.zeros((Nepochs)),
-                   'recall_10det': np.zeros((Nepochs)),
-                   'recall_100det_small': np.zeros((Nepochs)),
-                   'recall_100det_medium': np.zeros((Nepochs)),
-                   'recall_100det_large': np.zeros((Nepochs)),
-                   }
+                           'recall_1det': np.zeros((Nepochs)),
+                           'recall_10det': np.zeros((Nepochs)),
+                           'recall_100det_small': np.zeros((Nepochs)),
+                           'recall_100det_medium': np.zeros((Nepochs)),
+                           'recall_100det_large': np.zeros((Nepochs)),
+                           }
         recalls['segm'] = {'recall_100det': np.zeros((Nepochs)),
-                   'recall_1det': np.zeros((Nepochs)),
-                   'recall_10det': np.zeros((Nepochs)),
-                   'recall_100det_small': np.zeros((Nepochs)),
-                   'recall_100det_medium': np.zeros((Nepochs)),
-                   'recall_100det_large': np.zeros((Nepochs)),
-                   }
+                           'recall_1det': np.zeros((Nepochs)),
+                           'recall_10det': np.zeros((Nepochs)),
+                           'recall_100det_small': np.zeros((Nepochs)),
+                           'recall_100det_medium': np.zeros((Nepochs)),
+                           'recall_100det_large': np.zeros((Nepochs)),
+                           }
+        dices = np.zeros((Nepochs))
+        dices_exist = True
         for epoch in range(Nepochs):
             results_coco_file = f'{expDir}/cocoStats-{epoch}.txt'
-
-
             with open(results_coco_file, 'r') as f:
                 txt = f.read()
             tasks = {}
             tasks['bbox'] = txt.split('IOU: segm')[0]
             tasks['segm'] = txt.split('IOU: segm')[-1]
+            if 'DICE' in tasks['segm']:
+                tasks['segm'] = txt.split('IOU: segm')[-1].split('DICE:')[0]
+                dices[epoch] = float(txt.split('IOU: segm')[-1].split('DICE:')[-1])
+            else:
+                dices_exist = False
             for task, txt_ in tasks.items():
                 txt_ = txt_.replace(']:', '] :')
                 sp = txt_.split('] :')
@@ -112,7 +131,7 @@ def main(args=None):
                 recalls[task]['recall_100det_medium'][epoch] = vals[10]
                 recalls[task]['recall_100det_large'][epoch] = vals[11]
 
-        for task in ['bbox','segm']:
+        for task in ['bbox', 'segm']:
             lines = ['-', '--', '-.', ':', '--', '-']
             widths = [2, 2, 1, 1, 1, 1]
             fig, ax = plt.subplots(1, 1, figsize=(15, 8))
@@ -128,35 +147,42 @@ def main(args=None):
 
             fig.savefig(f'{expDir}/detailed{task}.jpg')
 
-
-        overall_ax.plot(range(Nepochs),precisions['bbox']['precision_iou50-95'],label=f'{dir}-precision-boxes',
-                        color='red',ls=lines[exp],lw=1)
+        overall_ax.plot(range(Nepochs), precisions['bbox']['precision_iou50-95'], label=f'{dir}-precision-boxes',
+                        color='red', ls=lines[exp], lw=1)
         overall_ax.plot(range(Nepochs), precisions['segm']['precision_iou50-95'], label=f'{dir}-precision-segm',
-                        color='red',ls=lines[exp],lw=2)
+                        color='red', ls=lines[exp], lw=2)
 
-        overall_ax.plot(range(Nepochs),recalls['bbox']['recall_100det'],label=f'{dir}-recall-boxes',
-                        color='blue',ls=lines[exp],lw=1)
+        overall_ax.plot(range(Nepochs), recalls['bbox']['recall_100det'], label=f'{dir}-recall-boxes',
+                        color='blue', ls=lines[exp], lw=1)
         overall_ax.plot(range(Nepochs), recalls['segm']['recall_100det'], label=f'{dir}-recall-segm',
-                        color='blue',ls=lines[exp],lw=2)
+                        color='blue', ls=lines[exp], lw=2)
+        if dices_exist:
+            overall_ax.plot(range(Nepochs), dices, label=f'{dir}-DICE',
+                            color='green', ls=lines[exp], width=2)
+    if args.dice:
+        model = get_instance_segmentation_model(num_classes)
+        torch.manual_seed(1)
+        dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                          return_image_source=False, binary_opacity=True)
+        data_loader_test = torch.utils.data.DataLoader(
+            dataset_test, batch_size=1, shuffle=False, num_workers=0,
+            collate_fn=collate_fn)
+        print('DATASET FOR COCO:')
+        dataset_test.quantifyClasses()
 
-        dices = np.zeros((Nepochs))
-        for epoch in range(Nepochs):
-            trainedModelPath = "{}/mixedMaskRCNN-{}.pth".format(expDir,epoch)
+        trainedModelPath = "{}/mixedMaskRCNN-{}.pth".format(expDir, args.epoch)
 
+        model.load_state_dict(torch.load(trainedModelPath))
+        model.to(device)
+        model.eval()
+        print('Model loaded')
+        dice_avg = evaluate(model, data_loader_test, device=device, coco=False, dice=True,
+                            results_file=results_coco_file)
+        print('dice avg: ', dice_avg)
 
-            model.load_state_dict(torch.load(trainedModelPath))
-            model.to(device)
-            model.eval()
-            print('Model loaded')
-            dice_avg = evaluate(model, data_loader_test, device=device, coco=False,dice=True,
-                     results_file=results_coco_file)
-
-            dices[epoch]=dice_avg
-
-        overall_ax.plot(range(Nepochs), dices, label=f'{dir}-DICE',
-                        color='green',ls=lines[exp],width=2)
     overall_ax.legend()
-    overall_fig.savefig(output_dir+'overall_fig.svg')
+    overall_fig.savefig(output_dir + 'overall_fig.svg')
+
 
 if __name__ == '__main__':
     main()
