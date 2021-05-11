@@ -43,14 +43,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         torch.cuda.synchronize()
         outputs = model(image)
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
-
+        """
         if min_box_proportionArea:
             total_area = image.shape[0]*image.shape[1]
             minimum_area = total_area*min_box_proportionArea
             outputs['areas'] = [(x2-x1)*(y2-y1) for x1,x2,y1,y2 in outputs['boxes']]
             bigBoxes = np.argwhere(outputs['areas']>minimum_area)
             for k,v in outputs.items():
-                outputs[k] = outputs[k][bigBoxes,]
+                outputs[k] = outputs[k][bigBoxes,]"""
         if isinstance(min_score_threshold,float):
             high_scores = np.argwhere(outputs['scores']>min_score_threshold)
             for k,v in outputs.items():
