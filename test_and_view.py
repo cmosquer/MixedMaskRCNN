@@ -136,9 +136,20 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
                 result = {'image_name': "{}_{}".format(image_source,os.path.basename(image_path)),
                           'box_type': 'ground-truth',
                           'label': label_to_name(label),
+                          'x1': targets['boxes'][i][0],
+                          'y1': targets['boxes'][i][1],
+                          'x2': targets['boxes'][i][2],
+                          'y2': targets['boxes'][i][3],
+                          'original_file_name': image_path,
+                          'image_source': image_source
                           }
                 results_list.append(result)
-
+            if len(results_list)==0:
+                results_list = [{'image_name': "{}_{}".format(image_source,os.path.basename(image_path)),
+                          'box_type': 'true-negative',
+                          'original_file_name': image_path,
+                          'image_source': image_source
+                          }]
             df = df.append(results_list,ignore_index=True)
 
         del outputs,targets, image
@@ -219,23 +230,26 @@ def main(args=None):
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     output_dir = baseDir +'TRx-v2/Experiments'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
-    output_csv_path = f'{output_dir}/{chosen_experiment}/targets_and_predictions_table-epoch{chosen_epoch}.csv'
+    output_csv_path = f'{output_dir}/{chosen_experiment}/test_output-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
 
     os.makedirs(save_fig_dir,exist_ok=True)
 
+    csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
+
     csv = pd.read_csv(
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
 
     image_ids = set(csv.file_name.values)
-    csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
+
     image_ids_train = set(csv_train.file_name.values)
     image_ids_test = image_ids.difference(image_ids_train)
     print('Len total: {}, len train: {}, len test:{}'.format(len(image_ids),len(image_ids_train),len(image_ids_test)))
 
     csv_test = csv[csv.file_name.isin(list(image_ids_test))].reset_index(drop=True)
     #csv_test = csv[:30].reset_index()
+    #csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv').reset_index(drop=True)
 
     print('{} images to evaluate'.format(len(csv_test)))
 
@@ -279,6 +293,7 @@ def main(args=None):
     #Redefinir solo las que quiero guardar la imagen
     try:
         csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
+        print('Using only top datasets. Total of {} images'.format(len(set(csv_test.file_name.values))))
     except ValueError as e:
         print(e)
         print('Not reseting index')
