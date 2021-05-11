@@ -115,7 +115,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                     else:
                         labels.append(raw_labels[i])
                         print('labels',labels)
-            masks = torch.as_tensor(masks, dtype=torch.uint8)
+            masks_tensor = torch.as_tensor(masks, dtype=torch.uint8)
+            del masks, mask
 
         else:
             labels = []
@@ -136,12 +137,13 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                             labels += [self.class_numbers[c] for c in raw_labels]
 
             img_shape = np.array(img).shape
-            masks = torch.as_tensor(np.zeros((len(boxes),img_shape[0],img_shape[1])),
+            masks_tensor = torch.as_tensor(np.zeros((len(boxes),img_shape[0],img_shape[1])),
                                     dtype=torch.uint8) #Masks with all-zero elements will be considered as empty masks
         iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        if len(boxes) > 0:
-            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        boxes_tensor = torch.as_tensor(boxes, dtype=torch.float32)
+        del boxes
+        if len(boxes_tensor) > 0:
+            area = (boxes_tensor[:, 3] - boxes_tensor[:, 1]) * (boxes_tensor[:, 2] - boxes_tensor[:, 0])
         else:
             area = torch.as_tensor([], dtype=torch.float32)
 
@@ -149,8 +151,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         image_id = torch.tensor([idx])
 
-        target["masks"] = masks
-        target["boxes"] = boxes
+        target["masks"] = masks_tensor
+        target["boxes"] = boxes_tensor
         target["labels"] = labels
         target["image_id"] = image_id
         target["area"] = area

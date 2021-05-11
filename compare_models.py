@@ -30,10 +30,9 @@ def parse_args(args):
     """
     parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
 
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--dice', help='Compute dice and added to coco file of the epoch', action='store_true')
-    group.add_argument('--experimentID', help='que carpeta usar', type=str)
-    group.add_argument('--epoch', help='que epoch usar', type=int)
+    parser.add_argument('--dice', help='Compute dice and added to coco file of the epoch', action='store_true')
+    parser.add_argument('--experimentID', help='que carpeta usar', type=str)
+    parser.add_argument('--epoch', help='que epoch usar', type=int)
 
     return parser.parse_args(args)
 
@@ -50,7 +49,10 @@ def main(args=None):
 
     output_dir = baseDir + 'TRx-v2/Experiments/'
     chosen_experiment = args.experimentID
-    modelsForCompare = [chosen_experiment + '_masksOnly_binary', chosen_experiment + '_masksAndBoxs_binary']
+    modelsForCompare = [
+                           chosen_experiment + '_masksOnly_binary',
+                           chosen_experiment + '_masksAndBoxs_binary'
+                        ]
     existing_test_set = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(output_dir, chosen_experiment)
     csv_test = pd.read_csv(existing_test_set)
     print('{} images to evaluate'.format(len(set(csv_test.file_name))))
@@ -66,7 +68,7 @@ def main(args=None):
     num_classes = 2
 
     # PRIMERO COMPUTAR DICES
-    overall_fig, overall_ax = plt.subplots(1, 1, figsize=(15, 8))
+    overall_fig, overall_axs = plt.subplots(1, 2, figsize=(15, 8))
     for exp, dir in enumerate(modelsForCompare):
         expDir = output_dir + dir
         precisions = {}
@@ -146,39 +148,46 @@ def main(args=None):
             ax.legend()
 
             fig.savefig(f'{expDir}/detailed{task}.jpg')
-
+        overall_ax = overall_axs[0]
         overall_ax.plot(range(Nepochs), precisions['bbox']['precision_iou50-95'], label=f'{dir}-precision-boxes',
                         color='red', ls=lines[exp], lw=1)
-        overall_ax.plot(range(Nepochs), precisions['segm']['precision_iou50-95'], label=f'{dir}-precision-segm',
-                        color='red', ls=lines[exp], lw=2)
-
         overall_ax.plot(range(Nepochs), recalls['bbox']['recall_100det'], label=f'{dir}-recall-boxes',
                         color='blue', ls=lines[exp], lw=1)
+        overall_ax.legend()
+
+        overall_ax = overall_axs[1]
+
         overall_ax.plot(range(Nepochs), recalls['segm']['recall_100det'], label=f'{dir}-recall-segm',
                         color='blue', ls=lines[exp], lw=2)
+        overall_ax.plot(range(Nepochs), precisions['segm']['precision_iou50-95'], label=f'{dir}-precision-segm',
+                        color='red', ls=lines[exp], lw=2)
         if dices_exist:
             overall_ax.plot(range(Nepochs), dices, label=f'{dir}-DICE',
                             color='green', ls=lines[exp], width=2)
+        overall_ax.legend()
+
     if args.dice:
-        model = get_instance_segmentation_model(num_classes)
-        torch.manual_seed(1)
-        dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
-                                          return_image_source=False, binary_opacity=True)
-        data_loader_test = torch.utils.data.DataLoader(
-            dataset_test, batch_size=1, shuffle=False, num_workers=0,
-            collate_fn=collate_fn)
-        print('DATASET FOR COCO:')
-        dataset_test.quantifyClasses()
+        for exp, dir in enumerate(modelsForCompare):
+            expDir = output_dir + dir
+            model = get_instance_segmentation_model(num_classes)
+            torch.manual_seed(1)
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                              return_image_source=False, binary_opacity=True)
+            data_loader_test = torch.utils.data.DataLoader(
+                dataset_test, batch_size=1, shuffle=False, num_workers=0,
+                collate_fn=collate_fn)
+            print('DATASET FOR COCO:')
+            dataset_test.quantifyClasses()
+            results_coco_file = f'{expDir}/cocoStats-{args.epoch}.txt'
+            trainedModelPath = "{}/mixedMaskRCNN-{}.pth".format(expDir, args.epoch)
 
-        trainedModelPath = "{}/mixedMaskRCNN-{}.pth".format(expDir, args.epoch)
-
-        model.load_state_dict(torch.load(trainedModelPath))
-        model.to(device)
-        model.eval()
-        print('Model loaded')
-        dice_avg = evaluate(model, data_loader_test, device=device, coco=False, dice=True,
-                            results_file=results_coco_file)
-        print('dice avg: ', dice_avg)
+            model.load_state_dict(torch.load(trainedModelPath))
+            model.to(device)
+            model.eval()
+            print('Model loaded')
+            dice_avg = evaluate(model, data_loader_test, device=device, coco=False, dice=True,
+                                results_file=results_coco_file)
+            print('dice avg: ', dice_avg)
 
     overall_ax.legend()
     overall_fig.savefig(output_dir + 'overall_fig.svg')
