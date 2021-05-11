@@ -20,7 +20,8 @@ def label_to_name(label):
      }
     return labels[label]
 
-def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
+def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
+                max_detections=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
                 min_box_proportionArea=None, draw='boxes',
                 save_csv=None #If not None, should be a str with filepath where to save dataframe with targets and predictions
@@ -28,7 +29,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     j = 0
     if save_csv is not None:
-        df = pd.DataFrame(columns=['image_name','box_type','label','score'])
+        df = pd.DataFrame(columns=['image_name','box_type','label','score','x1','x2','y1','y2','original_file_name','image_source'])
 
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
@@ -81,38 +82,38 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
-
-        if len(outputs['labels']) > 0:
-            colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
-            colorimage[:,:,0]=255*image
-            colorimage[:,:,1]=255*image
-            colorimage[:,:,2]=255*image
-            if draw=='boxes':
-                draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
-            if draw=='masks':
-                draw_masks(colorimage, outputs, label_to_name=label_to_name)
-
-            # draw annotations on the image
-        if len(targets)>0:
-            if len(targets['boxes'])==0:
-                caption = 'Image GT: '+','.join([label_to_name(lbl) for lbl in targets['labels']])
-                cv2.putText(colorimage, caption,
-                        (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
-            else:
-                # draw annotations in red
+        if save_figures:
+            if len(outputs['labels']) > 0:
+                colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
+                colorimage[:,:,0]=255*image
+                colorimage[:,:,1]=255*image
+                colorimage[:,:,2]=255*image
                 if draw=='boxes':
-                    draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
-                #if draw=='masks':
-                #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
+                    draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
+                if draw=='masks':
+                    draw_masks(colorimage, outputs, label_to_name=label_to_name)
 
-        try:
-            saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
-            cv2.imwrite(saving_path,colorimage)
+                # draw annotations on the image
+            if len(targets)>0:
+                if len(targets['boxes'])==0:
+                    caption = 'Image GT: '+','.join([label_to_name(lbl) for lbl in targets['labels']])
+                    cv2.putText(colorimage, caption,
+                            (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
+                else:
+                    # draw annotations in red
+                    if draw=='boxes':
+                        draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
+                    #if draw=='masks':
+                    #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
 
-            print('Saved ',saving_path)
+            try:
+                saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
+                cv2.imwrite(saving_path,colorimage)
 
-        except:
-            print('COULD SAVE ',saving_path)
+                print('Saved ',saving_path)
+
+            except:
+                print('COULD SAVE ',saving_path)
 
         if save_csv is not None:
             results_list = []
@@ -121,7 +122,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir,max_detections=None,
                 result = {'image_name':"{}_{}".format(image_source,os.path.basename(image_path)),
                           'box_type':'prediction',
                           'label':label_to_name(label),
-                          'score':outputs['scores'][i]}
+                          'score':outputs['scores'][i],
+                          'x1':outputs['boxes'][i][0],
+                          'y1': outputs['boxes'][i][1],
+                          'x2': outputs['boxes'][i][2],
+                          'y2': outputs['boxes'][i][3],
+                          'original_file_name': image_path,
+                          'image_source':image_source
+                          }
                 results_list.append(result)
 
             for i, label in enumerate(targets['labels']):
@@ -199,24 +207,23 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 
 def main(args=None):
     print('starting test script')
-    save_as_files = True
+    save_figures = False
     view_in_window = False
     evaluate_coco = False
     loop = True
+    save_csv = True
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
-    # use our dataset and defined transformations
-
-    output_dir = baseDir +'TRx-v2/Experiments'
     chosen_experiment = '18-04-21'
     chosen_epoch = 9
+
+    baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
+    output_dir = baseDir +'TRx-v2/Experiments'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
-    os.makedirs(save_fig_dir,exist_ok=True)
     output_csv_path = f'{output_dir}/{chosen_experiment}/targets_and_predictions_table-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
-
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
+
+    os.makedirs(save_fig_dir,exist_ok=True)
 
     csv = pd.read_csv(
         baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
@@ -239,7 +246,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
 
-
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     torch.manual_seed(1)
     num_classes = len(class_numbers.keys())+1
     model = get_instance_segmentation_model(num_classes)
@@ -247,11 +254,11 @@ def main(args=None):
     #model = torch.load(trainedModelPath)
     model.to(device)
 
-    #Change model parameters?
+    """#Change model parameters?
     model.box_score_thresh = 0.05
     model.box_nms_thresh = 0.3
     model.box_detections_per_img = 100
-    model.rpn_nms_thresh = 0.5
+    model.rpn_nms_thresh = 0.5"""
 
     model.eval()
     # define data loader
@@ -293,11 +300,11 @@ def main(args=None):
        }
     min_box_proportionArea = 1/50 #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
-    if save_as_files:
+    if save_figures or save_csv:
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
                           max_detections=8, min_score_threshold=min_score_thresholds,
                           min_box_proportionArea=min_box_proportionArea,
-                          save_csv=output_csv_path):
+                          save_csv=output_csv_path,save_figures=save_figures):
             pass
     if view_in_window:
         if loop:
