@@ -85,7 +85,9 @@ def main(args=None):
         revised_test_idx = list(set(csv_revised.original_file_name.values))
         inter = set(revised_test_idx).intersection(set(csv['file_name'].values))
         print('interseccion csv total con test revisado ',len(inter))
+        L = len(csv)
         csv = csv[csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
+        print('Len csv original {}, len after removing intersection {}'.format(L,len(csv)))
     if existing_valid_set:
         csv_valid = pd.read_csv(existing_valid_set)
         valid_idx = list(set(csv_valid.file_name.values))
