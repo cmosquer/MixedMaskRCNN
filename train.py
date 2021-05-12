@@ -82,7 +82,7 @@ def main(args=None):
 
     if revised_test_set:
         csv_revised = pd.read_csv(revised_test_set)
-        revised_test_idx = list(set(csv_revised.file_name.values))
+        revised_test_idx = list(set(csv_revised.original_file_name.values))
         inter = set(revised_test_idx).intersection(set(csv['file_name'].values))
         print('interseccion csv total con test revisado ',len(inter))
         csv = csv[csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
