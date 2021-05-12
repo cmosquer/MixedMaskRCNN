@@ -21,7 +21,7 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
     num_epochs = 10
-    random_seed = 'revisedSet'
+    random_seed = 35
     binary = True
     if binary:
         num_classes = 2
@@ -30,21 +30,19 @@ def main(args=None):
     pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
-    experiment_number = '09-05-21'
+    experiment_number = '12-05-21'
     experiment_type = 'masksAndBoxs' #'masksOnly'#
     experiment_id = experiment_number+'_'+experiment_type
     if binary:
         experiment_id+='_binary'
 
-    if random_seed == 'revisedSet':
-        existing_test_set = '{}/{}'.format(experiment_dir,'18-04-21/targets_and_predictions_table-epoch9.csv')
+    revised_test_set = '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv')
 
+    prevalid = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)
+    if os.path.exists(prevalid):
+        existing_valid_set = prevalid
     else:
-        pretest = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)
-        if os.path.exists(pretest):
-            existing_test_set = pretest
-        else:
-            existing_test_set = None
+        existing_valid_set = None
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
@@ -82,54 +80,51 @@ def main(args=None):
         print(csv.label_level.value_counts())
         csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
 
-
-    if existing_test_set:
-        if random_seed=='revisedSet':
-            csv_revised = pd.read_csv(existing_test_set)
-            test_basenames = [''.join(p.split('_')[1:]) for p in list(set(csv_revised.image_name.values))]
-            csv['base_name'] = [os.path.basename(file) for file in csv.file_name]
-            inter = set(test_basenames).intersection(set(csv['base_name'].values))
-            print(len(inter))
-            csv_test = csv[csv.base_name.isin(list(test_basenames))].reset_index(drop=True)
-            test_idx = list(set(csv_test.file_name.values))
-        else:
-            csv_test = pd.read_csv(existing_test_set)
-            test_idx = list(set(csv_test.file_name.values))
-        csv_train = csv[~csv.file_name.isin(test_idx)].reset_index(drop=True)
+    if revised_test_set:
+        csv_revised = pd.read_csv(revised_test_set)
+        revised_test_idx = list(set(csv_revised.file_name.values))
+        inter = set(revised_test_idx).intersection(set(csv['file_name'].values))
+        print('interseccion csv total con test revisado ',len(inter))
+        csv = csv[csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
+    if existing_valid_set:
+        csv_valid = pd.read_csv(existing_valid_set)
+        valid_idx = list(set(csv_valid.file_name.values))
+        csv_train = csv[~csv.file_name.isin(valid_idx)].reset_index(drop=True)
         train_idx = list(set(csv_train.file_name.values))
     else:
+        print('creating new validation set ... ')
         image_ids = list(set(csv.file_name.values))
         class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
         csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
         stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
 
-        train_idx, test_idx = train_test_split(image_ids, stratify=stratification,
+        train_idx, valid_idx = train_test_split(image_ids, stratify=stratification,
                                                test_size=0.1,
                                                random_state=random_seed)
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
-        csv_test = csv[csv.file_name.isin(list(test_idx))].reset_index(drop=True)
-    assert len(set(csv_train.file_name).intersection(csv_test.file_name)) == 0
-    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_test),
-                                                                                                      len(train_idx),len(test_idx)))
+        csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
+    assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
+    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_valid),
+                                                                                                      len(train_idx),len(valid_idx)))
     print('TRAIN SOURCES:')
     print(csv_train.image_source.value_counts(normalize=True))
     print(csv_train.label_level.value_counts(normalize=True))
 
-    print('TEST SOURCES')
-    print(csv_test.image_source.value_counts(normalize=True))
-    print(csv_test.label_level.value_counts(normalize=True))
+    print('VALID SOURCES')
+    print(csv_valid.image_source.value_counts(normalize=True))
+    print(csv_valid.label_level.value_counts(normalize=True))
 
     """
     csv_train = csv[:30000].reset_index()
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
-    csv_test.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
+    csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
     dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=binary)
-    dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),binary_opacity=binary)
+    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),binary_opacity=binary)
     print('TRAIN:')
     dataset.quantifyClasses()
-    print('\nTEST:')
-    dataset_test.quantifyClasses()
+    print('\nVALID:')
+    dataset_valid.quantifyClasses()
     # split the dataset in train and test set
     torch.manual_seed(1)
 
@@ -140,11 +135,11 @@ def main(args=None):
         #sampler=train_sampler
          )
 
-    data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, shuffle=False, num_workers=0,
+    data_loader_valid = torch.utils.data.DataLoader(
+        dataset_valid, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
 
-    print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_test)))
+    print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 
@@ -181,7 +176,7 @@ def main(args=None):
         # evaluate on the test dataset
         saving_path = None#'{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
-        evaluate(model, data_loader_test, device=device, model_saving_path=saving_path,results_file=results_coco_file)
+        evaluate(model, data_loader_valid, device=device, model_saving_path=saving_path,results_file=results_coco_file)
         #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
 
 

@@ -45,7 +45,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
         """
         if min_box_proportionArea:
-            total_area = image.shape[0]*image.shape[1]
+            total_area = image.shape[0]*image.shape[1]  #IMAGE ES LIST!! POR EL BATCH
             minimum_area = total_area*min_box_proportionArea
             outputs['areas'] = [(x2-x1)*(y2-y1) for x1,x2,y1,y2 in outputs['boxes']]
             bigBoxes = np.argwhere(outputs['areas']>minimum_area)
@@ -119,14 +119,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
             results_list = []
 
             for i,label in enumerate(outputs['labels']):
-                result = {'image_name':"{}_{}".format(image_source,os.path.basename(image_path)),
+                result = {'image_name': "{}_{}".format(image_source,os.path.basename(image_path)),
                           'box_type':'prediction',
-                          'label':label_to_name(label),
-                          'score':outputs['scores'][i],
-                          'x1':outputs['boxes'][i][0],
-                          'y1': outputs['boxes'][i][1],
-                          'x2': outputs['boxes'][i][2],
-                          'y2': outputs['boxes'][i][3],
+                          'label': label_to_name(label),
+                          'score': outputs['scores'][i],
+                          'x1': int(outputs['boxes'][i][0]),
+                          'y1': int(outputs['boxes'][i][1]),
+                          'x2': int(outputs['boxes'][i][2]),
+                          'y2': int(outputs['boxes'][i][3]),
                           'original_file_name': image_path,
                           'image_source':image_source
                           }
@@ -136,10 +136,10 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
                 result = {'image_name': "{}_{}".format(image_source,os.path.basename(image_path)),
                           'box_type': 'ground-truth',
                           'label': label_to_name(label),
-                          'x1': targets['boxes'][i][0],
-                          'y1': targets['boxes'][i][1],
-                          'x2': targets['boxes'][i][2],
-                          'y2': targets['boxes'][i][3],
+                          'x1': int(targets['boxes'][i][0]),
+                          'y1': int(targets['boxes'][i][1]),
+                          'x2': int(targets['boxes'][i][2]),
+                          'y2': int(targets['boxes'][i][3]),
                           'original_file_name': image_path,
                           'image_source': image_source
                           }
@@ -293,7 +293,7 @@ def main(args=None):
     #Redefinir solo las que quiero guardar la imagen
     try:
         csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
-        print('Using only top datasets. Total of {} images'.format(len(set(csv_test.file_name.values))))
+        print('Using only top datasets. Total of {} images'.format(len(set(csv_test_files.file_name.values))))
     except ValueError as e:
         print(e)
         print('Not reseting index')

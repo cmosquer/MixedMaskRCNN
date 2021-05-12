@@ -1,5 +1,5 @@
 import math
-import time, sys
+import time, sys,pickle
 import torch
 import torchvision.models.detection.mask_rcnn
 import numpy as np
@@ -82,8 +82,6 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
     if coco:
-
-
         if model_saving_path:
             torch.save(model.state_dict(),model_saving_path)
             print('Saved model to ',model_saving_path)
@@ -93,6 +91,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if "segm" not in iou_types:
             iou_types.append("segm")
         coco_evaluator = CocoEvaluator(coco, iou_types)
+        outputs_saved = []
         for images, targets in metric_logger.log_every(data_loader, 100, header):
             images = list(img.to(device) for img in images)
 
@@ -100,7 +99,8 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             model_time = time.time()
             outputs = model(images)
 
-            outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+            outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
+            outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
             model_time = time.time() - model_time
 
             res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
@@ -110,8 +110,11 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
         # gather the stats from all processes
+
         metric_logger.synchronize_between_processes()
         print("Averaged stats:", metric_logger)
+        with open(results_file.replace('coco','raw_outputs'),'wb') as f:
+            pickle.dump(outputs_saved,f)
         coco_evaluator.synchronize_between_processes()
 
         # accumulate predictions from all images
