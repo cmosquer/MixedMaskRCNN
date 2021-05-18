@@ -116,12 +116,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
         #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
         if classification:
-            for i,image_scores in enumerate(outputs['scores']):
+            for img_id,output in enumerate(outputs):
+                target = targets[img_id]
+                for i,image_scores in enumerate(output['scores']):
 
-                x_regresion.append([np.mean(image_scores),np.max(image_scores)])
-                N_targets = len(targets['boxes'][i])
-                y_regresion.append(1 if N_targets > 0 else 0)
-                print(i,targets['image_id'][i],outputs['image_id'][i],x_regresion,y_regresion)
+                    x_regresion.append([np.mean(image_scores),np.max(image_scores)])
+                    N_targets = len(target['boxes'][i])
+                    y_regresion.append(1 if N_targets > 0 else 0)
+                    print(i,target['image_id'][i],output['image_id'][i],x_regresion,y_regresion)
         del images,targets,outputs
 
     metric_logger.synchronize_between_processes()
