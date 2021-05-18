@@ -74,7 +74,7 @@ def _get_iou_types(model):
 
 @torch.no_grad()
 def evaluate(model, data_loader, device, model_saving_path=None, results_file=None,coco=True,
-             evaluate_classification=False,dice=False):
+             classification=False,dice=False):
     print('STARTING VALIDATION')
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
@@ -94,7 +94,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             iou_types.append("segm")
         coco_evaluator = CocoEvaluator(coco, iou_types)
         outputs_saved = []
-        if evaluate_classification:
+        if classification:
             x_regresion = []
             y_regresion = []
         for images, targets in metric_logger.log_every(data_loader, 100, header):
@@ -114,7 +114,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
-            if evaluate_classification:
+            if classification:
                 for i,image_scores in enumerate(outputs['scores']):
 
                     x_regresion.append([np.mean(image_scores),np.max(image_scores)])
@@ -143,7 +143,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         que me tire accueracy,auc.roc,aucpr en el otro 20%
         """
 
-        if evaluate_classification:
+        if classification:
             x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
                                                     test_size=0.2,
                                                     random_state=32)
@@ -156,6 +156,9 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             if results_file:
                 with open(results_file, 'a') as f:
                     f.write(f'\nClassification metrics: {classif_dict}')
+                with open(results_file.replace('coco', 'classification_data'), 'wb') as f:
+                    classification_data = {'x_train':x_train,'y_train':y_train,'x_test':x_test,'y_test':y_test,'preds_test':preds,'clf':clf}
+                    pickle.dump(classification_data, f)
     if dice:
         if data_loader.dataset.binary:
             total_dice = []
