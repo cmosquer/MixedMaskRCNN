@@ -179,7 +179,7 @@ def main(args=None):
         saving_path = None#'{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch)
         results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
         evaluate(model, data_loader_valid, device=device, model_saving_path=saving_path,results_file=results_coco_file,
-                 coco=True,dice=False,classification=True)
+                 coco=False,dice=False,classification=True)
         #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
 
 
