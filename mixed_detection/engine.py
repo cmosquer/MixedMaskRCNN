@@ -83,49 +83,50 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
+    if model_saving_path:
+        torch.save(model.state_dict(), model_saving_path)
+        print('Saved model to ', model_saving_path)
     if coco:
-        if model_saving_path:
-            torch.save(model.state_dict(),model_saving_path)
-            print('Saved model to ',model_saving_path)
+
 
         coco = get_coco_api_from_dataset(data_loader.dataset)
         iou_types = _get_iou_types(model)
         if "segm" not in iou_types:
             iou_types.append("segm")
         coco_evaluator = CocoEvaluator(coco, iou_types)
-        outputs_saved = []
-        if classification:
-            x_regresion = []
-            y_regresion = []
-        for images, targets in metric_logger.log_every(data_loader, 100, header):
-            images = list(img.to(device) for img in images)
+    outputs_saved = []
+    if classification:
+        x_regresion = []
+        y_regresion = []
+    for images, targets in metric_logger.log_every(data_loader, 100, header):
+        images = list(img.to(device) for img in images)
 
-            torch.cuda.synchronize()
-            model_time = time.time()
-            outputs = model(images)
+        torch.cuda.synchronize()
+        model_time = time.time()
+        outputs = model(images)
 
-            outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
-            outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
-            model_time = time.time() - model_time
-
+        outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
+        outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
+        model_time = time.time() - model_time
+        if coco:
             res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
             evaluator_time = time.time()
             coco_evaluator.update(res)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
-            #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
-            if classification:
-                for i,image_scores in enumerate(outputs['scores']):
+        #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
+        if classification:
+            for i,image_scores in enumerate(outputs['scores']):
 
-                    x_regresion.append([np.mean(image_scores),np.max(image_scores)])
-                    N_targets = len(targets['boxes'][i])
-                    y_regresion.append(1 if N_targets > 0 else 0)
-                    print(i,targets['image_id'][i],outputs['image_id'][i],x_regresion,y_regresion)
-            del images,targets,outputs
-        # gather the stats from all processes
+                x_regresion.append([np.mean(image_scores),np.max(image_scores)])
+                N_targets = len(targets['boxes'][i])
+                y_regresion.append(1 if N_targets > 0 else 0)
+                print(i,targets['image_id'][i],outputs['image_id'][i],x_regresion,y_regresion)
+        del images,targets,outputs
 
-        metric_logger.synchronize_between_processes()
-        print("Averaged stats:", metric_logger)
+    metric_logger.synchronize_between_processes()
+    print("Averaged stats:", metric_logger)
+    if coco:
         with open(results_file.replace('coco','raw_outputs'),'wb') as f:
             pickle.dump(outputs_saved,f)
         coco_evaluator.synchronize_between_processes()
