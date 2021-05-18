@@ -106,7 +106,7 @@ def main(args=None):
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
-    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len test_idx: {}'.format(len(csv),len(csv_train),len(csv_valid),
+    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len valid_idx: {}'.format(len(csv),len(csv_train),len(csv_valid),
                                                                                                       len(train_idx),len(valid_idx)))
     print('TRAIN SOURCES:')
     print(csv_train.image_source.value_counts(normalize=True))

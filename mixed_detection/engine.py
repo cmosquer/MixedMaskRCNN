@@ -6,10 +6,10 @@ import numpy as np
 from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
 from mixed_detection import vision_utils
-from mixed_detection.utils import mean_average_precision
+from mixed_detection.utils import getClassificationMetrics
 from tqdm import tqdm
-
-
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None):
     model.train()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
@@ -73,7 +73,8 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, model_saving_path=None, results_file=None,coco=True,dice=False):
+def evaluate(model, data_loader, device, model_saving_path=None, results_file=None,coco=True,
+             evaluate_classification=False,dice=False):
     print('STARTING VALIDATION')
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
@@ -93,6 +94,9 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             iou_types.append("segm")
         coco_evaluator = CocoEvaluator(coco, iou_types)
         outputs_saved = []
+        if evaluate_classification:
+            x_regresion = []
+            y_regresion = []
         for images, targets in metric_logger.log_every(data_loader, 100, header):
             images = list(img.to(device) for img in images)
 
@@ -109,6 +113,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             coco_evaluator.update(res)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+            #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
+            if evaluate_classification:
+                for i,image_scores in enumerate(outputs['scores']):
+
+                    x_regresion.append([np.mean(image_scores),np.max(image_scores)])
+                    N_targets = len(targets['boxes'][i])
+                    y_regresion.append(1 if N_targets > 0 else 0)
+                    print(i,targets['image_id'][i],outputs['image_id'][i],x_regresion,y_regresion)
             del images,targets,outputs
         # gather the stats from all processes
 
@@ -124,6 +136,26 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
         torch.set_num_threads(n_threads)
         del coco_evaluator
+
+
+        """
+        Agregar llamado a una funcion que ajuste una regresion logistica a la lista de counts y conf_max con 80% 
+        que me tire accueracy,auc.roc,aucpr en el otro 20%
+        """
+
+        if evaluate_classification:
+            x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
+                                                    test_size=0.2,
+                                                    random_state=32)
+            clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+            preds = clf.predict(x_test)
+            (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
+            classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
+                            'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
+                            'acc':acc, 'f1':f1score, 'aucroc':auc}
+            if results_file:
+                with open(results_file, 'a') as f:
+                    f.write(f'\nClassification metrics: {classif_dict}')
     if dice:
         if data_loader.dataset.binary:
             total_dice = []

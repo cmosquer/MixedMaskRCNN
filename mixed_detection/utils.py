@@ -1,6 +1,7 @@
 from mixed_detection.faster_rcnn import FastRCNNPredictor
 from mixed_detection.mask_rcnn import MaskRCNNPredictor, maskrcnn_resnet50_fpn
 from mixed_detection import vision_transforms as T
+from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score
 
 from collections import Counter
 import os
@@ -153,4 +154,27 @@ def get_instance_segmentation_model(num_classes, pretrained_backbone=None, pretr
     return model
 
 
+def getClassificationMetrics(preds, labels_test, print_results=True):
+    labels_test_num = [0 if l == 'B' else 1 for l in labels_test]
+    preds_num = [0 if p == 'B' else 1 for p in preds]
+    fpr, tpr, th = roc_curve(labels_test_num, preds_num)
+    auc = roc_auc_score(labels_test_num, preds_num)
+    print('AUC: {:.3f}'.format(auc))
 
+    tn, fp, fn, tp = confusion_matrix(labels_test_num, preds_num).ravel()
+
+    sens = tp / (tp + fn)
+    spec = tn / (tn + fp)
+    ppv = tp / (tp + fp)
+    npv = tn / (tn + fn)
+    acc = (tp + tn) / (tn + fp + fn + tp)
+    f1score = 2 * ppv * sens / (ppv + sens)
+    if print_results:
+        print(f'True negatives:{tn}\nTrue positives:{tp}\nFalse negatives:{fn}\nFalse positives:{fp}')
+        print(f'\nSensitivity(recall):{sens:.2f}\nSpecificity:{spec:.2f}')
+        print(f'PPV(precision):{ppv:.2f}\nNPV:{npv:.2f}\n')
+
+        print('f1-score:{:.3f}'.format(f1score))
+        print('accuracy:{:.3f}'.format(acc))
+    else:
+        return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc)
