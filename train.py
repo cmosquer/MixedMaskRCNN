@@ -63,8 +63,8 @@ def main(args=None):
         print('Len of original raw csv: {}, len after removing intersection with revised test set: {}'.format(L,len(raw_csv)))
 
     print('RAW CSV DESCRIPTION:')
-    print(raw_csv.image_source.value_counts(normalize=True))
-    print(raw_csv.label_level.value_counts(normalize=True))
+    print(raw_csv.image_source.value_counts())
+    print(raw_csv.label_level.value_counts())
 
     if 'label_level' not in raw_csv.columns:
         raw_csv['label_level'] = [None] * len(raw_csv)
