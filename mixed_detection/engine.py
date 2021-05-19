@@ -132,6 +132,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 gt = 1 if N_targets > 0 else 0
                 print(gt)
                 y_regresion.append(gt)
+                del gt,image_scores,target,score_mean,score_max
 
         del images,targets,outputs
 
@@ -155,22 +156,22 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         que me tire accueracy,auc.roc,aucpr en el otro 20%
         """
 
-        if classification:
-            x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
-                                                    test_size=0.2,
-                                                    random_state=32)
-            clf = LogisticRegression(random_state=32).fit(x_train, y_train)
-            preds = clf.predict(x_test)
-            (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
-            classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
-                            'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
-                            'acc':acc, 'f1':f1score, 'aucroc':auc}
-            if results_file:
-                with open(results_file, 'a') as f:
-                    f.write(f'\nClassification metrics: {classif_dict}')
-                with open(results_file.replace('coco', 'classification_data'), 'wb') as f:
-                    classification_data = {'x_train':x_train,'y_train':y_train,'x_test':x_test,'y_test':y_test,'preds_test':preds,'clf':clf}
-                    pickle.dump(classification_data, f)
+    if classification:
+        x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
+                                                test_size=0.2,
+                                                random_state=32)
+        clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+        preds = clf.predict(x_test)
+        (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
+        classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
+                        'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
+                        'acc':acc, 'f1':f1score, 'aucroc':auc}
+        if results_file:
+            with open(results_file, 'a') as f:
+                f.write(f'\nClassification metrics: {classif_dict}')
+            with open(results_file.replace('coco', 'classification_data'), 'wb') as f:
+                classification_data = {'x_train':x_train,'y_train':y_train,'x_test':x_test,'y_test':y_test,'preds_test':preds,'clf':clf}
+                pickle.dump(classification_data, f)
     if dice:
         if data_loader.dataset.binary:
             total_dice = []
