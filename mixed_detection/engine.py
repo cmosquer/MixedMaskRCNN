@@ -119,15 +119,19 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             for img_id,output in enumerate(outputs):
                 target = targets[img_id]
                 image_scores = output['scores']
-                print('OUTPUT: ',output)
-                print('TARGET:',target)
+                print('OUTPUT SCORES: ',image_scores)
+                print('TARGET LABELS:',target['labels'])
                 if image_scores is not None:
-                    x_regresion.append([torch.mean(image_scores).item(),torch.max(image_scores).item()])
+                    score_mean = torch.mean(image_scores).item()
+                    score_max = torch.max(image_scores).item()
+                    print(score_mean,score_max)
+                    x_regresion.append([score_mean,score_max])
                 else:
                     x_regresion.append([0, 0])
                 N_targets = len(target['boxes'])
-                y_regresion.append(1 if N_targets > 0 else 0)
-                print(target['image_id'],x_regresion,y_regresion)
+                gt = 1 if N_targets > 0 else 0
+                print(gt)
+                y_regresion.append(gt)
 
         del images,targets,outputs
 
