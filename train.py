@@ -24,7 +24,7 @@ def main(args=None):
     random_seed = 35
     binary = True
     no_findings_for_valid=True
-    max_valid_size = 2000
+    max_valid_size = 20
     if binary:
         num_classes = 2
     else:
