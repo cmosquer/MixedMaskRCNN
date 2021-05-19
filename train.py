@@ -33,7 +33,7 @@ def main(args=None):
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
     experiment_number = '12-05-21'
-    experiment_type = 'masksAndBoxs' # 'masksOnly'#
+    experiment_type = 'masksOnly'# 'masksAndBoxs' # 
     experiment_id = experiment_number+'_'+experiment_type
     if binary:
         experiment_id+='_binary'
