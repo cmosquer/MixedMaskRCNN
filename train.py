@@ -60,7 +60,11 @@ def main(args=None):
         print('interseccion csv total con test revisado ',len(inter))
         L = len(raw_csv)
         raw_csv = raw_csv[~raw_csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
-        print('Len of original raw csv{}, len after removing intersection with revised test set{}'.format(L,len(raw_csv)))
+        print('Len of original raw csv: {}, len after removing intersection with revised test set: {}'.format(L,len(raw_csv)))
+
+    print('RAW CSV DESCRIPTION:')
+    print(raw_csv.image_source.value_counts(normalize=True))
+    print(raw_csv.label_level.value_counts(normalize=True))
 
     if 'label_level' not in raw_csv.columns:
         raw_csv['label_level'] = [None] * len(raw_csv)
@@ -91,6 +95,7 @@ def main(args=None):
 
     # --Only accept images with boxes or masks--#
     validAnnotations = []
+
     if 'mask' in experiment_type.lower():
         validAnnotations.append('mask')
     if 'box' in experiment_type.lower():
@@ -120,7 +125,7 @@ def main(args=None):
         if no_findings_for_valid:
             print('len before appending no finding to valid set: {}'.format(len(csv_valid)))
             nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(max_valid_size-len(csv_valid))]
-            csv_valid = csv_valid.append(nofindings,ignore_index=True)
+            csv_valid = csv_valid.append(nofindings,ignore_index=True).reset_index(drop=True)
             print('len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
 
