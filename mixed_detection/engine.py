@@ -121,20 +121,24 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
             if classification:
                 for img_id,output in enumerate(outputs):
+
                     target = targets[img_id]
+                    N_targets = len(target['boxes'])
+                    gt = 1 if N_targets > 0 else 0
+                    # y_regresion.append(gt)
+
                     image_scores = output['scores'].detach()
                     if image_scores is not None:
                         score_mean = torch.mean(image_scores).item()
                         score_max = torch.max(image_scores).item()
                         print(score_mean,score_max)
-                        x_regresion.append([score_mean,score_max])
-                    else:
-                        x_regresion.append([0, 0])
-                    N_targets = len(target['boxes'])
-                    gt = 1 if N_targets > 0 else 0
+                        #x_regresion.append([score_mean,score_max])
+                    #else:
+                        #x_regresion.append([0, 0])
+
                     print(gt)
 
-                    y_regresion.append(gt)
+
                     del gt,image_scores,target,score_mean,score_max
                     print(psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
