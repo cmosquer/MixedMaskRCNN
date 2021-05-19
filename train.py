@@ -12,7 +12,7 @@ def main(args=None):
     print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
     experiment_dir = trx_dir+'Experiments/'
-    csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210423-00_ubuntu.csv')
+    raw_csv = pd.read_csv(trx_dir+'Datasets/Opacidades/TX-RX-ds-20210423-00_ubuntu.csv')
     class_numbers = {
      'NoduloMasa': 1,
      'Consolidacion': 2,
@@ -23,6 +23,8 @@ def main(args=None):
     num_epochs = 10
     random_seed = 35
     binary = True
+    no_findings_for_valid=True
+    max_valid_size = 2000
     if binary:
         num_classes = 2
     else:
@@ -31,7 +33,7 @@ def main(args=None):
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
     experiment_number = '12-05-21'
-    experiment_type = 'masksOnly'#'masksAndBoxs' #
+    experiment_type = 'masksAndBoxs' # 'masksOnly'#
     experiment_id = experiment_number+'_'+experiment_type
     if binary:
         experiment_id+='_binary'
@@ -46,10 +48,15 @@ def main(args=None):
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
     # --Only accept images with boxes or masks--#
-    if experiment_type=='masksOnly':
-        csv = csv[csv.label_level.isin(['mask'])].reset_index(drop=True)
-    else:
-        csv = csv[csv.label_level.isin(['box', 'mask'])].reset_index(drop=True)
+    validAnnotations = []
+    if 'mask' in experiment_type:
+        validAnnotations.append('mask')
+    if 'box' in experiment_type:
+        validAnnotations.append('box')
+
+
+    csv = raw_csv[raw_csv.label_level.isin(validAnnotations)].reset_index(drop=True)
+
 
 
     os.makedirs(output_dir,exist_ok=True)
@@ -95,6 +102,7 @@ def main(args=None):
         train_idx = list(set(csv_train.file_name.values))
     else:
         print('creating new validation set ... ')
+
         image_ids = list(set(csv.file_name.values))
         class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
         csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
@@ -105,6 +113,10 @@ def main(args=None):
                                                random_state=random_seed)
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
+
+        if no_findings_for_valid:
+            nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(max_valid_size-len(csv_valid))]
+            csv_valid = csv_valid.append(nofindings,ignore_index=True)
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
     print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len valid_idx: {}'.format(len(csv),len(csv_train),len(csv_valid),
                                                                                                       len(train_idx),len(valid_idx)))
