@@ -155,7 +155,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
     if results_file:
-        with open(results_file.replace('coco','raw_outputs'),'wb') as f:
+        with open(results_file.replace('coco','raw_outputs').replace('.txt',''),'wb') as f:
             pickle.dump(outputs_saved,f)
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
@@ -187,7 +187,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if results_file:
             with open(results_file, 'a') as f:
                 f.write(f'\nClassification metrics: {classif_dict}')
-            with open(results_file.replace('coco', 'classification_data'), 'wb') as f:
+            with open(results_file.replace('coco', 'classification_data').replace('.txt',''), 'wb') as f:
                 classification_data = {'x_train':x_train,'y_train':y_train,'x_test':x_test,'y_test':y_test,'preds_test':preds,'clf':clf}
                 pickle.dump(classification_data, f)
     if dice:
@@ -197,7 +197,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 images = list(img.to(device) for img in images)
                 outputs = model(images)
 
-                outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+                outputs = [{k: v.detach().to(cpu_device) for k, v in t.items()} for t in outputs]
                 dice = 0
                 for output, target in zip(outputs, targets):
                     output_all = torch.squeeze((torch.sum(output['masks'], axis=0) > 0).int())
