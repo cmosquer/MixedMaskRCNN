@@ -118,16 +118,16 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if classification:
             for img_id,output in enumerate(outputs):
                 target = targets[img_id]
-                for i,image_scores in enumerate(output['scores']):
-                    print(output)
-                    print(image_scores)
-                    if image_scores is not None:
-                        x_regresion.append([np.mean(image_scores),np.max(image_scores)])
-                    else:
-                        x_regresion.append([0, 0])
-                    N_targets = len(target['boxes'][i])
-                    y_regresion.append(1 if N_targets > 0 else 0)
-                    print(i,target['image_id'][i],output['image_id'][i],x_regresion,y_regresion)
+                image_scores = output['scores']
+
+                if image_scores is not None:
+                    x_regresion.append([torch.mean(image_scores).item(),torch.max(image_scores).item()])
+                else:
+                    x_regresion.append([0, 0])
+                N_targets = len(target['boxes'])
+                y_regresion.append(1 if N_targets > 0 else 0)
+                print(target['image_id'],output['image_id'],x_regresion,y_regresion)
+
         del images,targets,outputs
 
     metric_logger.synchronize_between_processes()
