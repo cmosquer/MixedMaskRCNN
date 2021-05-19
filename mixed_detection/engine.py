@@ -10,6 +10,7 @@ from mixed_detection.utils import getClassificationMetrics
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+import pandas as pd
 import psutil
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None):
@@ -174,6 +175,10 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                                                 test_size=0.2,
                                                 random_state=32)
         clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+        print(pd.Series(y_regresion).value_counts())
+        print(pd.Series(y_train).value_counts())
+        print(pd.Series(y_test).value_counts())
+
         preds = clf.predict(x_test)
         (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
