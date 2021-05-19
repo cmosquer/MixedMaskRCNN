@@ -10,6 +10,7 @@ from mixed_detection.utils import getClassificationMetrics
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+import pandas as pd
 import psutil
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None):
@@ -102,14 +103,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         y_regresion = np.zeros(len(data_loader.dataset))
         j = 0
     with torch.no_grad():
-        print('initial',psutil.virtual_memory().percent)
+        #print('initial',psutil.virtual_memory().percent)
         for images, targets in metric_logger.log_every(data_loader, 5, header):
             images = list(img.to(device) for img in images)
-            print('img loaded before inference',psutil.virtual_memory().percent)
+            #print('img loaded before inference',psutil.virtual_memory().percent)
             torch.cuda.synchronize()
             model_time = time.time()
             outputs = model(images)
-            print('after inference',psutil.virtual_memory().percent)
+            #print('after inference',psutil.virtual_memory().percent)
             outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
             targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
             #outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
@@ -147,14 +148,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
                     print(gt)
                     j += 1
-                    print('before del',psutil.virtual_memory().percent)
+                    #print('before del',psutil.virtual_memory().percent)
                     del gt,image_scores,target,score_mean,score_max
-                    print('after del',psutil.virtual_memory().percent)
+                    #print('after del',psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
     if results_file:
-        with open(results_file.replace('coco','raw_outputs'),'wb') as f:
+        with open(results_file.replace('coco','raw_outputs').replace('.txt',''),'wb') as f:
             pickle.dump(outputs_saved,f)
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
@@ -174,6 +175,10 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                                                 test_size=0.2,
                                                 random_state=32)
         clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+        print(pd.Series(y_regresion).value_counts())
+        print(pd.Series(y_train).value_counts())
+        print(pd.Series(y_test).value_counts())
+
         preds = clf.predict(x_test)
         (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
@@ -182,7 +187,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if results_file:
             with open(results_file, 'a') as f:
                 f.write(f'\nClassification metrics: {classif_dict}')
-            with open(results_file.replace('coco', 'classification_data'), 'wb') as f:
+            with open(results_file.replace('coco', 'classification_data').replace('.txt',''), 'wb') as f:
                 classification_data = {'x_train':x_train,'y_train':y_train,'x_test':x_test,'y_test':y_test,'preds_test':preds,'clf':clf}
                 pickle.dump(classification_data, f)
     if dice:
@@ -192,7 +197,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 images = list(img.to(device) for img in images)
                 outputs = model(images)
 
-                outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
+                outputs = [{k: v.detach().to(cpu_device) for k, v in t.items()} for t in outputs]
                 dice = 0
                 for output, target in zip(outputs, targets):
                     output_all = torch.squeeze((torch.sum(output['masks'], axis=0) > 0).int())
