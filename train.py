@@ -31,7 +31,7 @@ def main(args=None):
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'
     experiment_number = '12-05-21'
-    experiment_type = 'masksAndBoxs' #'masksOnly'#
+    experiment_type = 'masksOnly'#'masksAndBoxs' #
     experiment_id = experiment_number+'_'+experiment_type
     if binary:
         experiment_id+='_binary'
@@ -171,7 +171,7 @@ def main(args=None):
 
     for epoch in range(num_epochs):
         # train for one epoch, printing every 10 iterations
-        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=40,
+        train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=40,
                         )
         # update the learning rate
         lr_scheduler.step()

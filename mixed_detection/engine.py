@@ -102,14 +102,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         y_regresion = np.zeros(len(data_loader.dataset))
         j = 0
     with torch.no_grad():
-        print('initial',psutil.virtual_memory().percent)
+        #print('initial',psutil.virtual_memory().percent)
         for images, targets in metric_logger.log_every(data_loader, 5, header):
             images = list(img.to(device) for img in images)
-            print('img loaded before inference',psutil.virtual_memory().percent)
+            #print('img loaded before inference',psutil.virtual_memory().percent)
             torch.cuda.synchronize()
             model_time = time.time()
             outputs = model(images)
-            print('after inference',psutil.virtual_memory().percent)
+            #print('after inference',psutil.virtual_memory().percent)
             outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
             targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
             #outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
@@ -125,14 +125,14 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
             if classification:
                 for img_id,output in enumerate(outputs):
-                    print('beofre target',psutil.virtual_memory().percent)
+                    #print('beofre target',psutil.virtual_memory().percent)
                     target = targets[img_id]
                     N_targets = len(target['boxes'].detach().numpy())
                     gt = 1 if N_targets > 0 else 0
                     # y_regresion.append(gt)
                     y_regresion[j] = gt
 
-                    print('before scores',psutil.virtual_memory().percent)
+                    #print('before scores',psutil.virtual_memory().percent)
                     image_scores = output['scores'].detach().numpy()
 
                     if image_scores is not None:
@@ -147,9 +147,9 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
                     print(gt)
                     j += 1
-                    print('before del',psutil.virtual_memory().percent)
+                    #print('before del',psutil.virtual_memory().percent)
                     del gt,image_scores,target,score_mean,score_max
-                    print('after del',psutil.virtual_memory().percent)
+                    #print('after del',psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
