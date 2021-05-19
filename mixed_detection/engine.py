@@ -10,6 +10,8 @@ from mixed_detection.utils import getClassificationMetrics
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+import psutil
+
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None):
     model.train()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
@@ -100,42 +102,44 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         y_regresion = []
     for images, targets in metric_logger.log_every(data_loader, 5, header):
         images = list(img.to(device) for img in images)
+        with torch.no_grad():
+            torch.cuda.synchronize()
+            model_time = time.time()
+            outputs = model(images)
 
-        torch.cuda.synchronize()
-        model_time = time.time()
-        outputs = model(images)
+            outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
+            targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
+            outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
+            model_time = time.time() - model_time
+            evaluator_time = time.time()
 
-        outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
-        outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
-        model_time = time.time() - model_time
-        evaluator_time = time.time()
-        if coco:
-            res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+            if coco:
+                res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
 
-            coco_evaluator.update(res)
+                coco_evaluator.update(res)
 
-        #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
-        if classification:
-            for img_id,output in enumerate(outputs):
-                target = targets[img_id]
-                image_scores = output['scores']
-                print('OUTPUT SCORES: ',image_scores)
-                print('TARGET LABELS:',target['labels'])
-                if image_scores is not None:
-                    score_mean = torch.mean(image_scores).item()
-                    score_max = torch.max(image_scores).item()
-                    print(score_mean,score_max)
-                    x_regresion.append([score_mean,score_max])
-                else:
-                    x_regresion.append([0, 0])
-                N_targets = len(target['boxes'])
-                gt = 1 if N_targets > 0 else 0
-                print(gt)
-                y_regresion.append(gt)
-                del gt,image_scores,target,score_mean,score_max
-        evaluator_time = time.time() - evaluator_time
-        metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
-        del images,targets,outputs
+            #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
+            if classification:
+                for img_id,output in enumerate(outputs):
+                    target = targets[img_id]
+                    image_scores = output['scores'].detach()
+                    if image_scores is not None:
+                        score_mean = torch.mean(image_scores).item()
+                        score_max = torch.max(image_scores).item()
+                        print(score_mean,score_max)
+                        x_regresion.append([score_mean,score_max])
+                    else:
+                        x_regresion.append([0, 0])
+                    N_targets = len(target['boxes'])
+                    gt = 1 if N_targets > 0 else 0
+                    print(gt)
+
+                    y_regresion.append(gt)
+                    del gt,image_scores,target,score_mean,score_max
+                    print(psutil.virtual_memory().percent.)
+            evaluator_time = time.time() - evaluator_time
+            metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+            del images,targets,outputs
 
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
