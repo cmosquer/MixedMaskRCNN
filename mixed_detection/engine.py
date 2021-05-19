@@ -136,7 +136,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
                     y_regresion.append(gt)
                     del gt,image_scores,target,score_mean,score_max
-                    print(psutil.virtual_memory().percent.)
+                    print(psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
