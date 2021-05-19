@@ -98,8 +98,9 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         coco_evaluator = CocoEvaluator(coco, iou_types)
     outputs_saved = []
     if classification:
-        x_regresion = []
-        y_regresion = []
+        x_regresion = np.zeros((len(data_loader.dataset),2))
+        y_regresion = np.zeros(len(data_loader.dataset))
+        j = 0
     for images, targets in metric_logger.log_every(data_loader, 5, header):
         images = list(img.to(device) for img in images)
         with torch.no_grad():
@@ -109,7 +110,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
             outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
             targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
-            outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
+            #outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
             model_time = time.time() - model_time
             evaluator_time = time.time()
 
@@ -119,37 +120,41 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 coco_evaluator.update(res)
 
             #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
+
             if classification:
                 for img_id,output in enumerate(outputs):
 
                     target = targets[img_id]
-                    N_targets = len(target['boxes'])
+                    N_targets = len(target['boxes'].detach().numpy())
                     gt = 1 if N_targets > 0 else 0
                     # y_regresion.append(gt)
-
-                    image_scores = output['scores'].detach()
+                    y_regresion[j] = gt
+                    image_scores = output['scores'].detach().numpy()
                     if image_scores is not None:
-                        score_mean = torch.mean(image_scores).item()
-                        score_max = torch.max(image_scores).item()
+                        score_mean = np.mean(image_scores)
+                        score_max = np.max(image_scores)
                         print(score_mean,score_max)
+                        x_regresion[j,0] = score_mean
+                        x_regresion[j,1] = score_max
                         #x_regresion.append([score_mean,score_max])
                     #else:
                         #x_regresion.append([0, 0])
 
                     print(gt)
-
+                    j += 1
 
                     del gt,image_scores,target,score_mean,score_max
                     print(psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
-
+    if results_file:
+        with open(results_file.replace('coco','raw_outputs'),'wb') as f:
+            pickle.dump(outputs_saved,f)
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
     if coco:
-        with open(results_file.replace('coco','raw_outputs'),'wb') as f:
-            pickle.dump(outputs_saved,f)
+
         coco_evaluator.synchronize_between_processes()
 
         # accumulate predictions from all images
