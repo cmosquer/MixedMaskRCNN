@@ -47,6 +47,48 @@ def main(args=None):
         existing_valid_set = None
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
 
+
+
+
+
+    os.makedirs(output_dir,exist_ok=True)
+
+    if revised_test_set:
+        csv_revised = pd.read_csv(revised_test_set)
+        revised_test_idx = list(set(csv_revised.original_file_name.values))
+        inter = set(revised_test_idx).intersection(set(raw_csv['file_name'].values))
+        print('interseccion csv total con test revisado ',len(inter))
+        L = len(raw_csv)
+        raw_csv = raw_csv[~raw_csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
+        print('Len of original raw csv{}, len after removing intersection with revised test set{}'.format(L,len(raw_csv)))
+
+    if 'label_level' not in raw_csv.columns:
+        raw_csv['label_level'] = [None] * len(raw_csv)
+        for i, row in raw_csv.iterrows():
+            assigned = False
+            if isinstance(row['mask_path'], str):
+                if os.path.exists(row['mask_path']):
+                    raw_csv.loc[i, 'label_level'] = 'mask'
+                    assigned = True
+            else:
+                xmin = row['x1']
+                xmax = row['x2']
+                ymin = row['y1']
+                ymax = row['y2']
+                if ymax > ymin and xmax > xmin:
+                    raw_csv.loc[i, 'label_level'] = 'box'
+                    assigned = True
+                else:
+                    if isinstance(row['class_name'], str):
+                        if len(row['class_name']) > 0:
+                            raw_csv.loc[i, 'label_level'] = 'imagelabel'
+                            assigned = True
+            if not assigned:
+                raw_csv.loc[i, 'label_level'] = 'nofinding'
+        print('finished initialization: ')
+        print(raw_csv.label_level.value_counts())
+        raw_csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
+
     # --Only accept images with boxes or masks--#
     validAnnotations = []
     if 'mask' in experiment_type:
@@ -56,52 +98,14 @@ def main(args=None):
 
 
     csv = raw_csv[raw_csv.label_level.isin(validAnnotations)].reset_index(drop=True)
-
-
-
-    os.makedirs(output_dir,exist_ok=True)
-    if 'label_level' not in csv.columns:
-        csv['label_level'] = [None] * len(csv)
-        for i, row in csv.iterrows():
-            assigned = False
-            if isinstance(row['mask_path'], str):
-                if os.path.exists(row['mask_path']):
-                    csv.loc[i, 'label_level'] = 'mask'
-                    assigned = True
-            else:
-                xmin = row['x1']
-                xmax = row['x2']
-                ymin = row['y1']
-                ymax = row['y2']
-                if ymax > ymin and xmax > xmin:
-                    csv.loc[i, 'label_level'] = 'box'
-                    assigned = True
-                else:
-                    if isinstance(row['class_name'], str):
-                        if len(row['class_name']) > 0:
-                            csv.loc[i, 'label_level'] = 'imagelabel'
-                            assigned = True
-            if not assigned:
-                csv.loc[i, 'label_level'] = 'nofinding'
-        print('finished initialization: ')
-        print(csv.label_level.value_counts())
-        csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
-
-    if revised_test_set:
-        csv_revised = pd.read_csv(revised_test_set)
-        revised_test_idx = list(set(csv_revised.original_file_name.values))
-        inter = set(revised_test_idx).intersection(set(csv['file_name'].values))
-        print('interseccion csv total con test revisado ',len(inter))
-        L = len(csv)
-        csv = csv[~csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
-        print('Len csv original {}, len after removing intersection {}'.format(L,len(csv)))
+    print('Len of csv after keeping only {} annotations: {}'.format(validAnnotations,len(csv)))
     if existing_valid_set:
         csv_valid = pd.read_csv(existing_valid_set)
         valid_idx = list(set(csv_valid.file_name.values))
         csv_train = csv[~csv.file_name.isin(valid_idx)].reset_index(drop=True)
         train_idx = list(set(csv_train.file_name.values))
     else:
-        print('creating new validation set ... ')
+        print('Creating new validation set ... ')
 
         image_ids = list(set(csv.file_name.values))
         class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
@@ -113,13 +117,14 @@ def main(args=None):
                                                random_state=random_seed)
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
-
         if no_findings_for_valid:
+            print('len before appending no finding to valid set: {}'.format(len(csv_valid)))
             nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(max_valid_size-len(csv_valid))]
             csv_valid = csv_valid.append(nofindings,ignore_index=True)
+            print('len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
-    print('Len csv:{}, Len csv train: {}, len csv test: {}\nLen train_idx:{} , Len valid_idx: {}'.format(len(csv),len(csv_train),len(csv_valid),
-                                                                                                      len(train_idx),len(valid_idx)))
+
+    print('Len csv train: {}, len csv test: {}'.format(len(csv_train),len(csv_valid)))
     print('TRAIN SOURCES:')
     print(csv_train.image_source.value_counts(normalize=True))
     print(csv_train.label_level.value_counts(normalize=True))
