@@ -98,7 +98,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
     if classification:
         x_regresion = []
         y_regresion = []
-    for images, targets in metric_logger.log_every(data_loader, 100, header):
+    for images, targets in metric_logger.log_every(data_loader, 5, header):
         images = list(img.to(device) for img in images)
 
         torch.cuda.synchronize()
@@ -108,12 +108,12 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
         outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
+        evaluator_time = time.time()
         if coco:
             res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
-            evaluator_time = time.time()
+
             coco_evaluator.update(res)
-            evaluator_time = time.time() - evaluator_time
-            metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+
         #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
         if classification:
             for img_id,output in enumerate(outputs):
@@ -133,7 +133,8 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
                 print(gt)
                 y_regresion.append(gt)
                 del gt,image_scores,target,score_mean,score_max
-
+        evaluator_time = time.time() - evaluator_time
+        metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
         del images,targets,outputs
 
     metric_logger.synchronize_between_processes()
@@ -149,12 +150,6 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
         torch.set_num_threads(n_threads)
         del coco_evaluator
-
-
-        """
-        Agregar llamado a una funcion que ajuste una regresion logistica a la lista de counts y conf_max con 80% 
-        que me tire accueracy,auc.roc,aucpr en el otro 20%
-        """
 
     if classification:
         x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
