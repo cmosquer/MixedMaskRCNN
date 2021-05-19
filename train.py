@@ -91,9 +91,9 @@ def main(args=None):
 
     # --Only accept images with boxes or masks--#
     validAnnotations = []
-    if 'mask' in experiment_type:
+    if 'mask' in experiment_type.lower():
         validAnnotations.append('mask')
-    if 'box' in experiment_type:
+    if 'box' in experiment_type.lower():
         validAnnotations.append('box')
 
 
