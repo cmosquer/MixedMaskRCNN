@@ -180,6 +180,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         print(pd.Series(y_test).value_counts())
 
         preds = clf.predict(x_test)
+        print(pd.Series(preds).value_counts())
         (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                         'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
