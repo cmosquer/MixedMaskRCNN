@@ -90,8 +90,6 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         torch.save(model.state_dict(), model_saving_path)
         print('Saved model to ', model_saving_path)
     if coco:
-
-
         coco = get_coco_api_from_dataset(data_loader.dataset)
         iou_types = _get_iou_types(model)
         if "segm" not in iou_types:
