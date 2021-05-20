@@ -111,7 +111,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             #print('after inference',psutil.virtual_memory().percent)
             outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
             targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
-            #outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
+            outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
             model_time = time.time() - model_time
             evaluator_time = time.time()
 
@@ -153,7 +153,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
     if results_file:
-        with open(results_file.replace('coco','raw_outputs').replace('.txt',''),'wb') as f:
+        with open(results_file.replace('cocoStats','raw_outputs').replace('.txt',''),'wb') as f:
             pickle.dump(outputs_saved,f)
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
@@ -180,7 +180,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         preds = clf.predict(x_test)
         print(pd.Series(preds).value_counts())
         if results_file:
-            with open(results_file.replace('coco', 'classification_data').replace('.txt', ''), 'wb') as f:
+            with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
                 classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
                                        'preds_test': preds, 'clf': clf}
                 pickle.dump(classification_data, f)
