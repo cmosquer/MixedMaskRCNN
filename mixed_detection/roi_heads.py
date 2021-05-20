@@ -554,7 +554,6 @@ def maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs
     else:
         labels = torch.cat(labels, dim=0)
         mask_targets = torch.cat(mask_targets, dim=0)
-        print(mask_targets.device,mask_targets.shape)
         # torch.mean (in binary_cross_entropy_with_logits) doesn't
         # accept empty tensors, so handle it separately
         if mask_targets.numel() == 0:

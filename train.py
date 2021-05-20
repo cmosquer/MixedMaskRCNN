@@ -5,7 +5,7 @@ from mixed_detection.utils import get_instance_segmentation_model,get_transform,
 from mixed_detection.engine import train_one_epoch, evaluate
 from sklearn.model_selection import train_test_split
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
-import os, random
+import os, random, psutil
 import numpy as np
 
 def main(args=None):
@@ -192,6 +192,7 @@ def main(args=None):
                                                    gamma=0.1)
 
     for epoch in range(num_epochs):
+        print('Memory when starting epoch: ', psutil.virtual_memory().percent)
         # train for one epoch, printing every 10 iterations
         train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=40,
                         )
