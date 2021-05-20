@@ -164,8 +164,9 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
     except Exception as e:
         print('could calculate roc curve because error: {}'.format(e))
         auc = np.nan
-    tn, fp, fn, tp = confusion_matrix(labels_test_num, preds_num).ravel()
-
+    c = confusion_matrix(labels_test_num, preds_num).ravel()
+    print('Confusion matrix: ',c)
+    (tn, fp, fn, tp ) = c
     sens = tp / (tp + fn)
     spec = tn / (tn + fp)
     ppv = tp / (tp + fp)

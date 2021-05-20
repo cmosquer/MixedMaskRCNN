@@ -181,6 +181,11 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
 
         preds = clf.predict(x_test)
         print(pd.Series(preds).value_counts())
+        if results_file:
+            with open(results_file.replace('coco', 'classification_data').replace('.txt', ''), 'wb') as f:
+                classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
+                                       'preds_test': preds, 'clf': clf}
+                pickle.dump(classification_data, f)
         (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                         'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
@@ -188,9 +193,7 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         if results_file:
             with open(results_file, 'a') as f:
                 f.write(f'\nClassification metrics: {classif_dict}')
-            with open(results_file.replace('coco', 'classification_data').replace('.txt',''), 'wb') as f:
-                classification_data = {'x_train':x_train,'y_train':y_train,'x_test':x_test,'y_test':y_test,'preds_test':preds,'clf':clf}
-                pickle.dump(classification_data, f)
+
     if dice:
         if data_loader.dataset.binary:
             total_dice = []
