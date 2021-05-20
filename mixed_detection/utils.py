@@ -155,16 +155,15 @@ def get_instance_segmentation_model(num_classes, pretrained_backbone=None, pretr
 
 
 def getClassificationMetrics(preds, labels_test, print_results=True):
-    labels_test_num = [0 if l == 'B' else 1 for l in labels_test]
-    preds_num = [0 if p == 'B' else 1 for p in preds]
+
     try:
-        fpr, tpr, th = roc_curve(labels_test_num, preds_num)
-        auc = roc_auc_score(labels_test_num, preds_num)
+        fpr, tpr, th = roc_curve(labels_test, preds)
+        auc = roc_auc_score(labels_test, preds)
         print('AUC: {:.3f}'.format(auc))
     except Exception as e:
-        print('could calculate roc curve because error: {}'.format(e))
+        print('couldnt calculate roc curve because error: {}'.format(e))
         auc = np.nan
-    c = confusion_matrix(labels_test_num, preds_num).ravel()
+    c = confusion_matrix(labels_test, preds).ravel()
     print('Confusion matrix: ',c)
     (tn, fp, fn, tp ) = c
     sens = tp / (tp + fn)
