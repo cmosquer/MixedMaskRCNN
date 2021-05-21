@@ -66,9 +66,9 @@ def prepareDatasets(config,output_dir,class_numbers):
     # --Only accept images with boxes or masks--#
     validAnnotations = []
 
-    if 'mask' in config.experiment_type.lower():
+    if 'mask' in config["experiment_type"].lower():
         validAnnotations.append('mask')
-    if 'box' in config.experiment_type.lower():
+    if 'box' in config["experiment_type"].lower():
         validAnnotations.append('box')
 
 
