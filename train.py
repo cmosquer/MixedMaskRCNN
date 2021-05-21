@@ -42,9 +42,8 @@ def main(args=None):
      'Atelectasia': 4,
      'LesionesDeLaPared': 5
      }
-    binary = bool(config['opacityies_as_binary'])
 
-    if binary:
+    if config['opacityies_as_binary']:
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1 #patologias + background
@@ -57,7 +56,7 @@ def main(args=None):
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
-    if binary:
+    if config['opacityies_as_binary']:
         experiment_id+='_binary'
 
     prevalid = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)

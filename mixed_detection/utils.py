@@ -113,12 +113,13 @@ def prepareDatasets(config,output_dir,class_numbers):
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
-    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=binary)
-    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),binary_opacity=binary)
+    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=config['opacityies_as_binary'])
+    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),binary_opacity=config['opacityies_as_binary'])
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nVALID:')
     dataset_valid.quantifyClasses()
+    return dataset,dataset_valid
 
 
 def seed_all(seed=27):
