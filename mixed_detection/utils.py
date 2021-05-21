@@ -1,7 +1,9 @@
 from mixed_detection.faster_rcnn import FastRCNNPredictor
 from mixed_detection.mask_rcnn import MaskRCNNPredictor, maskrcnn_resnet50_fpn
 from mixed_detection import vision_transforms as T
-from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score
+from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score, precision_recall_curve
+from sklearn.metrics import auc as sklearnAUC
+from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
 
 from collections import Counter
 import os
@@ -9,11 +11,116 @@ import random
 import numpy as np
 import torch
 from torch import Tensor
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
 try:
     from torchvision.ops import box_iou
 except ModuleNotFoundError:  # pragma: no-cover
     box_iou = None
+
+def prepareDatasets(config,output_dir,class_numbers):
+
+    raw_csv = pd.read_csv(config["raw_csv"])
+
+    if config["revised_test_set"]:
+        csv_revised = pd.read_csv(config["revised_test_set"])
+        revised_test_idx = list(set(csv_revised.original_file_name.values))
+        inter = set(revised_test_idx).intersection(set(raw_csv['file_name'].values))
+        print('interseccion csv total con test revisado ',len(inter))
+        L = len(raw_csv)
+        raw_csv = raw_csv[~raw_csv.file_name.isin(list(revised_test_idx))].reset_index(drop=True)
+        print('Len of original raw csv: {}, len after removing intersection with revised test set: {}'.format(L,len(raw_csv)))
+
+    print('RAW CSV DESCRIPTION:')
+    print(raw_csv.image_source.value_counts())
+    print(raw_csv.label_level.value_counts())
+
+    if 'label_level' not in raw_csv.columns:
+        raw_csv['label_level'] = [None] * len(raw_csv)
+        for i, row in raw_csv.iterrows():
+            assigned = False
+            if isinstance(row['mask_path'], str):
+                if os.path.exists(row['mask_path']):
+                    raw_csv.loc[i, 'label_level'] = 'mask'
+                    assigned = True
+            else:
+                xmin = row['x1']
+                xmax = row['x2']
+                ymin = row['y1']
+                ymax = row['y2']
+                if ymax > ymin and xmax > xmin:
+                    raw_csv.loc[i, 'label_level'] = 'box'
+                    assigned = True
+                else:
+                    if isinstance(row['class_name'], str):
+                        if len(row['class_name']) > 0:
+                            raw_csv.loc[i, 'label_level'] = 'imagelabel'
+                            assigned = True
+            if not assigned:
+                raw_csv.loc[i, 'label_level'] = 'nofinding'
+        print('finished initialization: ')
+        print(raw_csv.label_level.value_counts())
+        raw_csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
+
+    # --Only accept images with boxes or masks--#
+    validAnnotations = []
+
+    if 'mask' in config.experiment_type.lower():
+        validAnnotations.append('mask')
+    if 'box' in config.experiment_type.lower():
+        validAnnotations.append('box')
+
+
+    csv = raw_csv[raw_csv.label_level.isin(validAnnotations)].reset_index(drop=True)
+    print('Len of csv after keeping only {} annotations: {}'.format(validAnnotations,len(csv)))
+    if config["existing_valid_set"]:
+        csv_valid = pd.read_csv(config["existing_valid_set"])
+        valid_idx = list(set(csv_valid.file_name.values))
+        csv_train = csv[~csv.file_name.isin(valid_idx)].reset_index(drop=True)
+        train_idx = list(set(csv_train.file_name.values))
+    else:
+        print('Creating new validation set ... ')
+
+        image_ids = list(set(csv.file_name.values))
+        class_series = pd.Series([clss.split('-')[0] for clss in csv['class_name'].values])
+        csv['stratification'] = csv['image_source'].astype(str)+'_'+csv['label_level'].astype(str)+'_'+class_series
+        stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
+
+        train_idx, valid_idx = train_test_split(image_ids, stratify=stratification,
+                                               test_size=0.1,
+                                               random_state=config["random_seed"])
+        csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
+        csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
+        if config["no_findings_for_valid"]:
+            print('len before appending no finding to valid set: {}'.format(len(csv_valid)))
+            nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_size"]-len(csv_valid))]
+            csv_valid = csv_valid.append(nofindings,ignore_index=True).reset_index(drop=True)
+            print('len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
+    assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
+
+    print('Len csv train: {}, len csv test: {}'.format(len(csv_train),len(csv_valid)))
+    print('TRAIN SOURCES:')
+    print(csv_train.image_source.value_counts(normalize=True))
+    print(csv_train.label_level.value_counts(normalize=True))
+
+    print('VALID SOURCES')
+    print(csv_valid.image_source.value_counts(normalize=True))
+    print(csv_valid.label_level.value_counts(normalize=True))
+
+    """
+    csv_train = csv[:30000].reset_index()
+    csv_test = csv[30000:].reset_index() """
+    csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
+    csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
+    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=binary)
+    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),binary_opacity=binary)
+    print('TRAIN:')
+    dataset.quantifyClasses()
+    print('\nVALID:')
+    dataset_valid.quantifyClasses()
+
+
 def seed_all(seed=27):
     """https://pytorch.org/docs/stable/notes/randomness.html"""
     random.seed(seed)
@@ -158,10 +265,18 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
 
     try:
         fpr, tpr, th = roc_curve(labels_test, preds)
-        auc = roc_auc_score(labels_test, preds)
-        print('AUC: {:.3f}'.format(auc))
+        aucroc = roc_auc_score(labels_test, preds)
+        print('AUCROC: {:.3f}'.format(aucroc))
     except Exception as e:
         print('couldnt calculate roc curve because error: {}'.format(e))
+        aucroc = np.nan
+
+    try:
+        precision, recall, thresholds = precision_recall_curve(y_true, y_pred)
+        aucpr = sklearnAUC(recall, precision)
+        print('AUCPR: {:.3f}'.format(aucpr))
+    except Exception as e:
+        print('couldnt calculate PR curve because error: {}'.format(e))
         auc = np.nan
     c = confusion_matrix(labels_test, preds).ravel()
     print('Confusion matrix: ',c)
@@ -180,4 +295,4 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
         print('f1-score:{:.3f}'.format(f1score))
         print('accuracy:{:.3f}'.format(acc))
     else:
-        return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc)
+        return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr)

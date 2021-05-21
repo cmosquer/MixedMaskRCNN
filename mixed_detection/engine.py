@@ -12,9 +12,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import psutil
+import wandb
 
-def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None):
+def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None,wandb_interval=500):
+    wandb.watch(model,optimizer, log_freq=wandb_interval)
+
     model.train()
+
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', vision_utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}]'.format(epoch)
@@ -27,14 +31,14 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
         lr_scheduler = vision_utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
     step = 0
+
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
         print('Memory before loading to GPU the batch: ', psutil.virtual_memory().percent)
 
         if breaking_step:
             if step > breaking_step:
                 break
-            else:
-                step+=1
+        step+=1
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
@@ -59,6 +63,8 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
 
         if lr_scheduler is not None:
             lr_scheduler.step()
+        if step % wandb_interval == 0:
+            wandb.log({"epoch":epoch,"losses": losses})
 
         metric_logger.update(loss=losses_reduced, **loss_dict_reduced)
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
@@ -190,7 +196,9 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                         'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
                         'acc':acc, 'f1':f1score, 'aucroc':auc}
+        wandb.log(classif_dict)
         if results_file:
+            wandb.log({'results_file':results_file})
             with open(results_file, 'a') as f:
                 f.write(f'\nClassification metrics: {classif_dict}')
 
