@@ -17,7 +17,7 @@ def main(args=None):
     config = {
         "batch_size": 2,
         "batch_size_valid":1,
-        "inital_lr": 0.001,
+        "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210423-00_ubuntu",
