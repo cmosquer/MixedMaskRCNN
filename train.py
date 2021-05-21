@@ -21,7 +21,7 @@ def main(args=None):
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210423-00_ubuntu",
-        'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv')
+        'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
 
 
         'opacityies_as_binary':True,
