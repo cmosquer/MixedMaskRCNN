@@ -56,7 +56,7 @@ def main(args=None):
     experiment_id = experiment_number+'_'+experiment_type
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
-    config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{dataset_id}.csv'.format(config['dataset'])
+    config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
     if binary:
         experiment_id+='_binary'
 
