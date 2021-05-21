@@ -33,12 +33,12 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
     step = 0
 
     for images, targets in metric_logger.log_every(data_loader, print_freq, header):
-        print('Memory before loading to GPU the batch: ', psutil.virtual_memory().percent)
+        #print('Memory before loading to GPU the batch: %', psutil.virtual_memory().percent)
 
         if breaking_step:
             if step > breaking_step:
                 break
-        step+=1
+        step += 1
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
