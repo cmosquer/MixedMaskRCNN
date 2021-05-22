@@ -29,7 +29,7 @@ def main(args=None):
         'no_findings_examples_in_train': False,
         'max_valid_set_size':2000,
         'experiment_type':'masks_boxes',# 'masks'#
-        'date': '12-05-21',
+        'date': '22-05-21',
         'epochs':10,
         'random_seed': 35,
 
@@ -126,7 +126,7 @@ def main(args=None):
             saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch) #None#
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
             evaluate(model, data_loader_valid, device=device, model_saving_path=saving_path,results_file=results_coco_file,
-                     coco=True,dice=False,classification=True)
+                     coco=False,dice=False,classification=True)
             #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
 
 
