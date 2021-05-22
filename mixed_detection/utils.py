@@ -92,7 +92,7 @@ def prepareDatasets(config,output_dir,class_numbers):
                                                random_state=config["random_seed"])
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
-        if config["no_findings_for_valid"]:
+        if config["no_findings_examples_in_valid"]:
             print('len before appending no finding to valid set: {}'.format(len(csv_valid)))
             nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_size"]-len(csv_valid))]
             csv_valid = csv_valid.append(nofindings,ignore_index=True).reset_index(drop=True)
