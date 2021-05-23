@@ -53,13 +53,14 @@ def main(args=None):
     experiment_number = config['date']
     experiment_type = config['experiment_type']
     experiment_id = experiment_number+'_'+experiment_type
+    if config['opacityies_as_binary']:
+        experiment_id+='_binary'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
-    if config['opacityies_as_binary']:
-        experiment_id+='_binary'
 
-    prevalid = '{}/{}_masksAndBoxs_binary/testCSV.csv'.format(experiment_dir,experiment_number)
+
+    prevalid = '{}/{}_masks_boxes_binary/testCSV.csv'.format(experiment_dir,experiment_number)
     if os.path.exists(prevalid):
         config["existing_valid_set"] = prevalid
     else:
@@ -115,10 +116,13 @@ def main(args=None):
                                                        step_size=config.lr_scheduler_epochs_interval,
                                                        gamma=config.lr_scheduler_factor)
 
+        interval_steps = int(len(data_loader)/20)
+        print('Wandb logging after {} steps'.format(interval_steps))
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
             train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=400,
+                            wandb_interval=interval_steps
                             )
 
             # update the learning rate
