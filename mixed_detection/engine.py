@@ -90,54 +90,44 @@ def _get_iou_types(model):
 def evaluate_coco(model, data_loader, device, results_file=None):
     print('STARTING VALIDATION')
     # FIXME remove this and make paste_masks_in_image run on the GPU
+    n_threads = torch.get_num_threads()
+    # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
-    cpu_device = torch.device("cpu")
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
 
     coco = get_coco_api_from_dataset(data_loader.dataset)
     iou_types = _get_iou_types(model)
-    if "segm" not in iou_types:
-        iou_types.append("segm")
     coco_evaluator = CocoEvaluator(coco, iou_types)
-    outputs_saved = []
 
-    with torch.no_grad():
-        #print('initial',psutil.virtual_memory().percent)
-        for images, targets in metric_logger.log_every(data_loader, 5, header):
-            images = list(img.to(device) for img in images)
-            #print('img loaded before inference',psutil.virtual_memory().percent)
+    for images, targets in metric_logger.log_every(data_loader, 100, header):
+        images = list(img.to(device) for img in images)
+
+        if torch.cuda.is_available():
             torch.cuda.synchronize()
-            model_time = time.time()
-            outputs = model(images)
-            #print('after inference',psutil.virtual_memory().percent)
-            outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
-            targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
-            outputs_saved+=[{k: v.numpy() for k, v in t.items()} for t in outputs]
-            model_time = time.time() - model_time
-            evaluator_time = time.time()
+        model_time = time.time()
+        outputs = model(images)
 
-            res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+        model_time = time.time() - model_time
 
-            coco_evaluator.update(res)
+        res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+        evaluator_time = time.time()
+        coco_evaluator.update(res)
+        evaluator_time = time.time() - evaluator_time
+        metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
 
-            evaluator_time = time.time() - evaluator_time
-            metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
-            del images,targets,outputs
-
-    if results_file:
-        with open(results_file.replace('cocoStats','raw_outputs').replace('.txt',''),'wb') as f:
-            pickle.dump(outputs_saved,f)
+    # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
-
-
     coco_evaluator.synchronize_between_processes()
+
 
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     results_dict = coco_evaluator.summarize(saving_file_path=results_file)
+    torch.set_num_threads(n_threads)
+
     return results_dict
 
 @torch.no_grad()
