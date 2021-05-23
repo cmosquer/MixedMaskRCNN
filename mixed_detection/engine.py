@@ -87,12 +87,14 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate_coco(model, data_loader, device, results_file=None):
+def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
     print('STARTING VALIDATION')
     # FIXME remove this and make paste_masks_in_image run on the GPU
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
+    if use_cpu:
+        cpu_device = torch.device("cpu")
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
@@ -100,15 +102,19 @@ def evaluate_coco(model, data_loader, device, results_file=None):
     coco = get_coco_api_from_dataset(data_loader.dataset)
     iou_types = _get_iou_types(model)
     coco_evaluator = CocoEvaluator(coco, iou_types)
-
+    leave = False
     for images, targets in metric_logger.log_every(data_loader, 100, header):
+        if psutil.virtual_memory().percent>80:
+            leave=True
+            break
         images = list(img.to(device) for img in images)
 
         if torch.cuda.is_available():
             torch.cuda.synchronize()
         model_time = time.time()
         outputs = model(images)
-
+        if use_cpu:
+            outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
 
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
@@ -117,19 +123,21 @@ def evaluate_coco(model, data_loader, device, results_file=None):
         evaluator_time = time.time() - evaluator_time
         metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
 
-    # gather the stats from all processes
-    metric_logger.synchronize_between_processes()
-    print("Averaged stats:", metric_logger)
-    coco_evaluator.synchronize_between_processes()
+    if not leave:
+        # gather the stats from all processes
+        metric_logger.synchronize_between_processes()
+        print("Averaged stats:", metric_logger)
+        coco_evaluator.synchronize_between_processes()
 
 
-    # accumulate predictions from all images
-    coco_evaluator.accumulate()
-    results_dict = coco_evaluator.summarize(saving_file_path=results_file)
-    torch.set_num_threads(n_threads)
+        # accumulate predictions from all images
+        coco_evaluator.accumulate()
+        results_dict = coco_evaluator.summarize(saving_file_path=results_file)
+        torch.set_num_threads(n_threads)
 
-    return results_dict
-
+        return results_dict
+    else:
+        return {'memory_reached':psutil.virtual_memory().percent}
 @torch.no_grad()
 def evaluate_classification(model, data_loader, device, results_file=None):
     print('STARTING VALIDATION')
@@ -145,9 +153,13 @@ def evaluate_classification(model, data_loader, device, results_file=None):
     x_regresion = np.zeros((len(data_loader.dataset),2))
     y_regresion = np.zeros(len(data_loader.dataset))
     j = 0
+    leave=False
     with torch.no_grad():
         #print('initial',psutil.virtual_memory().percent)
         for images, targets in metric_logger.log_every(data_loader, 5, header):
+            if psutil.virtual_memory().percent > 80:
+                leave = True
+                break
             images = list(img.to(device) for img in images)
             #print('img loaded before inference',psutil.virtual_memory().percent)
             torch.cuda.synchronize()
@@ -188,37 +200,38 @@ def evaluate_classification(model, data_loader, device, results_file=None):
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
+    if not leave:
+        metric_logger.synchronize_between_processes()
+        print("Averaged stats:", metric_logger)
 
-    metric_logger.synchronize_between_processes()
-    print("Averaged stats:", metric_logger)
 
+        x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
+                                                test_size=0.2,
+                                                random_state=32)
+        clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+        print(pd.Series(y_regresion).value_counts())
+        print(pd.Series(y_train).value_counts())
+        print(pd.Series(y_test).value_counts())
 
-    x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
-                                            test_size=0.2,
-                                            random_state=32)
-    clf = LogisticRegression(random_state=32).fit(x_train, y_train)
-    print(pd.Series(y_regresion).value_counts())
-    print(pd.Series(y_train).value_counts())
-    print(pd.Series(y_test).value_counts())
+        preds = clf.predict(x_test)
+        print(pd.Series(preds).value_counts())
+        if results_file:
+            with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
+                classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
+                                       'preds_test': preds, 'clf': clf}
+                pickle.dump(classification_data, f)
+        (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr) = getClassificationMetrics(preds, y_test)
+        classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
+                        'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
+                        'acc':acc, 'f1':f1score, 'aucroc':aucroc, 'aucpr':aucpr}
 
-    preds = clf.predict(x_test)
-    print(pd.Series(preds).value_counts())
-    if results_file:
-        with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
-            classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-                                   'preds_test': preds, 'clf': clf}
-            pickle.dump(classification_data, f)
-    (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr) = getClassificationMetrics(preds, y_test)
-    classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
-                    'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
-                    'acc':acc, 'f1':f1score, 'aucroc':aucroc, 'aucpr':aucpr}
-
-    if results_file:
-        wandb.log({'results_file':results_file})
-        with open(results_file, 'a') as f:
-            f.write(f'\nClassification metrics: {classif_dict}')
-    return classif_dict
-
+        if results_file:
+            wandb.log({'results_file':results_file})
+            with open(results_file, 'a') as f:
+                f.write(f'\nClassification metrics: {classif_dict}')
+        return classif_dict
+    else:
+        return {'memory_reached':psutil.virtual_memory().percent}
 
 @torch.no_grad()
 def evaluate_dice(model, data_loader, device, results_file=None):
