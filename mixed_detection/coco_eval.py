@@ -68,18 +68,22 @@ class CocoEvaluator(object):
     def summarize(self,saving_file_path=None):
         if saving_file_path:
             f = open(saving_file_path,'w')
+        results_dict = {}
         for iou_type, coco_eval in self.coco_eval.items():
             print("IoU metric: {}".format(iou_type))
+
             coco_eval.summarize()
             if saving_file_path:
                 f.write(f'IOU: {iou_type}')
                 results_list = [f'{name}:{stat:.4f}' for name,stat in zip(COCO_STATS_KEYS,list(coco_eval.stats))]
+                results_dict.update(dict(zip([f"{iou_type}_{m}" for m in COCO_STATS_KEYS], list(coco_eval.stats))))
                 for line in results_list:
                     f.write(line)
                     f.write('\n')
 
         if saving_file_path:
             f.close()
+        return results_dict
     def prepare(self, predictions, iou_type):
         if iou_type == "bbox":
             return self.prepare_for_coco_detection(predictions)

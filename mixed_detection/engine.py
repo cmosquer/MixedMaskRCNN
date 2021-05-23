@@ -137,8 +137,8 @@ def evaluate_coco(model, data_loader, device, results_file=None):
 
     # accumulate predictions from all images
     coco_evaluator.accumulate()
-    coco_evaluator.summarize(saving_file_path=results_file)
-
+    results_dict = coco_evaluator.summarize(saving_file_path=results_file)
+    return results_dict
 
 @torch.no_grad()
 def evaluate_classification(model, data_loader, device, results_file=None):
@@ -218,15 +218,16 @@ def evaluate_classification(model, data_loader, device, results_file=None):
             classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
                                    'preds_test': preds, 'clf': clf}
             pickle.dump(classification_data, f)
-    (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
+    (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr) = getClassificationMetrics(preds, y_test)
     classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                     'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
-                    'acc':acc, 'f1':f1score, 'aucroc':auc}
-    wandb.log(classif_dict)
+                    'acc':acc, 'f1':f1score, 'aucroc':aucroc, 'aucpr':aucpr}
+
     if results_file:
         wandb.log({'results_file':results_file})
         with open(results_file, 'a') as f:
             f.write(f'\nClassification metrics: {classif_dict}')
+    return classif_dict
 
 
 @torch.no_grad()
