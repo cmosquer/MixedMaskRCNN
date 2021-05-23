@@ -65,7 +65,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
             lr_scheduler.step()
 
         if step % wandb_interval == 0:
-            wandbdict=loss_dict.copy
+            wandbdict=loss_dict.copy()
             wandbdict['epoch']=epoch
             wandb.log(wandbdict)
 
