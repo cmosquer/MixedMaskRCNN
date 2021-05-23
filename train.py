@@ -61,6 +61,7 @@ def main(args=None):
 
 
     prevalid = '{}/{}_masks_boxes_binary/testCSV.csv'.format(experiment_dir,experiment_number)
+    print('PREVALID: ',prevalid)
     if os.path.exists(prevalid):
         config["existing_valid_set"] = prevalid
     else:
