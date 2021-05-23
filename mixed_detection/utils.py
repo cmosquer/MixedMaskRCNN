@@ -94,7 +94,7 @@ def prepareDatasets(config,output_dir,class_numbers):
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
         if config["no_findings_examples_in_valid"]:
             print('len before appending no finding to valid set: {}'.format(len(csv_valid)))
-            nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_size"]-len(csv_valid))]
+            nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_set_size"]-len(csv_valid))]
             csv_valid = csv_valid.append(nofindings,ignore_index=True).reset_index(drop=True)
             print('len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
