@@ -14,7 +14,7 @@ import pandas as pd
 import psutil
 import wandb
 
-def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None,wandb_interval=500):
+def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None,wandb_interval=200):
     wandb.watch(model,optimizer, log_freq=wandb_interval)
 
     model.train()
@@ -63,8 +63,11 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
 
         if lr_scheduler is not None:
             lr_scheduler.step()
+
         if step % wandb_interval == 0:
-            wandb.log({"epoch":epoch,"losses": losses})
+            wandbdict=loss_dict.copy
+            wandbdict['epoch']=epoch
+            wandb.log(wandbdict)
 
         metric_logger.update(loss=losses_reduced, **loss_dict_reduced)
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
@@ -84,30 +87,22 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate(model, data_loader, device, model_saving_path=None, results_file=None,coco=True,
-             classification=False,dice=False):
+def evaluate_coco(model, data_loader, device, results_file=None):
     print('STARTING VALIDATION')
-    n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
     cpu_device = torch.device("cpu")
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
-    if model_saving_path:
-        torch.save(model.state_dict(), model_saving_path)
-        print('Saved model to ', model_saving_path)
-    if coco:
-        coco = get_coco_api_from_dataset(data_loader.dataset)
-        iou_types = _get_iou_types(model)
-        if "segm" not in iou_types:
-            iou_types.append("segm")
-        coco_evaluator = CocoEvaluator(coco, iou_types)
+
+    coco = get_coco_api_from_dataset(data_loader.dataset)
+    iou_types = _get_iou_types(model)
+    if "segm" not in iou_types:
+        iou_types.append("segm")
+    coco_evaluator = CocoEvaluator(coco, iou_types)
     outputs_saved = []
-    if classification:
-        x_regresion = np.zeros((len(data_loader.dataset),2))
-        y_regresion = np.zeros(len(data_loader.dataset))
-        j = 0
+
     with torch.no_grad():
         #print('initial',psutil.virtual_memory().percent)
         for images, targets in metric_logger.log_every(data_loader, 5, header):
@@ -123,117 +118,158 @@ def evaluate(model, data_loader, device, model_saving_path=None, results_file=No
             model_time = time.time() - model_time
             evaluator_time = time.time()
 
-            if coco:
-                res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
+            res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
 
-                coco_evaluator.update(res)
+            coco_evaluator.update(res)
 
-            #Tengo que gaurdar el count de acjas con conf>0.05 y el valor maximo de las confidences y el groundtruth de clasificaicon para esa imagen"
-
-            if classification:
-                for img_id,output in enumerate(outputs):
-                    #print('beofre target',psutil.virtual_memory().percent)
-                    target = targets[img_id]
-                    N_targets = len(target['boxes'].detach().numpy())
-                    gt = 1 if N_targets > 0 else 0
-                    # y_regresion.append(gt)
-                    y_regresion[j] = gt
-
-                    #print('before scores',psutil.virtual_memory().percent)
-                    image_scores = output['scores'].detach().numpy()
-
-                    if image_scores is not None:
-                        score_mean = np.mean(image_scores)
-                        score_max = np.max(image_scores)
-                        print(score_mean,score_max)
-                        x_regresion[j,0] = score_mean
-                        x_regresion[j,1] = score_max
-                        #x_regresion.append([score_mean,score_max])
-                    #else:
-                        #x_regresion.append([0, 0])
-
-                    print(gt)
-                    j += 1
-                    #print('before del',psutil.virtual_memory().percent)
-                    del gt,image_scores,target,score_mean,score_max
-                    #print('after del',psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
             del images,targets,outputs
+
     if results_file:
         with open(results_file.replace('cocoStats','raw_outputs').replace('.txt',''),'wb') as f:
             pickle.dump(outputs_saved,f)
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
-    if coco:
 
-        coco_evaluator.synchronize_between_processes()
 
-        # accumulate predictions from all images
-        coco_evaluator.accumulate()
-        coco_evaluator.summarize(saving_file_path=results_file)
+    coco_evaluator.synchronize_between_processes()
 
-        torch.set_num_threads(n_threads)
-        del coco_evaluator
+    # accumulate predictions from all images
+    coco_evaluator.accumulate()
+    coco_evaluator.summarize(saving_file_path=results_file)
 
-    if classification:
-        x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
-                                                test_size=0.2,
-                                                random_state=32)
-        clf = LogisticRegression(random_state=32).fit(x_train, y_train)
-        print(pd.Series(y_regresion).value_counts())
-        print(pd.Series(y_train).value_counts())
-        print(pd.Series(y_test).value_counts())
 
-        preds = clf.predict(x_test)
-        print(pd.Series(preds).value_counts())
+@torch.no_grad()
+def evaluate_classification(model, data_loader, device, results_file=None):
+    print('STARTING VALIDATION')
+    n_threads = torch.get_num_threads()
+    # FIXME remove this and make paste_masks_in_image run on the GPU
+    torch.set_num_threads(1)
+    cpu_device = torch.device("cpu")
+    model.eval()
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
+    header = 'Test:'
+
+
+    x_regresion = np.zeros((len(data_loader.dataset),2))
+    y_regresion = np.zeros(len(data_loader.dataset))
+    j = 0
+    with torch.no_grad():
+        #print('initial',psutil.virtual_memory().percent)
+        for images, targets in metric_logger.log_every(data_loader, 5, header):
+            images = list(img.to(device) for img in images)
+            #print('img loaded before inference',psutil.virtual_memory().percent)
+            torch.cuda.synchronize()
+            model_time = time.time()
+            outputs = model(images)
+            #print('after inference',psutil.virtual_memory().percent)
+            outputs = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in outputs]
+            targets = [{k: v.to(cpu_device).detach() for k, v in t.items()} for t in targets]
+            model_time = time.time() - model_time
+            evaluator_time = time.time()
+
+            for img_id,output in enumerate(outputs):
+                #print('beofre target',psutil.virtual_memory().percent)
+                target = targets[img_id]
+                N_targets = len(target['boxes'].detach().numpy())
+                gt = 1 if N_targets > 0 else 0
+                # y_regresion.append(gt)
+                y_regresion[j] = gt
+
+                #print('before scores',psutil.virtual_memory().percent)
+                image_scores = output['scores'].detach().numpy()
+
+                if image_scores is not None:
+                    score_mean = np.mean(image_scores)
+                    score_max = np.max(image_scores)
+                    print(score_mean,score_max)
+                    x_regresion[j,0] = score_mean
+                    x_regresion[j,1] = score_max
+                    #x_regresion.append([score_mean,score_max])
+                #else:
+                    #x_regresion.append([0, 0])
+
+                print(gt)
+                j += 1
+                #print('before del',psutil.virtual_memory().percent)
+                del gt,image_scores,target,score_mean,score_max
+                #print('after del',psutil.virtual_memory().percent)
+            evaluator_time = time.time() - evaluator_time
+            metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
+            del images,targets,outputs
+
+    metric_logger.synchronize_between_processes()
+    print("Averaged stats:", metric_logger)
+
+
+    x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
+                                            test_size=0.2,
+                                            random_state=32)
+    clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+    print(pd.Series(y_regresion).value_counts())
+    print(pd.Series(y_train).value_counts())
+    print(pd.Series(y_test).value_counts())
+
+    preds = clf.predict(x_test)
+    print(pd.Series(preds).value_counts())
+    if results_file:
+        with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
+            classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
+                                   'preds_test': preds, 'clf': clf}
+            pickle.dump(classification_data, f)
+    (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
+    classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
+                    'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
+                    'acc':acc, 'f1':f1score, 'aucroc':auc}
+    wandb.log(classif_dict)
+    if results_file:
+        wandb.log({'results_file':results_file})
+        with open(results_file, 'a') as f:
+            f.write(f'\nClassification metrics: {classif_dict}')
+
+
+@torch.no_grad()
+def evaluate_dice(model, data_loader, device, results_file=None):
+    print('STARTING VALIDATION')
+    n_threads = torch.get_num_threads()
+    # FIXME remove this and make paste_masks_in_image run on the GPU
+    torch.set_num_threads(1)
+    cpu_device = torch.device("cpu")
+    model.eval()
+    metric_logger = vision_utils.MetricLogger(delimiter="  ")
+    header = 'Test:'
+
+    if data_loader.dataset.binary:
+        total_dice = []
+        for images, targets in metric_logger.log_every(data_loader, 100, header):
+            images = list(img.to(device) for img in images)
+            outputs = model(images)
+
+            outputs = [{k: v.detach().to(cpu_device) for k, v in t.items()} for t in outputs]
+            dice = 0
+            for output, target in zip(outputs, targets):
+                output_all = torch.squeeze((torch.sum(output['masks'], axis=0) > 0).int())
+                target_all = (torch.sum(target['masks'], axis=0) > 0).int()
+                area_gt = torch.sum(target['masks'])
+                area_det = torch.sum(output_all)
+                if area_gt > 0:
+                    intersection = torch.sum(output_all[target_all.bool()])
+                    dice_tensor = intersection * 2. / (area_gt + area_det)
+                    dice = dice_tensor.item()
+                    del dice_tensor, intersection
+                else:
+                    dice = 0
+                del output_all, target_all, area_det, area_gt
+            total_dice.append(dice)
+            del images, targets, outputs
+
+        dice_avg = np.mean(total_dice)
+
+        print('AVG DICE {:.5f}'.format(dice_avg))
         if results_file:
-            with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
-                classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-                                       'preds_test': preds, 'clf': clf}
-                pickle.dump(classification_data, f)
-        (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, auc) = getClassificationMetrics(preds, y_test)
-        classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
-                        'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
-                        'acc':acc, 'f1':f1score, 'aucroc':auc}
-        wandb.log(classif_dict)
-        if results_file:
-            wandb.log({'results_file':results_file})
             with open(results_file, 'a') as f:
-                f.write(f'\nClassification metrics: {classif_dict}')
-
-    if dice:
-        if data_loader.dataset.binary:
-            total_dice = []
-            for images, targets in metric_logger.log_every(data_loader, 100, header):
-                images = list(img.to(device) for img in images)
-                outputs = model(images)
-
-                outputs = [{k: v.detach().to(cpu_device) for k, v in t.items()} for t in outputs]
-                dice = 0
-                for output, target in zip(outputs, targets):
-                    output_all = torch.squeeze((torch.sum(output['masks'], axis=0) > 0).int())
-                    target_all = (torch.sum(target['masks'], axis=0) > 0).int()
-                    area_gt = torch.sum(target['masks'])
-                    area_det = torch.sum(output_all)
-                    if area_gt > 0:
-                        intersection = torch.sum(output_all[target_all.bool()])
-                        dice_tensor = intersection * 2. / (area_gt + area_det)
-                        dice = dice_tensor.item()
-                        del dice_tensor, intersection
-                    else:
-                        dice = 0
-                    del output_all, target_all, area_det, area_gt
-                total_dice.append(dice)
-                del images, targets, outputs
-
-            dice_avg = np.mean(total_dice)
-
-            print('AVG DICE {:.5f}'.format(dice_avg))
-            if results_file:
-                with open(results_file, 'a') as f:
-                    f.write(f'DICE: {dice_avg}')
-            return dice_avg
+                f.write(f'DICE: {dice_avg}')
 
 def train_one_epoch_resnet(model, criterion, optimizer, data_loader, device, epoch, print_freq):
     model.train()

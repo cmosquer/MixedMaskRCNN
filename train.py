@@ -2,7 +2,7 @@ import torch
 import pandas as pd
 import torch.utils.data
 from mixed_detection.utils import get_instance_segmentation_model,prepareDatasets,collate_fn
-from mixed_detection.engine import train_one_epoch, evaluate
+from mixed_detection.engine import train_one_epoch, evaluate_coco,evaluate_classification,evaluate_dice
 import os, random, psutil
 import numpy as np
 import wandb
@@ -118,15 +118,23 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=40,
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=40,
                             )
+
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
             saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch) #None#
+
+            if saving_path:
+                torch.save(model.state_dict(), saving_path)
+                print('Saved model to ', saving_path)
+
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
-            evaluate(model, data_loader_valid, device=device, model_saving_path=saving_path,results_file=results_coco_file,
-                     coco=False,dice=False,classification=True)
+            evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file)
+            evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
+            evaluate_dice(model, data_loader_valid, device=device, results_file=results_coco_file)
+
             #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
 
 
