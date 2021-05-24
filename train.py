@@ -120,6 +120,7 @@ def main(args=None):
 
         interval_steps = int(len(data_loader)/20)
         print('Wandb logging after {} steps'.format(interval_steps))
+        wandb.watch(model, optimizer, log_freq=interval_steps)
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations

@@ -15,7 +15,7 @@ import psutil
 import wandb
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None,wandb_interval=200):
-    wandb.watch(model,optimizer, log_freq=wandb_interval)
+
 
     model.train()
 
