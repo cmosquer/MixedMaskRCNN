@@ -273,12 +273,12 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
         aucroc = np.nan
 
     try:
-        precision, recall, thresholds = precision_recall_curve(y_true, y_pred)
+        precision, recall, thresholds = precision_recall_curve(labels_test, preds)
         aucpr = sklearnAUC(recall, precision)
         print('AUCPR: {:.3f}'.format(aucpr))
     except Exception as e:
         print('couldnt calculate PR curve because error: {}'.format(e))
-        auc = np.nan
+        aucpr = np.nan
     c = confusion_matrix(labels_test, preds).ravel()
     print('Confusion matrix: ',c)
     (tn, fp, fn, tp ) = c
