@@ -28,7 +28,7 @@ def main(args=None):
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
         'max_valid_set_size':2000,
-        'experiment_type':'masks',#'masks_boxes',# 
+        'experiment_type':'masks',#'masks_boxes',#
         'date': '22-05-21',
         'epochs':10,
         'random_seed': 35,
@@ -137,7 +137,7 @@ def main(args=None):
 
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
             results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
-            results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file, use_cpu=True)
+            results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
             #evaluate_dice(model, data_loader_valid, device=device, results_file=results_coco_file)
             wandb_valid = {'epoch': epoch}
             wandb_valid.update(results_coco)
