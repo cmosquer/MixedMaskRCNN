@@ -28,7 +28,7 @@ def main(args=None):
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
         'max_valid_set_size':2000,
-        'experiment_type':'masks',#'masks_boxes',#
+        'experiment_type':'masks_boxes',#'masks',#
         'date': '22-05-21',
         'epochs':10,
         'random_seed': 35,
@@ -122,7 +122,7 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=400,
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=1000,
                             wandb_interval=interval_steps
                             )
 
