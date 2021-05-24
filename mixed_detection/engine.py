@@ -185,16 +185,15 @@ def evaluate_classification(model, data_loader, device, results_file=None):
                 image_scores = output['scores'].detach().numpy()
 
                 if image_scores is not None:
-                    score_mean = np.mean(image_scores)
-                    score_max = np.max(image_scores)
-                    print(score_mean,score_max)
-                    x_regresion[j,0] = score_mean
-                    x_regresion[j,1] = score_max
+                    if len(image_scores)>0:
+                        score_mean = np.mean(image_scores)
+                        score_max = np.max(image_scores)
+                        x_regresion[j,0] = score_mean
+                        x_regresion[j,1] = score_max
                     #x_regresion.append([score_mean,score_max])
                 #else:
                     #x_regresion.append([0, 0])
 
-                print(gt)
                 j += 1
                 #print('before del',psutil.virtual_memory().percent)
                 del gt,image_scores,target,score_mean,score_max
