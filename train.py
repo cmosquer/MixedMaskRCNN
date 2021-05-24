@@ -6,6 +6,7 @@ from mixed_detection.engine import train_one_epoch, evaluate_coco,evaluate_class
 import os, random, psutil
 import numpy as np
 import wandb
+from datetime import datetime
 
 def main(args=None):
     project = "mixed_mask_rcnn"
@@ -29,7 +30,7 @@ def main(args=None):
         'no_findings_examples_in_train': False,
         'max_valid_set_size':2000,
         'experiment_type':'masks_boxes',#'masks',#
-        'date': '22-05-21',
+        'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs':10,
         'random_seed': 35,
 
