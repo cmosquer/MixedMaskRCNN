@@ -101,7 +101,8 @@ def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
     header = 'Test:'
 
     coco = get_coco_api_from_dataset(data_loader.dataset)
-    iou_types = _get_iou_types(model)
+    #iou_types = _get_iou_types(model)
+    iou_types = ["bbox","segm"]
     coco_evaluator = CocoEvaluator(coco, iou_types)
     leave = False
     for images, targets in metric_logger.log_every(data_loader, 100, header):
