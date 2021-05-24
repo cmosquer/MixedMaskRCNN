@@ -29,7 +29,7 @@ def main(args=None):
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
         'max_valid_set_size':2000,
-        'experiment_type':'masks',#'masks_boxes',#
+        'experiment_type':'masks_boxes',#'masks',#
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs':10,
         'random_seed': 35,
