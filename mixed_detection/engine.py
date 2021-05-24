@@ -67,6 +67,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
         if step % wandb_interval == 0:
             wandbdict=loss_dict.copy()
             wandbdict['epoch']=epoch
+            wandbdict['total_loss']=losses
             wandb.log(wandbdict)
 
         metric_logger.update(loss=losses_reduced, **loss_dict_reduced)

@@ -295,5 +295,5 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
 
         print('f1-score:{:.3f}'.format(f1score))
         print('accuracy:{:.3f}'.format(acc))
-    else:
-        return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr)
+
+    return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr)
