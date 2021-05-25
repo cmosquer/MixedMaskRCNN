@@ -190,13 +190,14 @@ def evaluate_classification(model, data_loader, device, results_file=None):
                         score_max = np.max(image_scores)
                         x_regresion[j,0] = score_mean
                         x_regresion[j,1] = score_max
+                        del score_mean,score_max
                     #x_regresion.append([score_mean,score_max])
                 #else:
                     #x_regresion.append([0, 0])
 
                 j += 1
                 #print('before del',psutil.virtual_memory().percent)
-                del gt,image_scores,target,score_mean,score_max
+                del gt,image_scores,target
                 #print('after del',psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
