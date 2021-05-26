@@ -299,7 +299,7 @@ def main(args=None):
         print('no existe archivo ',classification_data)
         test_clf=None
     if calculate_classification:
-        evaluate_classification(model, data_loader_test, device=device,
+        evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
                                 results_file=results_coco_file,test_clf=test_clf)
     #Redefinir solo las que quiero guardar la imagen
     try:

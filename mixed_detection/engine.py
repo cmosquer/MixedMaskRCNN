@@ -141,7 +141,7 @@ def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
     else:
         return {'memory_reached':psutil.virtual_memory().percent}
 @torch.no_grad()
-def evaluate_classification(model, data_loader, device, results_file=None, test_clf=None):
+def evaluate_classification(model, data_loader, device, results_file=None, test_clf=None,log_wandb=True):
     print('STARTING VALIDATION')
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
@@ -240,7 +240,8 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
                         'acc':acc, 'f1':f1score, 'aucroc':aucroc, 'aucpr':aucpr}
 
         if results_file:
-            wandb.log({'results_file':results_file})
+            if log_wandb:
+                wandb.log({'results_file':results_file})
             with open(results_file, 'a') as f:
                 f.write(f'\nClassification metrics: {classif_dict}')
         return classif_dict
