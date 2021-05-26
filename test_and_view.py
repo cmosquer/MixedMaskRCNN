@@ -238,18 +238,13 @@ def main(args=None):
 
     os.makedirs(save_fig_dir,exist_ok=True)
 
-    csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
 
-    csv = pd.read_csv(
+    csv_test = pd.read_csv(
         baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
 
-    image_ids = set(csv.file_name.values)
+    image_ids_test = set(csv_test.file_name)
+    print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))
 
-    image_ids_train = set(csv_train.file_name.values)
-    image_ids_test = image_ids.difference(image_ids_train)
-    print('Len total: {}, len train: {}, len test:{}'.format(len(image_ids),len(image_ids_train),len(image_ids_test)))
-
-    csv_test = csv[csv.file_name.isin(list(image_ids_test))].reset_index(drop=True)
     #csv_test = csv[:30].reset_index()
     #csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv').reset_index(drop=True)
 
