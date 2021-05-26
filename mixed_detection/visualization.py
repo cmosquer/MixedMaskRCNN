@@ -204,7 +204,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
     for i in range(annotations['boxes'].shape[0]):
 
         label   = annotations['labels'][i]
-        if len(list(label))>1:
+        if len(label)>1:
             label=[0][0]
             annotations_scores = annotations['scores'][i][0][0]
             annotations_boxes = annotations['boxes'][i][0][0]
