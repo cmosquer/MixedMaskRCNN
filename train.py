@@ -31,7 +31,7 @@ def main(args=None):
         'max_valid_set_size':2000,
         'experiment_type':'masks_boxes',#'masks',#
         'date': datetime.today().strftime('%Y-%m-%d'),
-        'epochs':10,
+        'epochs': 10,
         'random_seed': 35,
 
     }

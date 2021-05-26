@@ -1,4 +1,4 @@
-import os, random
+import os, pickle
 from sklearn.model_selection import train_test_split
 import numpy as np
 import torch
@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
 from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
-from mixed_detection.engine import evaluate
+from mixed_detection.engine import evaluate_coco, evaluate_classification
 def label_to_name(label):
     labels = {1:'NoduloMasa',
      2:'Consolidacion',
@@ -218,14 +218,14 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 
 def main(args=None):
     print('starting test script')
-    save_figures = False
+    save_figures = True
     view_in_window = False
-    evaluate_coco = False
+    evaluate_coco = True
     loop = True
     save_csv = True
 
-    chosen_experiment = '18-04-21'
-    chosen_epoch = 9
+    chosen_experiment = '2021-05-24_masks_boxes_binary'
+    chosen_epoch = 1
 
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     output_dir = baseDir +'TRx-v2/Experiments'
@@ -233,13 +233,14 @@ def main(args=None):
     output_csv_path = f'{output_dir}/{chosen_experiment}/test_output-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
+    classification_data = f'{output_dir}/{chosen_experiment}/classification_data-{chosen_epoch}'
 
     os.makedirs(save_fig_dir,exist_ok=True)
 
     csv_train = pd.read_csv(f'{output_dir}/{chosen_experiment}/trainCSV.csv').reset_index(drop=True)
 
     csv = pd.read_csv(
-        baseDir + 'TRx-v2/Datasets/Opacidades/TX-RX-ds-20210415-00_ubuntu.csv')
+        baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
 
     image_ids = set(csv.file_name.values)
 
@@ -286,10 +287,19 @@ def main(args=None):
             collate_fn=collate_fn)
         print('DATASET FOR COCO:')
         dataset_test.quantifyClasses()
-        evaluate(model, data_loader_test, device=device,
+        evaluate_coco(model, data_loader_test, device=device,
                  results_file=results_coco_file)
 
-
+    if os.path.exists(classification_data):
+        with open(classification_data,'rb') as f:
+            classification_data_dict = pickle.load(f)
+        test_clf = classification_data_dict['clf']
+    else:
+        print('no existe archivo ',classification_data)
+        test_clf=None
+    if evaluate_classification:
+        evaluate_classification(model, data_loader_test, device=device,
+                                results_file=results_coco_file,test_clf=test_clf)
     #Redefinir solo las que quiero guardar la imagen
     try:
         csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)

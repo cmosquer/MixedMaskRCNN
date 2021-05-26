@@ -141,7 +141,7 @@ def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
     else:
         return {'memory_reached':psutil.virtual_memory().percent}
 @torch.no_grad()
-def evaluate_classification(model, data_loader, device, results_file=None):
+def evaluate_classification(model, data_loader, device, results_file=None, test_clf=None):
     print('STARTING VALIDATION')
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
@@ -206,22 +206,34 @@ def evaluate_classification(model, data_loader, device, results_file=None):
         metric_logger.synchronize_between_processes()
         print("Averaged stats:", metric_logger)
 
+        if test_clf: #Testear con un regresor ya ajustado
 
-        x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
-                                                test_size=0.2,
-                                                random_state=32)
-        clf = LogisticRegression(random_state=32).fit(x_train, y_train)
-        print(pd.Series(y_regresion).value_counts())
-        print(pd.Series(y_train).value_counts())
-        print(pd.Series(y_test).value_counts())
+            preds = test_clf.predict(x_regresion)
+            print(pd.Series(preds).value_counts())
+            y_test =y_regresion
+            if results_file:
+                with open(results_file.replace('cocoStats', 'test_classification_data').replace('.txt', ''), 'wb') as f:
+                    classification_data = {'x_test': x_regresion, 'y_test': y_test,
+                                           'preds_test': preds, 'clf': test_clf}
+                    pickle.dump(classification_data, f)
+        else:
 
-        preds = clf.predict(x_test)
-        print(pd.Series(preds).value_counts())
-        if results_file:
-            with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
-                classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-                                       'preds_test': preds, 'clf': clf}
-                pickle.dump(classification_data, f)
+            x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
+                                                    test_size=0.2,
+                                                    random_state=32)
+            clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+            print(pd.Series(y_regresion).value_counts())
+            print(pd.Series(y_train).value_counts())
+            print(pd.Series(y_test).value_counts())
+
+            preds = clf.predict(x_test)
+
+            print(pd.Series(preds).value_counts())
+            if results_file:
+                with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
+                    classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
+                                           'preds_test': preds, 'clf': clf}
+                    pickle.dump(classification_data, f)
         (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr) = getClassificationMetrics(preds, y_test)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                         'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
