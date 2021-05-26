@@ -220,9 +220,10 @@ def main(args=None):
     print('starting test script')
     save_figures = True
     view_in_window = False
-    evaluate_coco = True
+    calculate_coco = True
     loop = True
     save_csv = True
+    calculate_classification=True
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
     chosen_epoch = 1
@@ -278,7 +279,7 @@ def main(args=None):
     # define data loader
     print('Model loaded')
 
-    if evaluate_coco:
+    if calculate_coco:
         dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
                                           binary_opacity=binary_opacity,
                                           return_image_source=False)
@@ -297,7 +298,7 @@ def main(args=None):
     else:
         print('no existe archivo ',classification_data)
         test_clf=None
-    if evaluate_classification:
+    if calculate_classification:
         evaluate_classification(model, data_loader_test, device=device,
                                 results_file=results_coco_file,test_clf=test_clf)
     #Redefinir solo las que quiero guardar la imagen
