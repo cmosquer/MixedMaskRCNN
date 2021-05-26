@@ -288,7 +288,7 @@ def main(args=None):
             collate_fn=collate_fn)
         print('DATASET FOR COCO:')
         dataset_test.quantifyClasses()
-        evaluate_coco(model, data_loader_test, device=device,
+        evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
                  results_file=results_coco_file)
 
     if os.path.exists(classification_data):
