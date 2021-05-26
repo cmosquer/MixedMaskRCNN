@@ -159,7 +159,7 @@ def draw_boxes(image, boxes, color, thickness=2):
         draw_box(image, b, color, thickness=thickness)
 
 
-def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None, score_threshold=0.5):
+def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None, score_threshold=0.5,binary=False):
     """ Draws detections in an image.
 
     # Arguments
@@ -178,11 +178,14 @@ def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None
         draw_box(image, boxes[i, :], color=c)
         print(labels[i])
         # draw labels
-        caption = (label_to_name(labels[i]) if label_to_name else labels[i]) + ': {0:.2f}'.format(scores[i])
+        if binary:
+            caption = ('opacidad {0:.2f}'.format(scores[i]))
+        else:
+            caption = (label_to_name(labels[i]) if label_to_name else labels[i]) + ': {0:.2f}'.format(scores[i])
         draw_caption(image, boxes[i, :], caption)
 
 
-def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
+def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,binary=False):
     """ Draws annotations in an image.
 
     # Arguments
@@ -203,7 +206,10 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
         c       = color if color is not None else label_color(label)
 
         print(label)
-        caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
+        if binary:
+            caption = f'{i}-opacidad'
+        else:
+            caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
         if 'scores' in annotations.keys():
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
@@ -211,7 +217,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
         draw_box(image, annotations['boxes'][i], color=c)
 
 
-def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None):
+def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None,binary=False):
     """ Draws annotations in an image.
 
     # Arguments
@@ -233,7 +239,10 @@ def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None):
     for i in range(annotations['masks'].shape[0]):
         label   = annotations['labels'][i]
         c       = color if color is not None else label_color(label)
-        caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
+        if binary:
+            caption=f'{i}-opacidad'
+        else:
+            caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
         if 'scores' in annotations.keys():
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)

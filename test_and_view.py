@@ -11,8 +11,11 @@ from mixed_detection.visualization import draw_annotations, draw_masks
 from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
+
+
+
 def label_to_name(label):
-    print('LABEL ',label)
+
     labels = {1:'NoduloMasa',
      2:'Consolidacion',
      3:'PatronIntersticial',
@@ -24,7 +27,7 @@ def label_to_name(label):
 def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
                 max_detections=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
-                min_box_proportionArea=None, draw='boxes',
+                min_box_proportionArea=None, draw='boxes',binary=False,
                 save_csv=None #If not None, should be a str with filepath where to save dataframe with targets and predictions
                 ):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -90,9 +93,9 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
                 colorimage[:,:,1]=255*image
                 colorimage[:,:,2]=255*image
                 if draw=='boxes':
-                    draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name)
+                    draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name,binary=binary)
                 if draw=='masks':
-                    draw_masks(colorimage, outputs, label_to_name=label_to_name)
+                    draw_masks(colorimage, outputs, label_to_name=label_to_name,binary=binary)
 
                 # draw annotations on the image
             if len(targets)>0:
@@ -103,7 +106,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
                 else:
                     # draw annotations in red
                     if draw=='boxes':
-                        draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
+                        draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name,binary=binary)
                     #if draw=='masks':
                     #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
 
@@ -331,7 +334,7 @@ def main(args=None):
     min_box_proportionArea = 1/50 #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
-        while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,
+        while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,binary=binary_opacity,
                           max_detections=8, min_score_threshold=min_score_thresholds,
                           min_box_proportionArea=min_box_proportionArea,
                           save_csv=output_csv_path,save_figures=save_figures):
