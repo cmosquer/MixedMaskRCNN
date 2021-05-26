@@ -220,7 +220,7 @@ def main(args=None):
     print('starting test script')
     save_figures = True
     view_in_window = False
-    calculate_coco = True
+    calculate_coco = False
     loop = True
     save_csv = True
     calculate_classification=True
