@@ -223,7 +223,7 @@ def main(args=None):
     calculate_coco = False
     loop = True
     save_csv = True
-    calculate_classification=True
+    calculate_classification=False
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
     chosen_epoch = 1
