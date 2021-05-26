@@ -264,7 +264,10 @@ def main(args=None):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     torch.manual_seed(1)
-    num_classes = len(class_numbers.keys())+1
+    if binary_opacity:
+        num_classes = 2
+    else:
+        num_classes = len(class_numbers.keys())+1
     model = get_instance_segmentation_model(num_classes)
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
