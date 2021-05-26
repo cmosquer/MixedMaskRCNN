@@ -12,6 +12,7 @@ from mixed_detection.utils import get_transform,get_instance_segmentation_model,
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 def label_to_name(label):
+    print('LABEL ',label)
     labels = {1:'NoduloMasa',
      2:'Consolidacion',
      3:'PatronIntersticial',
