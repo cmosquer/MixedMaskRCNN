@@ -234,6 +234,7 @@ def main(args=None):
     results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
     classification_data = f'{output_dir}/{chosen_experiment}/classification_data-{chosen_epoch}'
+    binary_opacity=True
 
     os.makedirs(save_fig_dir,exist_ok=True)
 
@@ -281,6 +282,7 @@ def main(args=None):
 
     if evaluate_coco:
         dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                          binary_opacity=binary_opacity,
                                           return_image_source=False)
         data_loader_test = torch.utils.data.DataLoader(
             dataset_test, batch_size=1, shuffle=False, num_workers=0,
@@ -309,20 +311,23 @@ def main(args=None):
         print('Not reseting index')
         csv_test_files = csv_test[csv_test.image_source == 'hiba']
 
-    dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers, get_transform(train=False), return_image_source=True)
+    dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers,
+                                            get_transform(train=False), binary_opacity=binary_opacity,
+                                            return_image_source=True)
     data_loader_test_files = torch.utils.data.DataLoader(
         dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
         collate_fn=collate_fn)
     tqdm_loader_files = tqdm(data_loader_test_files)
     print('DATASET FOR FIGURES:')
     print(dataset_test_files.quantifyClasses())
-
+    """
     min_score_thresholds = {1: 0.25, #'NoduloMasa', #NUEVO 0.35
        2: 0.25 , #'Consolidacion',
        3: 0.25, #'PatronIntersticial',
        4: 0.25, #'Atelectasia',
        5: 0.25 #'LesionesDeLaPared'
-       }
+       }"""
+    min_score_thresholds = 0.25
     min_box_proportionArea = 1/50 #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
