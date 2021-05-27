@@ -230,7 +230,7 @@ def main(args=None):
     calculate_classification=True
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
-    chosen_epoch = 2
+    chosen_epoch = 8
 
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     output_dir = baseDir +'TRx-v2/Experiments'
