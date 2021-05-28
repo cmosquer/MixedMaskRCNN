@@ -21,15 +21,15 @@ def main(args=None):
         "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
-        'dataset': "TX-RX-ds-20210423-00_ubuntu",
+        'dataset': "TX-RX-ds-20210527-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
 
 
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
-        'max_valid_set_size':2000,
-        'experiment_type':'masks_boxes',#'masks',#
+        'max_valid_set_size': 2500,
+        'experiment_type': 'masks_boxes',#'masks',#
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 10,
         'random_seed': 35,
@@ -41,7 +41,11 @@ def main(args=None):
      'Consolidacion': 2,
      'PatronIntersticial': 3,
      'Atelectasia': 4,
-     'LesionesDeLaPared': 5
+     'LesionesDeLaPared': 5,
+     'Covid_Typical_Appearance':6,
+        'Covid_Indeterminate_Appearance':7,
+        'Covid_Atypical_Appearance':8,
+
      }
 
     if config['opacityies_as_binary']:
