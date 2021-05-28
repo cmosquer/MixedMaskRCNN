@@ -25,7 +25,7 @@ def prepareDatasets(config,output_dir,class_numbers):
 
     if config["revised_test_set"]:
         csv_revised = pd.read_csv(config["revised_test_set"])
-        revised_test_idx = list(set(csv_revised.original_file_name.values))
+        revised_test_idx = list(set(csv_revised.file_name.values))
         inter = set(revised_test_idx).intersection(set(raw_csv['file_name'].values))
         print('interseccion csv total con test revisado ',len(inter))
         L = len(raw_csv)
