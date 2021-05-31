@@ -18,7 +18,7 @@ def main(args=None):
     config = {
         "batch_size": 2,
         "batch_size_valid":1,
-        "initial_lr": 0.001,
+        "initial_lr": 0.01,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210527-00_ubuntu",
@@ -32,7 +32,7 @@ def main(args=None):
         'experiment_type': 'masks_boxes',#'masks',#
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 10,
-        'random_seed': 35,
+        'random_seed': 40,
 
     }
 
