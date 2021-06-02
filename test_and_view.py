@@ -222,18 +222,18 @@ def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
 
 def main(args=None):
     print('starting test script')
-    save_figures = False
+    save_figures = True
     view_in_window = False
-    calculate_coco = True
-    loop = True
+    calculate_coco = False
+    loop = False
     save_csv = False
-    calculate_classification=True
+    calculate_classification=False
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
-    chosen_epoch = 8
+    chosen_epoch = 1
 
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
-    output_dir = baseDir +'TRx-v2/Experiments'
+    output_dir = baseDir +'TRx-v2/Experiments/'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     output_csv_path = f'{output_dir}/{chosen_experiment}/test_output-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/stats-test-epoch_{chosen_epoch}.txt'

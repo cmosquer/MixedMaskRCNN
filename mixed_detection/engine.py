@@ -243,7 +243,9 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
             if log_wandb:
                 wandb.log({'results_file':results_file})
             with open(results_file, 'a') as f:
-                f.write(f'\nClassification metrics: {classif_dict}')
+                f.write('\nClassification metrics\n')
+                for k, v in classif_dict.items():
+                    f.write("{}: {:.4f}\n".format(k.upper(), v))
         return classif_dict
     else:
         return {'memory_reached':psutil.virtual_memory().percent}

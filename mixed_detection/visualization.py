@@ -202,17 +202,9 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
     assert(annotations['boxes'].shape[0] == annotations['labels'].shape[0])
 
     for i in range(annotations['boxes'].shape[0]):
-
         label   = annotations['labels'][i]
-        if len(label)>1:
-            label=[0][0]
-            annotations_scores = annotations['scores'][i][0][0]
-            annotations_boxes = annotations['boxes'][i][0][0]
-        else:
-            annotations_scores = annotations['scores'][i]
-            annotations_boxes = annotations['boxes'][i]
-        print('label ',label,'score ',annotations_scores)
-        c       = color if color is not None else label_color(label)
+
+        c = color if color is not None else label_color(label)
 
         print(label)
         if binary:
@@ -220,10 +212,10 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
         else:
             caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
         if 'scores' in annotations.keys():
-            score = annotations_scores
+            score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
-        draw_caption(image, annotations_boxes, caption, fontColor=c)
-        draw_box(image, annotations_boxes, color=c)
+        draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
+        draw_box(image, annotations['boxes'][i], color=c)
 
 
 def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None,binary=False):
