@@ -49,19 +49,21 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
 
         if min_box_proportionArea:
-            total_area = image[0].shape[0]*image[0].shape[1]
+            height=image[0].shape[0]
+            width=image[0].shape[1]
+            total_area = width*height
+            print(width,height,total_area)
             minimum_area = total_area*min_box_proportionArea
             print('total area ',total_area,'minimum area: ', minimum_area)
             areas = []
             for x1, x2, y1, y2 in outputs['boxes']:
-                area = (x2-x1)*(y2-y1)
+                area = int(x2-x1)*int(y2-y1)
                 print(x1, x2, y1, y2,'-->',area)
                 areas.append(area)
             outputs['areas'] = np.array(areas)
             bigBoxes = np.argwhere(outputs['areas']>minimum_area).flatten()
             for k,v in outputs.items():
                 outputs[k] = outputs[k][bigBoxes,]
-            print('output after areas\n', outputs)
         if isinstance(min_score_threshold,float):
             high_scores = np.argwhere(outputs['scores']>min_score_threshold).flatten()
             for k,v in outputs.items():
@@ -89,7 +91,6 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
             scores_sort = np.argsort(-outputs['scores'])[:max_detections]
             for k,v in outputs.items():
                 outputs[k] = outputs[k][scores_sort,]
-            print('after max detections\n',outputs)
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
