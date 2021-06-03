@@ -214,7 +214,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
         if 'areas' in annotations.keys():
-            caption += '\nAREA{:.2f}'.format(annotations['areas'][i])
+            caption = 'AREA{}'.format(annotations['areas'][i])
         draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
         draw_box(image, annotations['boxes'][i], color=c)
 
