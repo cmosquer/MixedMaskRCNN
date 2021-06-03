@@ -339,7 +339,7 @@ def main(args=None):
        5: 0.25 #'LesionesDeLaPared'
        }"""
     min_score_thresholds = 0.25
-    min_box_proportionArea = float(1/50) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+    min_box_proportionArea = None#float(1/50) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
 
