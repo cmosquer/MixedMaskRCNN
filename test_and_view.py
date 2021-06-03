@@ -49,10 +49,9 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
 
         if min_box_proportionArea:
-            height=image[0].shape[0]
-            width=image[0].shape[1]
+            height=image[0].shape[1]
+            width=image[0].shape[2]
             total_area = width*height
-            print(width,height,total_area)
             minimum_area = total_area*min_box_proportionArea
             print('total area ',total_area,'minimum area: ', minimum_area)
             areas = []
