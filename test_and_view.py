@@ -56,7 +56,7 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
             for x1, x2, y1, y2 in outputs['boxes']:
                 area = (x2-x1)*(y2-y1)
                 print(x1, x2, y1, y2,'-->',area)
-                areas.append(area
+                areas.append(area)
             outputs['areas'] = np.array(areas)
             bigBoxes = np.argwhere(outputs['areas']>minimum_area).flatten()
             for k,v in outputs.items():
