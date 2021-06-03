@@ -206,7 +206,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
         label   = annotations['labels'][i]
         try:
             print('LABEL: ',annotations['labels'][i],'SCORE: ', annotations['scores'][i],'BOXES: ',annotations['boxes'][i])
-        except
+        except:
             pass
         c = color if color is not None else label_color(label)
         """ 
