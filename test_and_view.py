@@ -49,18 +49,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
 
         if min_box_proportionArea:
-
+            total_area = image[0].shape[0]*image[0].shape[1]
+            minimum_area = total_area*min_box_proportionArea
             areas = []
-            for jj,individual_image in enumerate(image):
-                areas_ = []
-                total_area = individual_image.shape[0]*individual_image.shape[1]  #IMAGE ES LIST!! POR EL BATCH
-                minimum_area = total_area*min_box_proportionArea
-                for x1, x2, y1, y2 in outputs['boxes'][jj]:
-                    area = (x2-x1)*(y2-y1)
-                    print(x1, x2, y1, y2,'-->',area)
-                    areas_.append(area)
-                areas.append(areas_)
-                outputs['areas'] = areas
+            for x1, x2, y1, y2 in outputs['boxes']:
+                area = (x2-x1)*(y2-y1)
+                print(x1, x2, y1, y2,'-->',area)
+                areas.append(area)
+            outputs['areas'] = areas
             bigBoxes = np.argwhere(outputs['areas']>minimum_area)
             for k,v in outputs.items():
                 outputs[k] = outputs[k][bigBoxes,]
@@ -345,6 +341,7 @@ def main(args=None):
     min_box_proportionArea = 1/50 #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
+        
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,binary=binary_opacity,
                           max_detections=8, min_score_threshold=min_score_thresholds,
                           min_box_proportionArea=min_box_proportionArea,
