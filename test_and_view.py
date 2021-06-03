@@ -51,13 +51,14 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         if min_box_proportionArea:
             total_area = image[0].shape[0]*image[0].shape[1]
             minimum_area = total_area*min_box_proportionArea
+            print('minimum area: ', minimum_area)
             areas = []
             for x1, x2, y1, y2 in outputs['boxes']:
                 area = (x2-x1)*(y2-y1)
                 print(x1, x2, y1, y2,'-->',area)
                 areas.append(area)
-            outputs['areas'] = areas
-            bigBoxes = np.argwhere(outputs['areas']>minimum_area)
+            outputs['areas'] = np.array(areas)
+            bigBoxes = np.argwhere(outputs['areas']>minimum_area).flatten()
             for k,v in outputs.items():
                 outputs[k] = outputs[k][bigBoxes,]
             print('output after areas\n', outputs)
@@ -341,7 +342,7 @@ def main(args=None):
     min_box_proportionArea = 1/50 #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
-        
+
         while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,binary=binary_opacity,
                           max_detections=8, min_score_threshold=min_score_thresholds,
                           min_box_proportionArea=min_box_proportionArea,
