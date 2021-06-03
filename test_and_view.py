@@ -47,15 +47,20 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         torch.cuda.synchronize()
         outputs = model(image)
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
-        """
+
         if min_box_proportionArea:
             total_area = image.shape[0]*image.shape[1]  #IMAGE ES LIST!! POR EL BATCH
             minimum_area = total_area*min_box_proportionArea
-            outputs['areas'] = [(x2-x1)*(y2-y1) for x1,x2,y1,y2 in outputs['boxes']]
+            areas = []
+            for x1, x2, y1, y2 in outputs['boxes']:
+                area = (x2-x1)*(y2-y1)
+                print(x1, x2, y1, y2,'-->',area)
+                areas.append(area)
+            outputs['areas'] = areas
             bigBoxes = np.argwhere(outputs['areas']>minimum_area)
             for k,v in outputs.items():
-                outputs[k] = outputs[k][bigBoxes,]"""
-        print(outputs)
+                outputs[k] = outputs[k][bigBoxes,]
+            print('output after areas\n', outputs)
         if isinstance(min_score_threshold,float):
             high_scores = np.argwhere(outputs['scores']>min_score_threshold).flatten()
             for k,v in outputs.items():
@@ -83,16 +88,17 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
             scores_sort = np.argsort(-outputs['scores'])[:max_detections]
             for k,v in outputs.items():
                 outputs[k] = outputs[k][scores_sort,]
-            print('after max detections\n',max_detections)
+            print('after max detections\n',outputs)
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
         if save_figures:
+            colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
+            colorimage[:, :, 0] = 255 * image
+            colorimage[:, :, 1] = 255 * image
+            colorimage[:, :, 2] = 255 * image
             if len(outputs['labels']) > 0:
-                colorimage = np.zeros((image.shape[0],image.shape[1],3),dtype=image.dtype)
-                colorimage[:,:,0]=255*image
-                colorimage[:,:,1]=255*image
-                colorimage[:,:,2]=255*image
+
                 if draw=='boxes':
                     draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name,binary=binary)
                 if draw=='masks':
