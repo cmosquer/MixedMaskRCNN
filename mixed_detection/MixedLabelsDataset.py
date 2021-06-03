@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 import numpy as np
 import pandas as pd
-
+import os
 
 
 
@@ -64,7 +64,12 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                           'x1','x2','y1','y2',
                           'class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
-
+        for i,path in self.csv.file_name:
+            try:
+                assert os.path.exists(path.replace('\\','/'))
+            except AssertionError:
+                f"{path} does not exist, excluding from dataset"
+                self.csv = self.csv[~self.csv.file_name==path].reset_index(drop=True)
     def quantifyClasses(self):
         all_labels_strings = '-'.join([c if isinstance(c, str) else 'no_finding' for c in self.csv.class_name])
         all_labels = all_labels_strings.split('-')
