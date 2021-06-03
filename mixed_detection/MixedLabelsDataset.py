@@ -64,7 +64,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                           'x1','x2','y1','y2',
                           'class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
-        for i,path in self.csv.file_name:
+        for i,row in self.csv.iterrows():
+            path = row['file_name']
             try:
                 assert os.path.exists(path.replace('\\','/'))
             except AssertionError:

@@ -288,6 +288,7 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
     npv = tn / (tn + fn)
     acc = (tp + tn) / (tn + fp + fn + tp)
     f1score = 2 * ppv * sens / (ppv + sens)
+    #TODO agregar brier score + y -
     if print_results:
         print(f'True negatives:{tn}\nTrue positives:{tp}\nFalse negatives:{fn}\nFalse positives:{fp}')
         print(f'\nSensitivity(recall):{sens:.2f}\nSpecificity:{spec:.2f}')

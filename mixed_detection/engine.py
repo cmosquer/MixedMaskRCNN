@@ -221,7 +221,7 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
             x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
                                                     test_size=0.2,
                                                     random_state=32)
-            clf = LogisticRegression(random_state=32).fit(x_train, y_train)
+            clf = LogisticRegression(random_state=32, solver='newton-cg').fit(x_train, y_train)
             print(pd.Series(y_regresion).value_counts())
             print(pd.Series(y_train).value_counts())
             print(pd.Series(y_test).value_counts())
