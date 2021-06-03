@@ -55,10 +55,12 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
             bigBoxes = np.argwhere(outputs['areas']>minimum_area)
             for k,v in outputs.items():
                 outputs[k] = outputs[k][bigBoxes,]"""
+        print(outputs)
         if isinstance(min_score_threshold,float):
             high_scores = np.argwhere(outputs['scores']>min_score_threshold)
             for k,v in outputs.items():
                 outputs[k] = outputs[k][high_scores,]
+            print('after high score\n',outputs)
         if isinstance(min_score_threshold,dict):
             valid_detections_idx = np.array([],dtype=np.int64)
             for clss_idx,th in min_score_threshold.items():
@@ -77,12 +79,12 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
             print('final idxs',valid_detections_idx)
             for k,v in outputs.items():
                 outputs[k] = outputs[k][valid_detections_idx,]
-
+            print('after min th\n',outputs)
         if max_detections:
             scores_sort = np.argsort(-outputs['scores'])[:max_detections]
             for k,v in outputs.items():
                 outputs[k] = outputs[k][scores_sort,]
-
+            print('after max detections\n',max_detections)
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
