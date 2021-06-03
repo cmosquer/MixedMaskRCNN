@@ -57,10 +57,9 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
                 outputs[k] = outputs[k][bigBoxes,]"""
         print(outputs)
         if isinstance(min_score_threshold,float):
-            high_scores = np.argwhere(outputs['scores']>min_score_threshold)
+            high_scores = np.argwhere(outputs['scores']>min_score_threshold).flatten()
             for k,v in outputs.items():
                 outputs[k] = outputs[k][high_scores,]
-            print('after high score\n',outputs)
         if isinstance(min_score_threshold,dict):
             valid_detections_idx = np.array([],dtype=np.int64)
             for clss_idx,th in min_score_threshold.items():
