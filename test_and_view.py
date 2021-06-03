@@ -49,14 +49,18 @@ def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
 
         if min_box_proportionArea:
-            total_area = image.shape[0]*image.shape[1]  #IMAGE ES LIST!! POR EL BATCH
-            minimum_area = total_area*min_box_proportionArea
+
             areas = []
-            for x1, x2, y1, y2 in outputs['boxes']:
-                area = (x2-x1)*(y2-y1)
-                print(x1, x2, y1, y2,'-->',area)
-                areas.append(area)
-            outputs['areas'] = areas
+            for jj,individual_image in enumerate(image):
+                areas_ = []
+                total_area = individual_image.shape[0]*individual_image.shape[1]  #IMAGE ES LIST!! POR EL BATCH
+                minimum_area = total_area*min_box_proportionArea
+                for x1, x2, y1, y2 in outputs['boxes'][jj]:
+                    area = (x2-x1)*(y2-y1)
+                    print(x1, x2, y1, y2,'-->',area)
+                    areas_.append(area)
+                areas.append(areas_)
+                outputs['areas'] = areas
             bigBoxes = np.argwhere(outputs['areas']>minimum_area)
             for k,v in outputs.items():
                 outputs[k] = outputs[k][bigBoxes,]
