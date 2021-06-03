@@ -207,7 +207,7 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
         print("Averaged stats:", metric_logger)
 
         if test_clf: #Testear con un regresor ya ajustado
-
+            print('Using existing regressor')
             preds = test_clf.predict(x_regresion)
             print(pd.Series(preds).value_counts())
             y_test =y_regresion
