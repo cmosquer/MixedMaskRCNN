@@ -46,7 +46,7 @@ def saveAsFiles(tqdm_loader,model,device,
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        torch.cuda.synchronize()
+
         outputs = model(image)
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
 
@@ -173,15 +173,14 @@ def saveAsFiles(tqdm_loader,model,device,
 
 
 
-def visualize(tqdm_loader,model,save_fig_dir=None,max_detections=None):
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+def visualize(tqdm_loader,model,device,save_fig_dir=None,max_detections=None):
 
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
         image_source = image_sources[0]
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
-        torch.cuda.synchronize()
+
         outputs = model(image)
 
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
@@ -238,6 +237,7 @@ def main(args=None):
     loop = False
     save_csv = True
     calculate_classification=False
+    force_cpu = True
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
     chosen_epoch = 1
@@ -272,9 +272,14 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
 
-    #device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    device = torch.device('cpu')
-    torch.manual_seed(1)
+    #
+
+    if force_cpu:
+        device = torch.device('cpu')
+    else:
+        torch.manual_seed(1)
+        torch.cuda.synchronize()
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     if binary_opacity:
         num_classes = 2
     else:
@@ -353,7 +358,7 @@ def main(args=None):
             pass
     if view_in_window:
         if loop:
-            while visualize(tqdm_loader_files,model,max_detections=4):
+            while visualize(tqdm_loader_files,model,device=device,max_detections=4):
                 pass
         else:
             visualize(tqdm_loader_files,model)
