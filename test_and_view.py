@@ -237,7 +237,7 @@ def main(args=None):
     loop = False
     save_csv = True
     calculate_classification=False
-    force_cpu = True
+    force_cpu = False
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
     chosen_epoch = 1
