@@ -234,7 +234,7 @@ def main(args=None):
     view_in_window = False
     calculate_coco = False
     loop = False
-    save_csv = False
+    save_csv = True
     calculate_classification=False
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
