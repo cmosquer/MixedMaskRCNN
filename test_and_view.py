@@ -237,7 +237,8 @@ def main(args=None):
     loop = False
     save_csv = True
     calculate_classification=False
-    force_cpu = False
+    force_cpu = False #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
+    # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
     chosen_experiment = '2021-05-24_masks_boxes_binary'
     chosen_epoch = 1
@@ -347,7 +348,7 @@ def main(args=None):
        5: 0.25 #'LesionesDeLaPared'
        }"""
     min_score_thresholds = 0.25
-    min_box_proportionArea = None#float(1/50) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+    min_box_proportionArea = float(1/40) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
 
