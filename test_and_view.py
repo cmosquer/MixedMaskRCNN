@@ -24,13 +24,15 @@ def label_to_name(label):
      }
     return labels[label]
 
-def saveAsFiles(tqdm_loader,model,save_fig_dir, save_figures=True,
+def saveAsFiles(tqdm_loader,model,device,
+                save_fig_dir,
+                save_figures=True,
                 max_detections=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
                 min_box_proportionArea=None, draw='boxes',binary=False,
-                save_csv=None #If not None, should be a str with filepath where to save dataframe with targets and predictions
+                save_csv=None, #If not None, should be a str with filepath where to save dataframe with targets and predictions
+
                 ):
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     j = 0
     if save_csv is not None:
         df = pd.DataFrame(columns=['image_name','box_type','label','score','x1','x2','y1','y2','original_file_name','image_source'])
@@ -344,7 +346,7 @@ def main(args=None):
 
     if save_figures or save_csv:
 
-        while saveAsFiles(tqdm_loader_files, model, save_fig_dir=save_fig_dir,binary=binary_opacity,
+        while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                           max_detections=8, min_score_threshold=min_score_thresholds,
                           min_box_proportionArea=min_box_proportionArea,
                           save_csv=output_csv_path,save_figures=save_figures):
