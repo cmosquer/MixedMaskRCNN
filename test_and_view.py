@@ -270,7 +270,8 @@ def main(args=None):
      'LesionesDeLaPared': 5
      }
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    #device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device('cpu')
     torch.manual_seed(1)
     if binary_opacity:
         num_classes = 2
