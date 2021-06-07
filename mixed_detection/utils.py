@@ -1,7 +1,7 @@
 from mixed_detection.faster_rcnn import FastRCNNPredictor
 from mixed_detection.mask_rcnn import MaskRCNNPredictor, maskrcnn_resnet50_fpn
 from mixed_detection import vision_transforms as T
-from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score, precision_recall_curve
+from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score, precision_recall_curve,brier_score_loss
 from sklearn.metrics import auc as sklearnAUC
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
 
@@ -61,7 +61,7 @@ def prepareDatasets(config,output_dir,class_numbers):
                 raw_csv.loc[i, 'label_level'] = 'nofinding'
         print('finished initialization: ')
         print(raw_csv.label_level.value_counts())
-        raw_csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
+        #raw_csv.to_csv(trx_dir + f'Datasets/Opacidades/TX-RX-ds-{experiment_id}.csv', index=False)
 
     # --Only accept images with boxes or masks--#
     validAnnotations = []
@@ -93,10 +93,19 @@ def prepareDatasets(config,output_dir,class_numbers):
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
         if config["no_findings_examples_in_valid"]:
-            print('len before appending no finding to valid set: {}'.format(len(csv_valid)))
-            nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_set_size"]-len(csv_valid))]
+            print('Len before appending no finding to valid set: {}'.format(len(csv_valid)))
+            if isinstance(config["max_valid_set_size"],int):
+                nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_set_size"]-len(csv_valid))]
+            else:
+                if config["max_valid_set_size"]=='balanced':
+                    current_0 = len(csv_valid[csv_valid.label_level=='nofinding'])
+                    required_0 = [len(csv_valid) - current_0] - current_0
+                    print('Adding {} no finding images'.format(required_0))
+                    nofindings = raw_csv[raw_csv.label_level == 'nofinding'].reset_index(drop=True)[
+                                 :required_0]
+
             csv_valid = csv_valid.append(nofindings,ignore_index=True).reset_index(drop=True)
-            print('len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
+            print('Len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
 
     print('Len csv train: {}, len csv test: {}'.format(len(csv_train),len(csv_valid)))
@@ -288,7 +297,21 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
     npv = tn / (tn + fn)
     acc = (tp + tn) / (tn + fp + fn + tp)
     f1score = 2 * ppv * sens / (ppv + sens)
+
     #TODO agregar brier score + y -
+    positive_labels = labels_test[labels_test == 1]
+    Npos = len(positive_labels)
+    positive_preds = preds[labels == 1]
+
+    negative_labels = labels_test[labels_test == 0]
+    negative_preds = preds[labels == 0]
+
+    assert len(positive_labels) + len(negative_labels) == len(labels_test)
+
+    brierPos = brier_score_loss(positive_labels, positive_preds)
+    brierNeg = brier_score_loss(negative_labels, negative_preds)
+    brier = brier_score_loss(labels, probs)
+
     if print_results:
         print(f'True negatives:{tn}\nTrue positives:{tp}\nFalse negatives:{fn}\nFalse positives:{fp}')
         print(f'\nSensitivity(recall):{sens:.2f}\nSpecificity:{spec:.2f}')
@@ -296,5 +319,6 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
 
         print('f1-score:{:.3f}'.format(f1score))
         print('accuracy:{:.3f}'.format(acc))
+        print('brier {:.3f}. brier+ {:.3f}. brier- {:.3f}'.format(brier,brierPos,brierNeg))
 
-    return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr)
+    return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr), (brier,brierPos,brierNeg)

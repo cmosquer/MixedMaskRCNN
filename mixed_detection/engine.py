@@ -152,7 +152,7 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
     header = 'Test:'
 
 
-    x_regresion = np.zeros((len(data_loader.dataset),2))
+    x_regresion = np.zeros((len(data_loader.dataset),3))
     y_regresion = np.zeros(len(data_loader.dataset))
     j = 0
     leave=False
@@ -186,10 +186,12 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
 
                 if image_scores is not None:
                     if len(image_scores)>0:
+                        score_median = np.median(image_scores)
                         score_mean = np.mean(image_scores)
                         score_max = np.max(image_scores)
                         x_regresion[j,0] = score_mean
                         x_regresion[j,1] = score_max
+                        x_regresion[j,2] = score_median
                         del score_mean,score_max
                     #x_regresion.append([score_mean,score_max])
                 #else:
@@ -234,10 +236,11 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
                     classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
                                            'preds_test': preds, 'clf': clf}
                     pickle.dump(classification_data, f)
-        (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr) = getClassificationMetrics(preds, y_test)
+        (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc, aucpr), (brier, brierPos, brierNeg) = getClassificationMetrics(preds, y_test)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
-                        'sens':sens, 'spec':spec, 'ppv':ppv, 'npv':npv,
-                        'acc':acc, 'f1':f1score, 'aucroc':aucroc, 'aucpr':aucpr}
+                        'sens': sens, 'spec': spec, 'ppv': ppv, 'npv':npv,
+                        'acc': acc, 'f1': f1score, 'aucroc': aucroc, 'aucpr': aucpr,
+                        'brier': brier, 'brierPos': brierPos, 'brierNeg': brierNeg}
 
         if results_file:
             if log_wandb:

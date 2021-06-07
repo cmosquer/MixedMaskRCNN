@@ -28,8 +28,8 @@ def main(args=None):
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
-        'max_valid_set_size': 2500,
-        'experiment_type': 'masks_boxes',#'masks',#
+        'max_valid_set_size': 'balanced',
+        'experiment_type': 'boxes',#'masks',#
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 10,
         'random_seed': 40,
