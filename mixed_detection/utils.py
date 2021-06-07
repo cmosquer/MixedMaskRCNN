@@ -88,7 +88,7 @@ def prepareDatasets(config,output_dir,class_numbers):
         stratification = [csv[csv.file_name == idx]['stratification'].values[0] for idx in image_ids]
 
         train_idx, valid_idx = train_test_split(image_ids, stratify=stratification,
-                                               test_size=0.1,
+                                               test_size=0.05,
                                                random_state=config["random_seed"])
         csv_train = csv[csv.file_name.isin(list(train_idx))].reset_index(drop=True)
         csv_valid = csv[csv.file_name.isin(list(valid_idx))].reset_index(drop=True)
