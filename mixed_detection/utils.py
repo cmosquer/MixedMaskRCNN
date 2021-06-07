@@ -99,7 +99,8 @@ def prepareDatasets(config,output_dir,class_numbers):
             else:
                 if config["max_valid_set_size"]=='balanced':
                     current_0 = len(csv_valid[csv_valid.label_level=='nofinding'])
-                    required_0 = [len(csv_valid) - current_0] - current_0
+                    current_1 = len(csv_valid) - current_0
+                    required_0 = current_1 - current_0
                     print('Adding {} no finding images'.format(required_0))
                     nofindings = raw_csv[raw_csv.label_level == 'nofinding'].reset_index(drop=True)[
                                  :required_0]
