@@ -39,7 +39,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,bre
             if step > breaking_step:
                 break
         step += 1
-        images = list(image.to(device,non_blocking=True).long() for image in images)
+        images = list(image.to(device,non_blocking=True) for image in images)
         targets = [{k: v.to(device,non_blocking=True).long() for k, v in t.items()} for t in targets]
 
         loss_dict = model(images, targets)
@@ -109,7 +109,7 @@ def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
         if psutil.virtual_memory().percent>80:
             leave=True
             break
-        images = list(img.to(device,non_blocking=True).long() for img in images)
+        images = list(img.to(device,non_blocking=True) for img in images)
 
         if torch.cuda.is_available():
             torch.cuda.synchronize()
@@ -162,7 +162,7 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
             if psutil.virtual_memory().percent > 80:
                 leave = True
                 break
-            images = list(img.to(device,non_blocking=True).long() for img in images)
+            images = list(img.to(device,non_blocking=True) for img in images)
             #print('img loaded before inference',psutil.virtual_memory().percent)
             torch.cuda.synchronize()
             model_time = time.time()
@@ -267,7 +267,7 @@ def evaluate_dice(model, data_loader, device, results_file=None):
     if data_loader.dataset.binary:
         total_dice = []
         for images, targets in metric_logger.log_every(data_loader, 100, header):
-            images = list(img.to(device,non_blocking=True).long() for img in images)
+            images = list(img.to(device,non_blocking=True) for img in images)
             outputs = model(images)
 
             outputs = [{k: v.detach().to(cpu_device) for k, v in t.items()} for t in outputs]
