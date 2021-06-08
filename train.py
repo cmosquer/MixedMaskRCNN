@@ -108,7 +108,7 @@ def main(args=None):
             model.load_state_dict(torch.load(pretrained_checkpoint))
 
         # move model to the right device
-        model.to(device,non_blocking=True).long()
+        model.to(device,non_blocking=True)
 
         # construct an optimizer
         params = [p for p in model.parameters() if p.requires_grad]
