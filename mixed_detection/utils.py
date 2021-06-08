@@ -302,16 +302,16 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
     #TODO agregar brier score + y -
     positive_labels = labels_test[labels_test == 1]
     Npos = len(positive_labels)
-    positive_preds = preds[labels == 1]
+    positive_preds = preds[labels_test == 1]
 
     negative_labels = labels_test[labels_test == 0]
-    negative_preds = preds[labels == 0]
+    negative_preds = preds[labels_test == 0]
 
     assert len(positive_labels) + len(negative_labels) == len(labels_test)
 
     brierPos = brier_score_loss(positive_labels, positive_preds)
     brierNeg = brier_score_loss(negative_labels, negative_preds)
-    brier = brier_score_loss(labels, probs)
+    brier = brier_score_loss(labels_test, preds)
 
     if print_results:
         print(f'True negatives:{tn}\nTrue positives:{tp}\nFalse negatives:{fn}\nFalse positives:{fp}')

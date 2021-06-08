@@ -128,7 +128,7 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=1000,
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=1000,
                             wandb_interval=interval_steps
                             )
 
@@ -142,12 +142,15 @@ def main(args=None):
                 print('Saved model to ', saving_path)
 
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
-            results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
+            #results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
+            #wandb_valid.update(results_coco)
+
             results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
+            wandb_valid.update(results_classif)
+
             #evaluate_dice(model, data_loader_valid, device=device, results_file=results_coco_file)
             wandb_valid = {'epoch': epoch}
-            wandb_valid.update(results_coco)
-            wandb_valid.update(results_classif)
+
 
             wandb.log(wandb_valid)
             #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
