@@ -97,6 +97,7 @@ def main(args=None):
                                                 #trainable_layers=0
                                                 )
         if pretrained_checkpoint is not None:
+            print('Loading pretrained checkpoint ...')
             model.load_state_dict(torch.load(pretrained_checkpoint))
         print(model)
         # move model to the right device
