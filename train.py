@@ -102,9 +102,14 @@ def main(args=None):
         # move model to the right device
         model.to(device)
 
-        #for param in networkB.conv1.parameters():
-        #    param.requires_grad = False
-
+        for param in model.backbone.parameters():
+            param.requires_grad = False
+        for param in model.roi_heads.box_roi_pool.parameters():
+            param.requires_grad = False
+        for param in model.roi_heads.box_head.parameters():
+            param.requires_grad = False
+        for param in model.roi_heads.box_predictor.parameters():
+            param.requires_grad = False
         # construct an optimizer
         params = [p for p in model.parameters() if p.requires_grad]
         optimizer = torch.optim.SGD(params, lr=config.initial_lr,
