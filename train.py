@@ -29,7 +29,7 @@ def main(args=None):
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
         'max_valid_set_size': 'balanced',
-        'experiment_type': 'boxes',#'masks',#
+        'experiment_type': 'masks',
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 10,
         'random_seed': 40,
@@ -52,7 +52,7 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1 #patologias + background
-    pretrained_checkpoint = None #experiment_dir+'/19-03-21/maskRCNN-8.pth'
+    pretrained_checkpoint = experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'o
     experiment_number = config['date']
