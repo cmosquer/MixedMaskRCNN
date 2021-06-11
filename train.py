@@ -24,14 +24,14 @@ def main(args=None):
         'dataset': "TX-RX-ds-20210527-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
 
-
+        'existing_valid_set': '{}/2021-06-08_boxes_binary/testCSV.csv'.format(experiment_dir), #None
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
         'max_valid_set_size': 'balanced',
         'experiment_type': 'masks',
         'date': datetime.today().strftime('%Y-%m-%d'),
-        'epochs': 10,
+        'epochs': 20,
         'random_seed': 40,
 
     }
@@ -63,14 +63,6 @@ def main(args=None):
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
-
-
-    prevalid = '{}/{}_masks_boxes_binary/testCSV.csv'.format(experiment_dir,experiment_number)
-    print('PREVALID: ',prevalid)
-    if os.path.exists(prevalid):
-        config["existing_valid_set"] = prevalid
-    else:
-        config["existing_valid_set"] = None
 
     dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
 
