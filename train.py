@@ -98,9 +98,12 @@ def main(args=None):
                                                 )
         if pretrained_checkpoint is not None:
             model.load_state_dict(torch.load(pretrained_checkpoint))
-
+        print(model)
         # move model to the right device
         model.to(device)
+
+        #for param in networkB.conv1.parameters():
+        #    param.requires_grad = False
 
         # construct an optimizer
         params = [p for p in model.parameters() if p.requires_grad]
