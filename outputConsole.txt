@@ -1,0 +1,58 @@
+starting training script
+interseccion csv total con test revisado  1034
+Len of original raw csv: 38079, len after removing intersection with revised test set: 37039
+RAW CSV DESCRIPTION:
+chexpert           24299
+vin                 6898
+kaggle              2945
+mimic               2200
+hiba                 491
+mimic_relabeled      115
+jsrt                  91
+Name: image_source, dtype: int64
+imagelabel    26505
+box           10206
+mask            218
+nofinding       110
+Name: label_level, dtype: int64
+Len of csv after keeping only ['mask', 'box'] annotations: 10424
+Len csv train: 9399, len csv test: 1135
+TRAIN SOURCES:
+vin                0.663262
+kaggle             0.280775
+hiba               0.036068
+mimic_relabeled    0.011171
+jsrt               0.008724
+Name: image_source, dtype: float64
+box     0.979147
+mask    0.020853
+Name: label_level, dtype: float64
+VALID SOURCES
+vin                0.585022
+kaggle             0.269604
+hiba               0.128634
+mimic_relabeled    0.008811
+jsrt               0.007930
+Name: image_source, dtype: float64
+box          0.883700
+nofinding    0.096916
+mask         0.019383
+Name: label_level, dtype: float64
+TRAIN:
+N de NoduloMasa: 2597 (27.25%)
+N de Consolidacion: 5613 (58.89%)
+N de PatronIntersticial: 1014 (10.64%)
+N de Atelectasia: 277 (2.91%)
+N de LesionesDeLaPared: 30 (0.31%)
+N de no_finding: 0 (0.00%)
+
+VALID:
+N de NoduloMasa: 234 (20.38%)
+N de Consolidacion: 640 (55.75%)
+N de PatronIntersticial: 129 (11.24%)
+N de Atelectasia: 31 (2.70%)
+N de LesionesDeLaPared: 4 (0.35%)
+N de no_finding: 110 (9.58%)
+N train: 4700. N test: 1135
+trainable layers  3
+Epoch: [0]  [   0/4700]  eta: 0:45:17  lr: 0.000020  loss: 0.5158 (0.5158)  loss_classifier: 0.4591 (0.4591)  loss_box_reg: 0.0096 (0.0096)  loss_objectness: 0.0331 (0.0331)  loss_rpn_box_reg: 0.0140 (0.0140)  time: 0.5782  data: 0.1073  max mem: 1678

@@ -154,11 +154,20 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
 
     x_regresion = np.zeros((len(data_loader.dataset),3))
     y_regresion = np.zeros(len(data_loader.dataset))
+    image_paths = []
     j = 0
     leave=False
     with torch.no_grad():
         #print('initial',psutil.virtual_memory().percent)
-        for images, targets in metric_logger.log_every(data_loader, 5, header):
+        for batch in metric_logger.log_every(data_loader, 5, header):
+            if data_loader.dataset.return_image_source:
+                images, targets, image_sources, batch_paths = batch
+                if isinstance(batch_paths,list):
+                    image_paths += batch_paths
+                if isinstance(batch_paths,str):
+                    image_paths.append(batch_paths)
+            else:
+                images, targets = batch
             if psutil.virtual_memory().percent > 80:
                 leave = True
                 break
@@ -217,6 +226,8 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
                 with open(results_file.replace('cocoStats', 'test_classification_data').replace('.txt', ''), 'wb') as f:
                     classification_data = {'x_test': x_regresion, 'y_test': y_test,
                                            'preds_test': preds, 'clf': test_clf}
+                    if data_loader.dataset.return_image_source:
+                        classification_data['paths'] = image_paths
                     pickle.dump(classification_data, f)
         else:
 

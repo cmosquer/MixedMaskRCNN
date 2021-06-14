@@ -1,0 +1,74 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.10.30
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.6.9
+    t:
+      1:
+      - 1
+      - 5
+      2:
+      - 1
+      - 5
+      3:
+      - 2
+      4: 3.6.9
+      5: 0.10.30
+      8:
+      - 5
+batch_size:
+  desc: null
+  value: 2
+batch_size_valid:
+  desc: null
+  value: 1
+dataset:
+  desc: null
+  value: TX-RX-ds-20210527-00_ubuntu
+date:
+  desc: null
+  value: '2021-06-08'
+epochs:
+  desc: null
+  value: 10
+existing_valid_set:
+  desc: null
+  value: null
+experiment_type:
+  desc: null
+  value: boxes
+initial_lr:
+  desc: null
+  value: 0.01
+lr_scheduler_epochs_interval:
+  desc: null
+  value: 3
+lr_scheduler_factor:
+  desc: null
+  value: 0.1
+max_valid_set_size:
+  desc: null
+  value: balanced
+no_findings_examples_in_train:
+  desc: null
+  value: false
+no_findings_examples_in_valid:
+  desc: null
+  value: true
+opacityies_as_binary:
+  desc: null
+  value: true
+random_seed:
+  desc: null
+  value: 40
+raw_csv:
+  desc: null
+  value: /run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Datasets/Opacidades/TX-RX-ds-20210527-00_ubuntu.csv
+revised_test_set:
+  desc: null
+  value: /run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Experiments//test_groundtruth_validados.csv

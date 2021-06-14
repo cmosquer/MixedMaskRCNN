@@ -1,0 +1,1 @@
+  ret = ret.dtype.type(ret / rcount)

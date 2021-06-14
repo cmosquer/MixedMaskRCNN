@@ -29,7 +29,7 @@ def saveAsFiles(tqdm_loader,model,device,
                 save_figures=True,
                 max_detections=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
-                min_box_proportionArea=None, draw='boxes',binary=False,
+                min_box_proportionArea=None, draw='boxes',binary=False,results_file='',
                 save_csv=None, #If not None, should be a str with filepath where to save dataframe with targets and predictions
 
                 ):
@@ -120,8 +120,33 @@ def saveAsFiles(tqdm_loader,model,device,
                     #if draw=='masks':
                     #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
 
+            os.makedirs(save_fig_dir+'TruePositive',exist_ok=True)
+            os.makedirs(save_fig_dir+'FalsePositive',exist_ok=True)
+            os.makedirs(save_fig_dir+'FalseNegative',exist_ok=True)
+            os.makedirs(save_fig_dir+'TrueNegative',exist_ok=True)
+            folder = ''
             try:
-                saving_path = "{}/{}_{}".format(save_fig_dir, image_source, os.path.basename(image_path.replace('\\','/')))
+                predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
+                if os.path.exists(predspath):
+                    with open(predspath, 'rb') as f:
+                        classification_data = pickle.load(f)
+                    if 'paths' in classification_data.keys():
+                        idx = np.argwhere(classification_data['paths'] == image_path)
+                        print(idx)
+                        pred = classification_data['preds_test'][idx]
+                        gt = classification_data['y_test'][idx]
+                        if pred == gt:
+                            if int(gt) == 0:
+                                folder='TrueNegative'
+                            else:
+                                folder = 'TruePositive'
+                        else:
+                            if int(gt) == 0:
+                                folder='FalsePositive'
+                            else:
+                                folder = 'FalseNegative'
+                saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
+                                                   image_source, os.path.basename(image_path.replace('\\','/')))
                 cv2.imwrite(saving_path,colorimage)
 
                 print('Saved ',saving_path)
@@ -232,22 +257,23 @@ def visualize(tqdm_loader,model,device,save_fig_dir=None,max_detections=None):
 def main(args=None):
     print('starting test script')
     save_figures = True
+    only_best_datasets = False
     view_in_window = False
     calculate_coco = False
     loop = False
     save_csv = True
-    calculate_classification=False
+    calculate_classification=True
     force_cpu = False #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
-    chosen_experiment = '2021-05-24_masks_boxes_binary'
-    chosen_epoch = 1
+    chosen_experiment = '2021-06-11_masks_binary/'
+    chosen_epoch = 6
 
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     output_dir = baseDir +'TRx-v2/Experiments/'
     save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
     output_csv_path = f'{output_dir}/{chosen_experiment}/test_output-epoch{chosen_epoch}.csv'
-    results_coco_file = f'{output_dir}/{chosen_experiment}/stats-test-epoch_{chosen_epoch}.txt'
+    results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
     classification_data = f'{output_dir}/{chosen_experiment}/classification_data-{chosen_epoch}'
     binary_opacity=True
@@ -320,17 +346,25 @@ def main(args=None):
         print('no existe archivo ',classification_data)
         test_clf=None
     if calculate_classification:
+        dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                          binary_opacity=binary_opacity,
+                                          return_image_source=True)
+        data_loader_test = torch.utils.data.DataLoader(
+            dataset_test, batch_size=1, shuffle=False, num_workers=0,
+            collate_fn=collate_fn)
         evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
                                 results_file=results_coco_file,test_clf=test_clf)
     #Redefinir solo las que quiero guardar la imagen
-    try:
-        csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
-        print('Using only top datasets. Total of {} images'.format(len(set(csv_test_files.file_name.values))))
-    except ValueError as e:
-        print(e)
-        print('Not reseting index')
-        csv_test_files = csv_test[csv_test.image_source == 'hiba']
-
+    if only_best_datasets:
+        try:
+            csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
+            print('Using only top datasets. Total of {} images'.format(len(set(csv_test_files.file_name.values))))
+        except ValueError as e:
+            print(e)
+            print('Not reseting index')
+            csv_test_files = csv_test[csv_test.image_source == 'hiba']
+    else:
+        csv_test_files = csv_test.copy()
     dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers,
                                             get_transform(train=False), binary_opacity=binary_opacity,
                                             return_image_source=True)
@@ -347,14 +381,14 @@ def main(args=None):
        4: 0.25, #'Atelectasia',
        5: 0.25 #'LesionesDeLaPared'
        }"""
-    min_score_thresholds = 0.25
-    min_box_proportionArea = float(1/20) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+    min_score_thresholds = 0.2
+    min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
     if save_figures or save_csv:
 
         while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                           max_detections=8, min_score_threshold=min_score_thresholds,
-                          min_box_proportionArea=min_box_proportionArea,
+                          min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
                           save_csv=output_csv_path,save_figures=save_figures):
             pass
     if view_in_window:
