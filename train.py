@@ -23,7 +23,7 @@ def main(args=None):
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210527-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
-
+        'unfreeze_only_mask': True,
         'existing_valid_set': '{}/2021-06-08_boxes_binary/testCSV.csv'.format(experiment_dir), #None
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
@@ -102,15 +102,15 @@ def main(args=None):
         print(model)
         # move model to the right device
         model.to(device)
-
-        for param in model.backbone.parameters():
-            param.requires_grad = False
-        for param in model.roi_heads.box_roi_pool.parameters():
-            param.requires_grad = False
-        for param in model.roi_heads.box_head.parameters():
-            param.requires_grad = False
-        for param in model.roi_heads.box_predictor.parameters():
-            param.requires_grad = False
+        if config["unfreeze_only_mask"]:
+            for param in model.backbone.parameters():
+                param.requires_grad = False
+            for param in model.roi_heads.box_roi_pool.parameters():
+                param.requires_grad = False
+            for param in model.roi_heads.box_head.parameters():
+                param.requires_grad = False
+            for param in model.roi_heads.box_predictor.parameters():
+                param.requires_grad = False
         # construct an optimizer
         params = [p for p in model.parameters() if p.requires_grad]
         optimizer = torch.optim.SGD(params, lr=config.initial_lr,
