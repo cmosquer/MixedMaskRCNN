@@ -118,7 +118,7 @@ def label_color(label):
         return colors[label]
     else:
         warnings.warn('Label {} has no color, returning default.'.format(label))
-        return (0, 255, 0)
+        return (50, 255, 50)
 
 def draw_box(image, box, color, thickness=2):
     """ Draws a box on an image with a given color.
@@ -212,8 +212,8 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
         if 'scores' in annotations.keys():
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
-        if 'areas' in annotations.keys():
-            caption = 'AREA{}'.format(annotations['areas'][i])
+        #if 'areas' in annotations.keys():
+        #    caption = 'AREA{}'.format(annotations['areas'][i])
         draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
         draw_box(image, annotations['boxes'][i], color=c)
 

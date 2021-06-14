@@ -162,6 +162,8 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
         for batch in metric_logger.log_every(data_loader, 5, header):
             if data_loader.dataset.return_image_source:
                 images, targets, image_sources, batch_paths = batch
+                if isinstance(batch_paths,tuple):
+                    image_paths += list(batch_paths)
                 if isinstance(batch_paths,list):
                     image_paths += batch_paths
                 if isinstance(batch_paths,str):

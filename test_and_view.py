@@ -55,11 +55,11 @@ def saveAsFiles(tqdm_loader,model,device,
             width=image[0].shape[2]
             total_area = width*height
             minimum_area = total_area*min_box_proportionArea
-            print('total area ',total_area,'minimum area: ', minimum_area)
+            #print('total area ',total_area,'minimum area: ', minimum_area)
             areas = []
             for x1, x2, y1, y2 in outputs['boxes']:
                 area = int(x2-x1)*int(y2-y1)
-                print(x1, x2, y1, y2,'-->',area)
+                #print(x1, x2, y1, y2,'-->',area)
                 areas.append(area)
             outputs['areas'] = np.array(areas)
             bigBoxes = np.argwhere(outputs['areas']>minimum_area).flatten()
@@ -125,34 +125,35 @@ def saveAsFiles(tqdm_loader,model,device,
             os.makedirs(save_fig_dir+'FalseNegative',exist_ok=True)
             os.makedirs(save_fig_dir+'TrueNegative',exist_ok=True)
             folder = ''
-            try:
-                predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
-                if os.path.exists(predspath):
-                    with open(predspath, 'rb') as f:
-                        classification_data = pickle.load(f)
-                    if 'paths' in classification_data.keys():
-                        idx = np.argwhere(classification_data['paths'] == image_path)
-                        print(idx)
-                        pred = classification_data['preds_test'][idx]
-                        gt = classification_data['y_test'][idx]
-                        if pred == gt:
-                            if int(gt) == 0:
-                                folder='TrueNegative'
-                            else:
-                                folder = 'TruePositive'
+            #try:
+            predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
+            if os.path.exists(predspath):
+                with open(predspath, 'rb') as f:
+                    classification_data = pickle.load(f)
+                if 'paths' in classification_data.keys():
+                    idx = np.argwhere([image_path in dir for dir in classification_data['paths']]).flatten()
+
+                    pred = classification_data['preds_test'][idx].astype(np.int)
+                    gt = classification_data['y_test'][idx].astype(np.int)
+                    print(idx,pred,gt)
+                    if np.all(pred == gt):
+                        if np.all(gt == 0):
+                            folder = 'TrueNegative'
                         else:
-                            if int(gt) == 0:
-                                folder='FalsePositive'
-                            else:
-                                folder = 'FalseNegative'
-                saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
-                                                   image_source, os.path.basename(image_path.replace('\\','/')))
-                cv2.imwrite(saving_path,colorimage)
+                            folder = 'TruePositive'
+                    else:
+                        if np.all(gt == 0):
+                            folder = 'FalsePositive'
+                        else:
+                            folder = 'FalseNegative'
+            saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
+                                               image_source, os.path.basename(image_path.replace('\\', '/')))
+            cv2.imwrite(saving_path, colorimage)
 
-                print('Saved ',saving_path)
+            print('Saved ', saving_path)
 
-            except:
-                print('COULD SAVE ',saving_path)
+            #except:
+            #    print('COULDNT SAVE ',image_path)
 
         if save_csv is not None:
             results_list = []
@@ -262,7 +263,7 @@ def main(args=None):
     calculate_coco = False
     loop = False
     save_csv = True
-    calculate_classification=True
+    calculate_classification=False
     force_cpu = False #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
