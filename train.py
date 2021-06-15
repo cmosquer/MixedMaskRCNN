@@ -65,11 +65,11 @@ def main(args=None):
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
-    if config['data_augmentation']:
+    if config['data_augmentation'] and config['experiment_type']=='boxes':
         train_transform = A.Compose([
-        A.RandomCrop(width=450, height=450),
-        A.HorizontalFlip(p=0.5),
-        A.RandomBrightnessContrast(p=0.2),
+        A.pytorch.ToTensorV2(p=1),
+        A.RandomCrop(width=450, height=450,p=0.5),
+        A.RandomBrightnessContrast(p=0.5),
     ], bbox_params=A.BboxParams(format='coco'))
     else:
         train_transform = None
