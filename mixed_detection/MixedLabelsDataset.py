@@ -151,11 +151,11 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             masks = np.zeros((len(boxes),img_shape[0],img_shape[1])) #Masks with all-zero elements will be considered as empty masks
 
         iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)
-
-        if len(boxes) > 0:
-            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        boxes_tensor = torch.as_tensor(boxes, dtype=torch.float32)
+        if len(boxes_tensor) > 0:
+            areas = (boxes_tensor[:, 3] - boxes_tensor[:, 1]) * (boxes_tensor[:, 2] - boxes_tensor[:, 0])
         else:
-            area = [], dtype=torch.float32
+            areas = torch.as_tensor([], dtype=torch.float32)
         image_id = torch.tensor([idx])
 
         if self.transforms is not None:
@@ -163,7 +163,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             target["boxes"] = boxes
             target["labels"] = labels
             target["image_id"] = image_id
-            target["area"] = area
+            target["area"] = areas
             target["iscrowd"] = iscrowd
             for k,val in target.items():
                 print(k,type(val))
@@ -187,14 +187,13 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         else:
             labels = torch.as_tensor(labels, dtype=torch.int64)
             masks_tensor = torch.as_tensor(masks, dtype=torch.uint8)
-            boxes_tensor = torch.as_tensor(boxes, dtype=torch.float32)
-            area = torch.as_tensor(area, dtype=torch.float32)
+
 
             target["masks"] = masks_tensor
             target["boxes"] = boxes_tensor
             target["labels"] = labels
             target["image_id"] = image_id
-            target["area"] = area
+            target["area"] = areas
             target["iscrowd"] = iscrowd
             for k,val in target.items():
                 print(k,type(val))
