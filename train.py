@@ -8,7 +8,7 @@ import numpy as np
 import wandb
 from datetime import datetime
 import albumentations as A
-from albumentations.pytorch.transforms import ToTensor
+from albumentations.pytorch.transforms import ToTensorV2
 
 def main(args=None):
     project = "mixed_mask_rcnn"
@@ -68,7 +68,7 @@ def main(args=None):
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
     if config['data_augmentation'] and config['experiment_type']=='boxes':
         train_transform = A.Compose([
-        ToTensor(p=1),
+        ToTensorV2(p=1),
         A.RandomCrop(width=450, height=450,p=0.5),
         A.RandomBrightnessContrast(p=0.5),
     ], bbox_params=A.BboxParams(format='coco'))
