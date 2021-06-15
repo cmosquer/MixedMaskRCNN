@@ -55,7 +55,7 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1 #patologias + background
-    pretrained_checkpoint = experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
+    pretrained_checkpoint = None #experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
     pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
     #experiment_id = '06-05-21_masksOnly'o
     experiment_number = config['date']
@@ -71,7 +71,7 @@ def main(args=None):
         ToTensorV2(p=1),
         A.RandomCrop(width=450, height=450,p=0.5),
         A.RandomBrightnessContrast(p=0.5),
-    ], bbox_params=A.BboxParams(format='coco'))
+    ], bbox_params=A.BboxParams(format='coco',label_fields=["labels"]))
     else:
         train_transform = None
     dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir,train_transform=train_transform)
