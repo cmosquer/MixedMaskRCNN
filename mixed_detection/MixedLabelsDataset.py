@@ -88,7 +88,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         image_source = self.csv.image_source.values[idx]
 
-        img = Image.open(img_path.replace('\\','/')).convert("RGB")
+        img = torch.as_tensor(Image.open(img_path.replace('\\','/')).convert("RGB"))
         boxes = []
         target = {}
         if isinstance(self.csv.mask_path[idx] ,str):
@@ -145,7 +145,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                         else:
                             labels += [self.class_numbers[c] for c in raw_labels]
 
-            img_shape = np.array(img).shape
+            img_shape = img.shape
             masks_tensor = torch.as_tensor(np.zeros((len(boxes),img_shape[0],img_shape[1])),
                                     dtype=torch.uint8) #Masks with all-zero elements will be considered as empty masks
         iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)
