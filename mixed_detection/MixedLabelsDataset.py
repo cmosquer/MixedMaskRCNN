@@ -195,7 +195,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             target["image_id"] = image_id
             target["area"] = areas
             target["iscrowd"] = iscrowd
-            img = torch.as_tensor(img)
+            img = torch.as_tensor(img, dtype=torch.float32)
             for k,val in target.items():
                 print(k,type(val))
             print(type(img))
