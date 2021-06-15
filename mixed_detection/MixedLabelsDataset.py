@@ -2,7 +2,7 @@ import torch
 from PIL import Image
 import numpy as np
 import pandas as pd
-import os
+import os, cv2
 
 
 
@@ -88,7 +88,9 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         image_source = self.csv.image_source.values[idx]
 
-        img = torch.as_tensor(Image.open(img_path.replace('\\','/')).convert("RGB"))
+        #img = Image.open(img_path.replace('\\','/')).convert("RGB")
+        img = cv2.imread(img_path.replace('\\','/'))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         boxes = []
         target = {}
         if isinstance(self.csv.mask_path[idx] ,str):
