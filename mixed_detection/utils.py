@@ -19,7 +19,7 @@ try:
 except ModuleNotFoundError:  # pragma: no-cover
     box_iou = None
 
-def prepareDatasets(config,output_dir,class_numbers):
+def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
 
     raw_csv = pd.read_csv(config["raw_csv"])
 
@@ -123,13 +123,70 @@ def prepareDatasets(config,output_dir,class_numbers):
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
-    dataset = MixedLabelsDataset(csv_train, class_numbers, get_transform(train=False),binary_opacity=config['opacityies_as_binary'])
+    dataset = MixedLabelsDataset(csv_train, class_numbers, transforms=train_transform,binary_opacity=config['opacityies_as_binary'])
     dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),binary_opacity=config['opacityies_as_binary'])
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nVALID:')
     dataset_valid.quantifyClasses()
     return dataset,dataset_valid
+
+def process_output(outputs,total_area,min_score_threshold=0.1,min_box_proportionArea=1/20,max_detections=6):
+    if min_box_proportionArea:
+        minimum_area = total_area * min_box_proportionArea
+        # print('total area ',total_area,'minimum area: ', minimum_area)
+        areas = []
+        for x1, x2, y1, y2 in outputs['boxes']:
+            area = int(x2 - x1) * int(y2 - y1)
+            # print(x1, x2, y1, y2,'-->',area)
+            areas.append(area)
+        outputs['areas'] = np.array(areas)
+        bigBoxes = np.argwhere(outputs['areas'] > minimum_area).flatten()
+        for k, v in outputs.items():
+            outputs[k] = outputs[k][bigBoxes,]
+    if isinstance(min_score_threshold, float):
+        high_scores = np.argwhere(outputs['scores'] > min_score_threshold).flatten()
+        for k, v in outputs.items():
+            outputs[k] = outputs[k][high_scores,]
+    if isinstance(min_score_threshold, dict):
+        valid_detections_idx = np.array([], dtype=np.int64)
+        for clss_idx, th in min_score_threshold.items():
+            idxs_clss = np.argwhere(outputs['labels'] == clss_idx).flatten()
+            print('class id: ', clss_idx, 'idxs clss', idxs_clss)
+            if idxs_clss.shape[0] > 0:
+                print(idxs_clss)
+                high_scores = np.argwhere(outputs['scores'][idxs_clss] > th).flatten()
+                print('idxs high scores', high_scores)
+                if high_scores.shape[0] > 0:
+                    print('th', th, 'allclassscores',
+                          outputs['scores'][idxs_clss],
+                          'highscores idx', high_scores)
+                    valid_detections_idx = np.concatenate((valid_detections_idx, high_scores)).astype(np.int64)
+        # valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
+        print('final idxs', valid_detections_idx)
+        for k, v in outputs.items():
+            outputs[k] = outputs[k][valid_detections_idx,]
+        print('after min th\n', outputs)
+    if max_detections:
+        scores_sort = np.argsort(-outputs['scores'])[:max_detections]
+        for k, v in outputs.items():
+            outputs[k] = outputs[k][scores_sort,]
+    return outputs
+
+
+def update_regression_features(image_scores,image_areas,n_features=7):
+    x_regresion_j = np.zeros(n_features)
+    if image_scores is not None:
+        N_detections = len(image_scores)
+        if N_detections > 0:
+            x_regresion_j[0] = np.mean(image_scores)
+            x_regresion_j[1] = np.max(image_scores)
+            x_regresion_j[2] = np.min(image_scores)
+            x_regresion_j[3] = np.mean(image_areas)
+            x_regresion_j[4] = np.max(image_areas)
+            x_regresion_j[5] = np.min(image_areas)
+            x_regresion_j[6] = N_detections
+    return x_regresion_j
 
 
 def seed_all(seed=27):

@@ -54,12 +54,15 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
 
-    def __init__(self, csv, class_numbers, transforms=None, return_image_source=False,binary_opacity=False):
+    def __init__(self, csv, class_numbers, transforms=None,
+                 return_image_source=False,binary_opacity=False,
+                 masks_as_boxes=False):
         self.csv = csv
         self.class_numbers = class_numbers
         self.transforms = transforms
         self.return_image_source = return_image_source
         self.binary = binary_opacity
+        self.masks_as_boxes=masks_as_boxes
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
                           'class_name','image_source',
@@ -164,8 +167,15 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["area"] = area
         target["iscrowd"] = iscrowd
         if self.transforms is not None:
-            img, target = self.transforms(img, target)
-
+            #img, target = self.transforms(img, target)
+            transformed = self.transforms(image=img,
+                                          bboxes=target["boxes"],
+                                          class_labels=target["labels"],
+                                          mask=target["masks"])
+            img = transformed['image']
+            target["boxes"] = transformed['bboxes']
+            target["labels"] = transformed['class_labels']
+            target["masks"] = transformed["mask"]
         if self.return_image_source:
             return img, target, image_source, img_path
         else:

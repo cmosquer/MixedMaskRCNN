@@ -8,7 +8,7 @@ from tqdm import tqdm
 import cv2
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
-from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn
+from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn, process_output
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 
@@ -49,49 +49,10 @@ def saveAsFiles(tqdm_loader,model,device,
 
         outputs = model(image)
         outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
-
-        if min_box_proportionArea:
-            height=image[0].shape[1]
-            width=image[0].shape[2]
-            total_area = width*height
-            minimum_area = total_area*min_box_proportionArea
-            #print('total area ',total_area,'minimum area: ', minimum_area)
-            areas = []
-            for x1, x2, y1, y2 in outputs['boxes']:
-                area = int(x2-x1)*int(y2-y1)
-                #print(x1, x2, y1, y2,'-->',area)
-                areas.append(area)
-            outputs['areas'] = np.array(areas)
-            bigBoxes = np.argwhere(outputs['areas']>minimum_area).flatten()
-            for k,v in outputs.items():
-                outputs[k] = outputs[k][bigBoxes,]
-        if isinstance(min_score_threshold,float):
-            high_scores = np.argwhere(outputs['scores']>min_score_threshold).flatten()
-            for k,v in outputs.items():
-                outputs[k] = outputs[k][high_scores,]
-        if isinstance(min_score_threshold,dict):
-            valid_detections_idx = np.array([],dtype=np.int64)
-            for clss_idx,th in min_score_threshold.items():
-                idxs_clss = np.argwhere(outputs['labels']==clss_idx).flatten()
-                print('class id: ',clss_idx, 'idxs clss',idxs_clss)
-                if idxs_clss.shape[0]>0:
-                    print(idxs_clss)
-                    high_scores = np.argwhere(outputs['scores'][idxs_clss]>th).flatten()
-                    print('idxs high scores',high_scores)
-                    if high_scores.shape[0]>0:
-                        print('th',th,'allclassscores',
-                              outputs['scores'][idxs_clss],
-                              'highscores idx',high_scores)
-                        valid_detections_idx = np.concatenate((valid_detections_idx,high_scores)).astype(np.int64)
-            #valid_detections_idx = list(dict.fromkeys(valid_detections_idx))
-            print('final idxs',valid_detections_idx)
-            for k,v in outputs.items():
-                outputs[k] = outputs[k][valid_detections_idx,]
-            print('after min th\n',outputs)
-        if max_detections:
-            scores_sort = np.argsort(-outputs['scores'])[:max_detections]
-            for k,v in outputs.items():
-                outputs[k] = outputs[k][scores_sort,]
+        height = image[0].shape[1]
+        width = image[0].shape[2]
+        total_area = height*width
+        outputs = process_output(outputs,total_area)
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]

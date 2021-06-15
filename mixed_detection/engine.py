@@ -6,7 +6,7 @@ import numpy as np
 from mixed_detection.coco_utils import get_coco_api_from_dataset
 from mixed_detection.coco_eval import CocoEvaluator
 from mixed_detection import vision_utils
-from mixed_detection.utils import getClassificationMetrics
+from mixed_detection.utils import getClassificationMetrics, process_output, update_regression_features
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -150,9 +150,9 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
+    n_features = 7
 
-
-    x_regresion = np.zeros((len(data_loader.dataset),3))
+    x_regresion = np.zeros((len(data_loader.dataset),n_features))
     y_regresion = np.zeros(len(data_loader.dataset))
     image_paths = []
     j = 0
@@ -185,6 +185,10 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
             evaluator_time = time.time()
 
             for img_id,output in enumerate(outputs):
+                height = images[img_id].shape[1]
+                width = images[img_id].shape[2]
+                total_area = height * width
+                outputs = process_output(output, total_area)
                 #print('beofre target',psutil.virtual_memory().percent)
                 target = targets[img_id]
                 N_targets = len(target['boxes'].detach().numpy())
@@ -194,23 +198,11 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
 
                 #print('before scores',psutil.virtual_memory().percent)
                 image_scores = output['scores'].detach().numpy()
-
-                if image_scores is not None:
-                    if len(image_scores)>0:
-                        score_median = np.median(image_scores)
-                        score_mean = np.mean(image_scores)
-                        score_max = np.max(image_scores)
-                        x_regresion[j,0] = score_mean
-                        x_regresion[j,1] = score_max
-                        x_regresion[j,2] = score_median
-                        del score_mean,score_max
-                    #x_regresion.append([score_mean,score_max])
-                #else:
-                    #x_regresion.append([0, 0])
-
+                image_areas = output['areas'].detach().numpy()
+                x_regresion[j,:] = update_regression_features(image_scores,image_areas)
                 j += 1
                 #print('before del',psutil.virtual_memory().percent)
-                del gt,image_scores,target
+                del gt,image_scores,image_areas,target
                 #print('after del',psutil.virtual_memory().percent)
             evaluator_time = time.time() - evaluator_time
             metric_logger.update(model_time=model_time, evaluator_time=evaluator_time)
