@@ -171,9 +171,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 print(type(val))
             print(type(img))
             #img, target = self.transforms(img, target)
-            transformed = self.transforms(image=img,
+            transformed = self.transforms(
+                                        image=img,
                                           bboxes=target["boxes"],
-                                          class_labels=target["labels"],
+                                          labels=target["labels"],
                                           mask=target["masks"])
             print(transformed.keys())
             for val in transformed.values():
