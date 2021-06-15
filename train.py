@@ -26,7 +26,7 @@ def main(args=None):
         'dataset': "TX-RX-ds-20210527-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': True,
-        'data_augmentation': True,
+        'data_augmentation': False,
         'existing_valid_set': '{}/2021-06-08_boxes_binary/testCSV.csv'.format(experiment_dir), #None
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
