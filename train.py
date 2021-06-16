@@ -18,7 +18,7 @@ def main(args=None):
     experiment_dir = trx_dir+'Experiments/'
 
     config = {
-        "batch_size": 2,
+        "batch_size": 4,
         "batch_size_valid":1,
         "initial_lr": 0.01,
         "lr_scheduler_epochs_interval": 3,
@@ -68,7 +68,7 @@ def main(args=None):
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
     dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
-                                        
+
 
 
     with wandb.init(config=config, project=project, name=experiment_id):
