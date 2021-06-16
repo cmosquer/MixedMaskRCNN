@@ -144,7 +144,7 @@ def process_output(outputs,total_area,min_score_threshold=0.1,min_box_proportion
             area = int(x2 - x1) * int(y2 - y1)
             # print(x1, x2, y1, y2,'-->',area)
             areas.append(area)
-        outputs['areas'] = torch.as_tensor(areas)
+        outputs['areas'] = torch.as_tensor(areas, dtype=torch.float32)
         bigBoxes = np.argwhere(outputs['areas'] > minimum_area).flatten()
         for k, v in outputs.items():
             outputs[k] = outputs[k][bigBoxes,]
@@ -183,8 +183,8 @@ def update_regression_features(image_scores,image_areas,n_features=7):
     print(type(image_scores))
     print(image_scores.shape)
     print(type(image_areas))
-    print(image_areas.shape)
     print(image_scores)
+    print(image_areas)
 
     if image_scores is not None:
         N_detections = len(image_scores)
