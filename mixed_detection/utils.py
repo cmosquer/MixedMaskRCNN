@@ -123,7 +123,7 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
-    dataset = MixedLabelsDataset(csv_train, class_numbers, transforms=train_transform,
+    dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), #transforms=train_transform,
                                  binary_opacity=config['opacityies_as_binary'],
                                  masks_as_boxes=config['masks_as_boxes'])
     dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),
