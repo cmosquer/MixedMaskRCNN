@@ -197,8 +197,8 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
                 y_regresion[j] = gt
 
                 #print('before scores',psutil.virtual_memory().percent)
-                image_scores = output['scores'].detach().numpy()
-                image_areas = output['areas'].detach().numpy()
+                image_scores = output['scores']#.detach().numpy()
+                image_areas = output['areas']#.detach().numpy()
                 x_regresion[j,:] = update_regression_features(image_scores,image_areas)
                 j += 1
                 #print('before del',psutil.virtual_memory().percent)

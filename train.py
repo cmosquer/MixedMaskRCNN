@@ -132,7 +132,7 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=100,
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=50,
                             wandb_interval=interval_steps
                             )
 
