@@ -67,16 +67,8 @@ def main(args=None):
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
-    if config['data_augmentation'] and config['experiment_type']=='boxes':
-        train_transform = A.Compose([
-        ToTensorV2(p=1),
-        A.RandomCrop(width=450, height=450,p=0.5),
-        A.RandomBrightnessContrast(p=0.5),
-    ], bbox_params=A.BboxParams(format='coco',label_fields=["labels"]))
-    else:
-        train_transform = None
-    dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir,
-                                            train_transform=train_transform)
+    dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
+                                        
 
 
     with wandb.init(config=config, project=project, name=experiment_id):

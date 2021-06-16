@@ -173,22 +173,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["area"] = area
         target["iscrowd"] = iscrowd
         if self.transforms is not None:
-            for val in target.values():
-                print(type(val))
-            print(type(img))
-            #img, target = self.transforms(img, target)
-            transformed = self.transforms(
-                                        image=img,
-                                          bboxes=target["boxes"],
-                                          labels=target["labels"],
-                                          mask=target["masks"])
-            print(transformed.keys())
-            for val in transformed.values():
-                print(type(val))
-            img = transformed['image']
-            target["boxes"] = transformed['bboxes']
-            target["labels"] = transformed['class_labels']
-            target["masks"] = transformed["mask"]
+            img, target = self.transforms(img, target)
         if self.return_image_source:
             return img, target, image_source, img_path
         else:
