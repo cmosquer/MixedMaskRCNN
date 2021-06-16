@@ -147,8 +147,8 @@ def main(args=None):
             wandb_valid = {'epoch': epoch}
 
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
-            results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
-            wandb_valid.update(results_coco)
+            #results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
+            #wandb_valid.update(results_coco)
 
             results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
             wandb_valid.update(results_classif)
