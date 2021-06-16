@@ -26,7 +26,7 @@ def main(args=None):
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': True,
         'data_augmentation': False,
-        'existing_valid_set': '{}/2021-06-16_boxes_binary/testCSV.csv'.format(experiment_dir),
+        'existing_valid_set': '{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
@@ -132,7 +132,7 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=1000,
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=100,
                             wandb_interval=interval_steps
                             )
 
