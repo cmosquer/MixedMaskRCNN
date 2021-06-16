@@ -188,7 +188,8 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
                 height = images[img_id].shape[1]
                 width = images[img_id].shape[2]
                 total_area = height * width
-                outputs = process_output(output, total_area)
+                outputs = process_output(output, total_area,
+                                         max_detections=None,min_box_proportionArea=None,min_score_threshold=None)
                 #print('beofre target',psutil.virtual_memory().percent)
                 target = targets[img_id]
                 N_targets = len(target['boxes'].detach().numpy())
