@@ -180,6 +180,9 @@ def process_output(outputs,total_area,min_score_threshold=0.1,min_box_proportion
 
 def update_regression_features(image_scores,image_areas,n_features=7):
     x_regresion_j = np.zeros(n_features)
+    print(type(image_scores))
+    print(image_scores.shape)
+
     if image_scores is not None:
         N_detections = len(image_scores)
         if N_detections > 0:
