@@ -62,7 +62,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         self.transforms = transforms
         self.return_image_source = return_image_source
         self.binary = binary_opacity
-        self.masks_as_boxes=masks_as_boxes
+        self.masks_as_boxes = masks_as_boxes
+
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
                           'class_name','image_source',
@@ -125,9 +126,12 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                         labels.append(1)
                     else:
                         labels.append(raw_labels[i])
-                        print('labels',labels)
+
 
             #del masks, mask
+            if self.masks_as_boxes:
+                print("Using mask {} as box".format(img_path))
+                masks = np.zeros((len(boxes), img.shape[0], img.shape[1]))
 
         else:
             labels = []
@@ -147,26 +151,30 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                         else:
                             labels += [self.class_numbers[c] for c in raw_labels]
 
-            img_shape = img.shape
-            masks = np.zeros((len(boxes),img_shape[0],img_shape[1])) #Masks with all-zero elements will be considered as empty masks
+            masks = np.zeros((len(boxes),img.shape[0],img.shape[1])) #Masks with all-zero elements will be considered as empty masks
 
+        masks_tensor = torch.as_tensor(masks, dtype=torch.uint8)
         iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)
         boxes_tensor = torch.as_tensor(boxes, dtype=torch.float32)
+        del boxes
         if len(boxes_tensor) > 0:
-            areas = (boxes_tensor[:, 3] - boxes_tensor[:, 1]) * (boxes_tensor[:, 2] - boxes_tensor[:, 0])
+            area = (boxes_tensor[:, 3] - boxes_tensor[:, 1]) * (boxes_tensor[:, 2] - boxes_tensor[:, 0])
         else:
-            areas = torch.as_tensor([], dtype=torch.float32)
+            area = torch.as_tensor([], dtype=torch.float32)
+
+        labels = torch.as_tensor(labels, dtype=torch.int64)
+
         image_id = torch.tensor([idx])
 
+        target["masks"] = masks_tensor
+        target["boxes"] = boxes_tensor
+        target["labels"] = labels
+        target["image_id"] = image_id
+        target["area"] = area
+        target["iscrowd"] = iscrowd
         if self.transforms is not None:
-            target["masks"] = masks
-            target["boxes"] = boxes
-            target["labels"] = labels
-            target["image_id"] = image_id
-            target["area"] = areas
-            target["iscrowd"] = iscrowd
-            for k,val in target.items():
-                print(k,type(val))
+            for val in target.values():
+                print(type(val))
             print(type(img))
             #img, target = self.transforms(img, target)
             transformed = self.transforms(
@@ -181,24 +189,6 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             target["boxes"] = transformed['bboxes']
             target["labels"] = transformed['class_labels']
             target["masks"] = transformed["mask"]
-            for k,val in target.items():
-                print(k,type(val))
-            print(type(img))
-        else:
-            labels = torch.as_tensor(labels, dtype=torch.int64)
-            masks_tensor = torch.as_tensor(masks, dtype=torch.uint8)
-
-
-            target["masks"] = masks_tensor
-            target["boxes"] = boxes_tensor
-            target["labels"] = labels
-            target["image_id"] = image_id
-            target["area"] = areas
-            target["iscrowd"] = iscrowd
-            img = torch.as_tensor(img, dtype=torch.float32)
-            for k,val in target.items():
-                print(k,type(val))
-            print(type(img))
         if self.return_image_source:
             return img, target, image_source, img_path
         else:

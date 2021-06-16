@@ -32,6 +32,7 @@ def main(args=None):
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
         'max_valid_set_size': 'balanced',
+        'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 20,
@@ -74,7 +75,8 @@ def main(args=None):
     ], bbox_params=A.BboxParams(format='coco',label_fields=["labels"]))
     else:
         train_transform = None
-    dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir,train_transform=train_transform)
+    dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir,
+                                            train_transform=train_transform)
 
 
     with wandb.init(config=config, project=project, name=experiment_id):
