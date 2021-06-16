@@ -144,7 +144,7 @@ def process_output(outputs,total_area,min_score_threshold=0.1,min_box_proportion
             area = int(x2 - x1) * int(y2 - y1)
             # print(x1, x2, y1, y2,'-->',area)
             areas.append(area)
-        outputs['areas'] = np.array(areas)
+        outputs['areas'] = torch.as_tensor(areas)
         bigBoxes = np.argwhere(outputs['areas'] > minimum_area).flatten()
         for k, v in outputs.items():
             outputs[k] = outputs[k][bigBoxes,]
