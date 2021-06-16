@@ -26,7 +26,7 @@ def main(args=None):
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': True,
         'data_augmentation': False,
-        'existing_valid_set': None, #'{}/2021-06-08_boxes_binary/testCSV.csv'.format(experiment_dir),
+        'existing_valid_set': '{}/2021-06-16_boxes_binary/testCSV.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
