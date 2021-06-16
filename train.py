@@ -56,7 +56,7 @@ def main(args=None):
     else:
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = None #experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
-    pretrained_backbone_path = None #experiment_dir+'/17-04-21/resnetBackbone-8.pth'
+    pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth' #None #
     #experiment_id = '06-05-21_masksOnly'o
     experiment_number = config['date']
     experiment_type = config['experiment_type']
@@ -132,9 +132,9 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=50,
-                            wandb_interval=interval_steps
-                            )
+            #train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=50,
+            #                wandb_interval=interval_steps
+            #                )
 
             # update the learning rate
             lr_scheduler.step()
