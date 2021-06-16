@@ -138,12 +138,12 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
 def process_output(outputs,total_area,min_score_threshold=0.1,min_box_proportionArea=1/20,max_detections=6):
 
     areas = []
-    for x1, x2, y1, y2 in outputs['boxes']:
+    for x1, y1, x2,y2 in outputs['boxes']:
         area = (int(x2 - x1) * int(y2 - y1))/total_area
         # print(x1, x2, y1, y2,'-->',area)
         areas.append(area)
     outputs['areas'] = torch.as_tensor(areas, dtype=torch.float32)
-    
+
     if min_box_proportionArea:
         bigBoxes = np.argwhere(outputs['areas'] > min_box_proportionArea).flatten()
         for k, v in outputs.items():
