@@ -182,16 +182,19 @@ def update_regression_features(image_scores,image_areas,n_features=7):
     x_regresion_j = np.zeros(n_features)
     print(type(image_scores))
     print(image_scores.shape)
+    print(type(image_areas))
+    print(image_areas.shape)
+    print(image_scores)
 
     if image_scores is not None:
         N_detections = len(image_scores)
         if N_detections > 0:
-            x_regresion_j[0] = np.mean(image_scores)
-            x_regresion_j[1] = np.max(image_scores)
-            x_regresion_j[2] = np.min(image_scores)
-            x_regresion_j[3] = np.mean(image_areas)
-            x_regresion_j[4] = np.max(image_areas)
-            x_regresion_j[5] = np.min(image_areas)
+            x_regresion_j[0] = torch.mean(image_scores)
+            x_regresion_j[1] = torch.max(image_scores)
+            x_regresion_j[2] = torch.min(image_scores)
+            x_regresion_j[3] = torch.mean(image_areas)
+            x_regresion_j[4] = torch.max(image_areas)
+            x_regresion_j[5] = torch.min(image_areas)
             x_regresion_j[6] = N_detections
     return x_regresion_j
 

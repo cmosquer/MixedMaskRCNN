@@ -218,18 +218,18 @@ def visualize(tqdm_loader,model,device,save_fig_dir=None,max_detections=None):
 
 def main(args=None):
     print('starting test script')
-    save_figures = True
+    save_figures = False
     only_best_datasets = False
     view_in_window = False
     calculate_coco = False
     loop = False
-    save_csv = True
-    calculate_classification=False
+    save_csv = False
+    calculate_classification=True
     force_cpu = False #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
-    chosen_experiment = '2021-06-11_masks_binary/'
-    chosen_epoch = 6
+    chosen_experiment = '2021-06-08_boxes_binary/'
+    chosen_epoch = 4
 
     baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
     output_dir = baseDir +'TRx-v2/Experiments/'
@@ -243,8 +243,8 @@ def main(args=None):
     os.makedirs(save_fig_dir,exist_ok=True)
 
 
-    csv_test = pd.read_csv(
-        baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
+    csv_test = pd.read_csv(baseDir + 'TRx-v2/Experiments/2021-06-08_boxes_binary/testCSV.csv')
+        #baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
 
     image_ids_test = set(csv_test.file_name)
     print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))
@@ -303,6 +303,7 @@ def main(args=None):
     if os.path.exists(classification_data):
         with open(classification_data,'rb') as f:
             classification_data_dict = pickle.load(f)
+        print('Loaded logistic regressor for classification')
         test_clf = classification_data_dict['clf']
     else:
         print('no existe archivo ',classification_data)
