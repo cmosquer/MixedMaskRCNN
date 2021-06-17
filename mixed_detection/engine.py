@@ -141,7 +141,9 @@ def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
     else:
         return {'memory_reached':psutil.virtual_memory().percent}
 @torch.no_grad()
-def evaluate_classification(model, data_loader, device, results_file=None, test_clf=None,log_wandb=True):
+def evaluate_classification(model, data_loader, device,
+                            results_file=None, test_clf=None,log_wandb=True,
+                            max_detections=None,min_box_proportionArea=None,min_score_threshold=None):
     print('STARTING VALIDATION')
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
@@ -189,7 +191,9 @@ def evaluate_classification(model, data_loader, device, results_file=None, test_
                 width = images[img_id].shape[2]
                 total_area = height * width
                 outputs = process_output(output, total_area,
-                                         #max_detections=None,min_box_proportionArea=None,min_score_threshold=None
+                                         max_detections=max_detections,
+                                         min_box_proportionArea=min_box_proportionArea,
+                                         min_score_threshold=min_score_threshold
                                          )
                 #print('beofre target',psutil.virtual_memory().percent)
                 target = targets[img_id]

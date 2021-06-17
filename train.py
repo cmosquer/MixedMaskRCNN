@@ -19,14 +19,14 @@ def main(args=None):
     config = {
         "batch_size": 4,
         "batch_size_valid":1,
-        "initial_lr": 0.01,
+        "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210527-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
-        'unfreeze_only_mask': True,
+        'unfreeze_only_mask': False,
         'data_augmentation': False,
-        'existing_valid_set': '{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
+        'existing_valid_set': None,#'{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
@@ -55,7 +55,7 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1 #patologias + background
-    pretrained_checkpoint = None #experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
+    pretrained_checkpoint = experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
     pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth' #None #
     #experiment_id = '06-05-21_masksOnly'o
     experiment_number = config['date']
@@ -132,9 +132,9 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            #train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=50,
-            #                wandb_interval=interval_steps
-            #                )
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=50,
+                            wandb_interval=interval_steps
+                            )
 
             # update the learning rate
             lr_scheduler.step()
@@ -147,8 +147,8 @@ def main(args=None):
             wandb_valid = {'epoch': epoch}
 
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
-            #results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
-            #wandb_valid.update(results_coco)
+            results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
+            wandb_valid.update(results_coco)
 
             results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
             wandb_valid.update(results_classif)
@@ -158,7 +158,6 @@ def main(args=None):
 
 
             wandb.log(wandb_valid)
-            #evaluate(model, data_loader_test, device=device, results_file=results_coco_file, coco=False,dice=True)
 
 
 if __name__ == '__main__':

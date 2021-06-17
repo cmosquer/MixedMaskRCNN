@@ -52,7 +52,10 @@ def saveAsFiles(tqdm_loader,model,device,
         height = image[0].shape[1]
         width = image[0].shape[2]
         total_area = height*width
-        outputs = process_output(outputs,total_area)
+        outputs = process_output(outputs,total_area,
+                                 max_detections=max_detections,
+                                 min_box_proportionArea=min_box_proportionArea,
+                                 min_score_threshold=min_score_threshold)
 
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
