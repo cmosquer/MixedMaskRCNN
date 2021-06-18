@@ -1,7 +1,7 @@
 import torch
 import pandas as pd
 import torch.utils.data
-from mixed_detection.utils import get_instance_segmentation_model,prepareDatasets,collate_fn
+from mixed_detection.utils import get_instance_segmentation_model,prepareDatasets,collate_fn, get_object_detection_model
 from mixed_detection.engine import train_one_epoch, evaluate_coco,evaluate_classification,evaluate_dice
 import os, random, psutil
 import numpy as np
@@ -92,14 +92,22 @@ def main(args=None):
         print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-
-        # get the model using our helper function
-        model = get_instance_segmentation_model(num_classes,
+        if config['experiment_type']=='boxes':
+            # get the model using our helper function
+            model = get_object_detection_model(num_classes,
                                                 pretrained_on_coco=True,
-                                                #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
+                                                # rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
                                                 pretrained_backbone=pretrained_backbone_path,
-                                                #trainable_layers=0
+                                                # trainable_layers=0
                                                 )
+        if config['experiment_type']=='masks':
+            # get the model using our helper function
+            model = get_instance_segmentation_model(num_classes,
+                                                    pretrained_on_coco=True,
+                                                    #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
+                                                    pretrained_backbone=pretrained_backbone_path,
+                                                    #trainable_layers=0
+                                                    )
         if pretrained_checkpoint is not None:
             print('Loading pretrained checkpoint ...')
             model.load_state_dict(torch.load(pretrained_checkpoint))

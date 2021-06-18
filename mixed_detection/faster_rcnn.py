@@ -296,8 +296,10 @@ model_urls = {
 }
 
 
-def fasterrcnn_resnet50_fpn(pretrained=False, progress=True,
-                            num_classes=91, pretrained_backbone=True, trainable_backbone_layers=None, **kwargs):
+def fasterrcnn_resnet50_fpn(pretrained_coco=False, progress=True,
+                          num_classes=91, pretrained_imagenet_backbone=True,
+                          trainable_backbone_layers=None, pretrained_backbone_checkpoint=None,
+                          **kwargs):
     """
     Constructs a Faster R-CNN model with a ResNet-50-FPN backbone.
 
@@ -358,14 +360,19 @@ def fasterrcnn_resnet50_fpn(pretrained=False, progress=True,
             Valid values are between 0 and 5, with 5 meaning all backbone layers are trainable.
     """
     trainable_backbone_layers = _validate_trainable_layers(
-        pretrained or pretrained_backbone, trainable_backbone_layers, 5, 3)
+        pretrained_coco or pretrained_imagenet_backbone, trainable_backbone_layers, 5, 3)
 
-    if pretrained:
+    if pretrained_coco:
         # no need to download the backbone if pretrained is set
-        pretrained_backbone = False
-    backbone = resnet_fpn_backbone('resnet50', pretrained_backbone, trainable_layers=trainable_backbone_layers)
+        pretrained_imagenet_backbone = False
+
+    backbone = resnet_fpn_backbone('resnet50', pretrained=pretrained_imagenet_backbone,
+                                   trainable_layers=trainable_backbone_layers,
+                                   pretrained_state_dict=pretrained_backbone_checkpoint)
+
+
     model = FasterRCNN(backbone, num_classes, **kwargs)
-    if pretrained:
+    if pretrained_coco:
         state_dict = load_state_dict_from_url(model_urls['fasterrcnn_resnet50_fpn_coco'],
                                               progress=progress)
         model.load_state_dict(state_dict)

@@ -1,4 +1,4 @@
-from mixed_detection.faster_rcnn import FastRCNNPredictor
+from mixed_detection.faster_rcnn import FastRCNNPredictor, fasterrcnn_resnet50_fpn
 from mixed_detection.mask_rcnn import MaskRCNNPredictor, maskrcnn_resnet50_fpn
 from mixed_detection import vision_transforms as T
 from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score, precision_recall_curve,brier_score_loss
@@ -312,6 +312,19 @@ def get_transform(train):
 
         transforms.append(T.RandomHorizontalFlip(0.5))
     return T.Compose(transforms)
+
+def get_object_detection_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False,**kwargs):
+    # load an instance segmentation model pre-trained on COCO
+    model = fasterrcnn_resnet50_fpn(pretrained_coco=pretrained_on_coco,
+                                  pretrained_backbone_checkpoint=pretrained_backbone,**kwargs)
+
+    # get the number of input features for the classifier
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    # replace the pre-trained head with a new one
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+
+    return model
 
 def get_instance_segmentation_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False,**kwargs):
     # load an instance segmentation model pre-trained on COCO
