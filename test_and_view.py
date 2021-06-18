@@ -246,8 +246,8 @@ def main(args=None):
     os.makedirs(save_fig_dir,exist_ok=True)
 
 
-    csv_test = pd.read_csv(baseDir + 'TRx-v2/Experiments/2021-06-08_boxes_binary/testCSV.csv')
-        #baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
+    csv_test = pd.read_csv(#baseDir + 'TRx-v2/Experiments/2021-06-08_boxes_binary/testCSV.csv')
+        baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
 
     image_ids_test = set(csv_test.file_name)
     print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))

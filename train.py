@@ -36,7 +36,8 @@ def main(args=None):
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 20,
         'random_seed': 40,
-
+        'pretrained_checkpoint': None, #experiment_dir + '/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth',
+        'pretrained_backbone_path': experiment_dir + '/17-04-21/resnetBackbone-8.pth',
     }
 
     class_numbers = {
@@ -55,8 +56,8 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1 #patologias + background
-    pretrained_checkpoint = experiment_dir+'/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth'
-    pretrained_backbone_path = experiment_dir+'/17-04-21/resnetBackbone-8.pth' #None #
+    pretrained_checkpoint = config['pretrained_checkpoint']
+    pretrained_backbone_path = config['pretrained_backbone_path']
     #experiment_id = '06-05-21_masksOnly'o
     experiment_number = config['date']
     experiment_type = config['experiment_type']
