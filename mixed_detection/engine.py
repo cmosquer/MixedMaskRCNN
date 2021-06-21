@@ -88,7 +88,7 @@ def _get_iou_types(model):
 
 
 @torch.no_grad()
-def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
+def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False, iou_types= ["bbox","segm"]):
     print('STARTING VALIDATION')
     # FIXME remove this and make paste_masks_in_image run on the GPU
     n_threads = torch.get_num_threads()
@@ -102,7 +102,7 @@ def evaluate_coco(model, data_loader, device, results_file=None, use_cpu=False):
 
     coco = get_coco_api_from_dataset(data_loader.dataset)
     #iou_types = _get_iou_types(model)
-    iou_types = ["bbox","segm"]
+
     coco_evaluator = CocoEvaluator(coco, iou_types)
     leave = False
     for images, targets in metric_logger.log_every(data_loader, 100, header):

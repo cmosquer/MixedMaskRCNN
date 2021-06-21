@@ -154,9 +154,13 @@ def main(args=None):
                 torch.save(model.state_dict(), saving_path)
                 print('Saved model to ', saving_path)
             wandb_valid = {'epoch': epoch}
-
+            if config['experiment_type']=='masks':
+                iou_types = ["bbox", "segm"]
+            else:
+                iou_types = ["bbox"]
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
-            results_coco = evaluate_coco(model, data_loader_valid, device=device, results_file=results_coco_file,use_cpu=True)
+            results_coco = evaluate_coco(model, data_loader_valid, device=device,
+                                         results_file=results_coco_file,use_cpu=True, iou_types=iou_types)
             wandb_valid.update(results_coco)
 
             results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
