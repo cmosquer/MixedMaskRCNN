@@ -22,7 +22,7 @@ def main(args=None):
         "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
-        'dataset': "TX-RX-ds-20210527-00_ubuntu",
+        'dataset': "TX-RX-ds-20210625-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': False,
         'data_augmentation': False,
