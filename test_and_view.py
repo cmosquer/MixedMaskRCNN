@@ -232,18 +232,20 @@ def main(args=None):
         'experiment': '2021-06-25_boxes_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 4,
+
         'opacityies_as_binary':True,
-        'view_in_window': True,
-        'save_figures': False,
-        'calculate_coco': False,
-        'calculate_classification': False,
-        'adjust_new_LR': True,
         'masks_as_boxes': True,
+
+
+        'calculate_coco': False,
+        'calculate_classification': True,
+        'adjust_new_LR': True,
+        'save_figures': False,
         'only_best_datasets': False,
         'save_csv': False,
+        'view_in_window': False,
+        'loop': False,
         'force_cpu': False,
-        'date': datetime.today().strftime('%Y-%m-%d'),
-        'random_seed': 40,
     }
     print('starting test script')
 
@@ -254,7 +256,7 @@ def main(args=None):
     chosen_epoch = config['tested_epoch']
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
 
-    date = config['date']
+    date = datetime.today().strftime('%Y-%m-%d'),
     save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}/'
     output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
