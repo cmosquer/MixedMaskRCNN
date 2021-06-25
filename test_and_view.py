@@ -228,9 +228,8 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'dataset': "TX-RX-ds-20210527-00_ubuntu",
-        'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
-        'experiment': '2021-06-08_boxes_binary',
+        'test_set' : output_dir+'2021-06-08_boxes_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
+        'experiment': '2021-06-25_boxes_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 4,
         'opacityies_as_binary':True,
@@ -255,10 +254,11 @@ def main(args=None):
     chosen_epoch = config['tested_epoch']
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
 
-    save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{}/detections_test_epoch-{chosen_epoch}/'
-    output_csv_path = f'{output_dir}/{chosen_experiment}/test-{}/test_output-epoch{chosen_epoch}.csv'
-    results_coco_file = f'{output_dir}/{chosen_experiment}/test-{}/cocoStats-test-epoch_{chosen_epoch}.txt'
-    classification_data = f'{output_dir}/{chosen_experiment}/test-{}/classification_data-{chosen_epoch}'
+    date = config['date']
+    save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}/'
+    output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
+    results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
+    classification_data = f'{output_dir}/{chosen_experiment}/test-{date}/classification_data-{chosen_epoch}'
     binary_opacity=config['opacityies_as_binary']
 
     os.makedirs(save_fig_dir,exist_ok=True)
@@ -377,15 +377,15 @@ def main(args=None):
     min_score_thresholds = 0.2
     min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
-    if save_figures or save_csv:
+    if config['save_figures'] or config['save_csv']:
 
         while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                           max_detections=8, min_score_threshold=min_score_thresholds,
                           min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
-                          save_csv=output_csv_path,save_figures=save_figures):
+                          save_csv=output_csv_path,save_figures=config['save_figures']):
             pass
-    if view_in_window:
-        if loop:
+    if config['view_in_window']:
+        if config['loop']:
             while visualize(tqdm_loader_files,model,device=device,max_detections=4):
                 pass
         else:
