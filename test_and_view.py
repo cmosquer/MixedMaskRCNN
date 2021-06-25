@@ -8,9 +8,10 @@ from tqdm import tqdm
 import cv2
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
-from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn, process_output
+from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn, process_output, get_object_detection_model
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
+from datetime import datetime
 
 
 
@@ -220,34 +221,50 @@ def visualize(tqdm_loader,model,device,save_fig_dir=None,max_detections=None):
 
 
 def main(args=None):
+    project = "mixed_mask_rcnn"
+
+    print('starting training script')
+    trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
+    output_dir = trx_dir+'Experiments/'
+
+    config = {
+        'dataset': "TX-RX-ds-20210527-00_ubuntu",
+        'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
+        'experiment': '2021-06-08_boxes_binary',
+        'experiment_type': 'boxes',
+        'tested_epoch': 4,
+        'opacityies_as_binary':True,
+        'view_in_window': True,
+        'save_figures': False,
+        'calculate_coco': False,
+        'calculate_classification': False,
+        'adjust_new_LR': True,
+        'masks_as_boxes': True,
+        'only_best_datasets': False,
+        'save_csv': False,
+        'force_cpu': False,
+        'date': datetime.today().strftime('%Y-%m-%d'),
+        'random_seed': 40,
+    }
     print('starting test script')
-    save_figures = False
-    only_best_datasets = False
-    view_in_window = False
-    calculate_coco = False
-    loop = False
-    save_csv = False
-    calculate_classification=True
-    force_cpu = False #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
+
+    force_cpu = config['force_cpu'] #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
-    chosen_experiment = '2021-06-08_boxes_binary/'
-    chosen_epoch = 4
-
-    baseDir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/'
-    output_dir = baseDir +'TRx-v2/Experiments/'
-    save_fig_dir = f'{output_dir}/{chosen_experiment}/detections_test_epoch-{chosen_epoch}/'
-    output_csv_path = f'{output_dir}/{chosen_experiment}/test_output-epoch{chosen_epoch}.csv'
-    results_coco_file = f'{output_dir}/{chosen_experiment}/cocoStats-test-epoch_{chosen_epoch}.txt'
+    chosen_experiment = config['experiment']
+    chosen_epoch = config['tested_epoch']
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
-    classification_data = f'{output_dir}/{chosen_experiment}/classification_data-{chosen_epoch}'
-    binary_opacity=True
+
+    save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{}/detections_test_epoch-{chosen_epoch}/'
+    output_csv_path = f'{output_dir}/{chosen_experiment}/test-{}/test_output-epoch{chosen_epoch}.csv'
+    results_coco_file = f'{output_dir}/{chosen_experiment}/test-{}/cocoStats-test-epoch_{chosen_epoch}.txt'
+    classification_data = f'{output_dir}/{chosen_experiment}/test-{}/classification_data-{chosen_epoch}'
+    binary_opacity=config['opacityies_as_binary']
 
     os.makedirs(save_fig_dir,exist_ok=True)
 
 
-    csv_test = pd.read_csv(#baseDir + 'TRx-v2/Experiments/2021-06-08_boxes_binary/testCSV.csv')
-        baseDir + 'TRx-v2/Experiments/test_groundtruth_validados.csv')
+    csv_test = config['test_set']
 
     image_ids_test = set(csv_test.file_name)
     print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))
@@ -276,7 +293,14 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1
-    model = get_instance_segmentation_model(num_classes)
+
+    if config['experiment_type']=='boxes':
+        # get the model using our helper function
+        model = get_object_detection_model(num_classes)
+    if config['experiment_type']=='masks':
+        # get the model using our helper function
+        model = get_instance_segmentation_model(num_classes)
+
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
     model.to(device)
@@ -291,7 +315,7 @@ def main(args=None):
     # define data loader
     print('Model loaded')
 
-    if calculate_coco:
+    if config['calculate_coco']:
         dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
                                           binary_opacity=binary_opacity,
                                           return_image_source=False)
@@ -302,16 +326,19 @@ def main(args=None):
         dataset_test.quantifyClasses()
         evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
                  results_file=results_coco_file)
+    test_clf = None
+    if not config['adjust_new_LR']:
+        if os.path.exists(classification_data):
+            with open(classification_data,'rb') as f:
+                classification_data_dict = pickle.load(f)
+            print('Loaded logistic regressor for classification')
+            test_clf = classification_data_dict['clf']
+        else:
+            print('no existe archivo ',classification_data)
 
-    if os.path.exists(classification_data):
-        with open(classification_data,'rb') as f:
-            classification_data_dict = pickle.load(f)
-        print('Loaded logistic regressor for classification')
-        test_clf = classification_data_dict['clf']
-    else:
-        print('no existe archivo ',classification_data)
-        test_clf=None
-    if calculate_classification:
+
+
+    if config['calculate_classification']:
         dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
                                           binary_opacity=binary_opacity,
                                           return_image_source=True)
@@ -321,7 +348,7 @@ def main(args=None):
         evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
                                 results_file=results_coco_file,test_clf=test_clf)
     #Redefinir solo las que quiero guardar la imagen
-    if only_best_datasets:
+    if config['only_best_datasets']:
         try:
             csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
             print('Using only top datasets. Total of {} images'.format(len(set(csv_test_files.file_name.values))))

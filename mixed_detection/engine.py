@@ -152,7 +152,7 @@ def evaluate_classification(model, data_loader, device,
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
-    n_features = 7
+    n_features = 1
 
     x_regresion = np.zeros((len(data_loader.dataset),n_features))
     y_regresion = np.zeros(len(data_loader.dataset))

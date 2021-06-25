@@ -30,7 +30,7 @@ def main(args=None):
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
         'no_findings_examples_in_train': False,
-        'max_valid_set_size': 'balanced',
+        'max_valid_set_size': 9150,
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
@@ -70,7 +70,7 @@ def main(args=None):
     dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
 
 
-
+    """
     with wandb.init(config=config, project=project, name=experiment_id):
         config=wandb.config
 
@@ -172,6 +172,6 @@ def main(args=None):
 
             wandb.log(wandb_valid)
 
-
+    """
 if __name__ == '__main__':
     main()
