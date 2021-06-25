@@ -61,7 +61,7 @@ def main(args=None):
     #experiment_id = '06-05-21_masksOnly'o
     experiment_number = config['date']
     experiment_type = config['experiment_type']
-    experiment_id = experiment_number+'_'+experiment_type
+    wandb_valid = {'epoch': epoch}
     if config['opacityies_as_binary']:
         experiment_id+='_binary'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
@@ -70,7 +70,7 @@ def main(args=None):
     dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
 
 
-    """
+
     with wandb.init(config=config, project=project, name=experiment_id):
         config=wandb.config
 
@@ -172,6 +172,6 @@ def main(args=None):
 
             wandb.log(wandb_valid)
 
-    """
+
 if __name__ == '__main__':
     main()

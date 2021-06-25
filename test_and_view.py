@@ -13,6 +13,7 @@ from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 from datetime import datetime
 
+import wandb
 
 
 def label_to_name(label):
@@ -316,83 +317,88 @@ def main(args=None):
     model.eval()
     # define data loader
     print('Model loaded')
+    experiment_id = f"test_{date}_{chosen_experiment}"
+    with wandb.init(config=config, project=project, name=experiment_id):
+        config = wandb.config
+        wandb_valid = {}
+        if config['calculate_coco']:
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                              binary_opacity=binary_opacity,
+                                              return_image_source=False)
+            data_loader_test = torch.utils.data.DataLoader(
+                dataset_test, batch_size=1, shuffle=False, num_workers=0,
+                collate_fn=collate_fn)
+            print('DATASET FOR COCO:')
+            dataset_test.quantifyClasses()
+            results_coco = evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
+                     results_file=results_coco_file)
+            wandb_valid.update(results_coco)
+        test_clf = None
+        if not config['adjust_new_LR']:
+            if os.path.exists(classification_data):
+                with open(classification_data,'rb') as f:
+                    classification_data_dict = pickle.load(f)
+                print('Loaded logistic regressor for classification')
+                test_clf = classification_data_dict['clf']
+            else:
+                print('no existe archivo ',classification_data)
 
-    if config['calculate_coco']:
-        dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
-                                          binary_opacity=binary_opacity,
-                                          return_image_source=False)
-        data_loader_test = torch.utils.data.DataLoader(
-            dataset_test, batch_size=1, shuffle=False, num_workers=0,
-            collate_fn=collate_fn)
-        print('DATASET FOR COCO:')
-        dataset_test.quantifyClasses()
-        evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
-                 results_file=results_coco_file)
-    test_clf = None
-    if not config['adjust_new_LR']:
-        if os.path.exists(classification_data):
-            with open(classification_data,'rb') as f:
-                classification_data_dict = pickle.load(f)
-            print('Loaded logistic regressor for classification')
-            test_clf = classification_data_dict['clf']
+
+
+        if config['calculate_classification']:
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+                                              binary_opacity=binary_opacity,
+                                              return_image_source=True)
+            data_loader_test = torch.utils.data.DataLoader(
+                dataset_test, batch_size=1, shuffle=False, num_workers=0,
+                collate_fn=collate_fn)
+            results_classif = evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
+                                    results_file=results_coco_file,test_clf=test_clf)
+            wandb_valid.update(results_classif)
+        #Redefinir solo las que quiero guardar la imagen
+        if config['only_best_datasets']:
+            try:
+                csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
+                print('Using only top datasets. Total of {} images'.format(len(set(csv_test_files.file_name.values))))
+            except ValueError as e:
+                print(e)
+                print('Not reseting index')
+                csv_test_files = csv_test[csv_test.image_source == 'hiba']
         else:
-            print('no existe archivo ',classification_data)
-
-
-
-    if config['calculate_classification']:
-        dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
-                                          binary_opacity=binary_opacity,
-                                          return_image_source=True)
-        data_loader_test = torch.utils.data.DataLoader(
-            dataset_test, batch_size=1, shuffle=False, num_workers=0,
+            csv_test_files = csv_test.copy()
+        dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers,
+                                                get_transform(train=False), binary_opacity=binary_opacity,
+                                                return_image_source=True)
+        data_loader_test_files = torch.utils.data.DataLoader(
+            dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
             collate_fn=collate_fn)
-        evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
-                                results_file=results_coco_file,test_clf=test_clf)
-    #Redefinir solo las que quiero guardar la imagen
-    if config['only_best_datasets']:
-        try:
-            csv_test_files = csv_test[csv_test.image_source.isin(['hiba','jsrt','mimic_relabeled'])].reset_index(drop=True)
-            print('Using only top datasets. Total of {} images'.format(len(set(csv_test_files.file_name.values))))
-        except ValueError as e:
-            print(e)
-            print('Not reseting index')
-            csv_test_files = csv_test[csv_test.image_source == 'hiba']
-    else:
-        csv_test_files = csv_test.copy()
-    dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers,
-                                            get_transform(train=False), binary_opacity=binary_opacity,
-                                            return_image_source=True)
-    data_loader_test_files = torch.utils.data.DataLoader(
-        dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
-        collate_fn=collate_fn)
-    tqdm_loader_files = tqdm(data_loader_test_files)
-    print('DATASET FOR FIGURES:')
-    print(dataset_test_files.quantifyClasses())
-    """
-    min_score_thresholds = {1: 0.25, #'NoduloMasa', #NUEVO 0.35
-       2: 0.25 , #'Consolidacion',
-       3: 0.25, #'PatronIntersticial',
-       4: 0.25, #'Atelectasia',
-       5: 0.25 #'LesionesDeLaPared'
-       }"""
-    min_score_thresholds = 0.2
-    min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+        tqdm_loader_files = tqdm(data_loader_test_files)
+        print('DATASET FOR FIGURES:')
+        print(dataset_test_files.quantifyClasses())
+        """
+        min_score_thresholds = {1: 0.25, #'NoduloMasa', #NUEVO 0.35
+           2: 0.25 , #'Consolidacion',
+           3: 0.25, #'PatronIntersticial',
+           4: 0.25, #'Atelectasia',
+           5: 0.25 #'LesionesDeLaPared'
+           }"""
+        min_score_thresholds = 0.2
+        min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
-    if config['save_figures'] or config['save_csv']:
+        if config['save_figures'] or config['save_csv']:
 
-        while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
-                          max_detections=8, min_score_threshold=min_score_thresholds,
-                          min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
-                          save_csv=output_csv_path,save_figures=config['save_figures']):
-            pass
-    if config['view_in_window']:
-        if config['loop']:
-            while visualize(tqdm_loader_files,model,device=device,max_detections=4):
+            while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
+                              max_detections=8, min_score_threshold=min_score_thresholds,
+                              min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
+                              save_csv=output_csv_path,save_figures=config['save_figures']):
                 pass
-        else:
-            visualize(tqdm_loader_files,model)
+        if config['view_in_window']:
+            if config['loop']:
+                while visualize(tqdm_loader_files,model,device=device,max_detections=4):
+                    pass
+            else:
+                visualize(tqdm_loader_files,model)
 
-
+        wandb.log(wandb_valid)
 if __name__ == '__main__':
     main()
