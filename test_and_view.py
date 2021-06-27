@@ -267,7 +267,7 @@ def main(args=None):
     os.makedirs(save_fig_dir,exist_ok=True)
 
 
-    csv_test = config['test_set']
+    csv_test = pd.read_csv(config['test_set'])
 
     image_ids_test = set(csv_test.file_name)
     print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))
