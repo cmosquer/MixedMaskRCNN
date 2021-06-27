@@ -229,7 +229,7 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : output_dir+'2021-06-08_boxes_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
+        'test_set' : output_dir+'2021-06-25_boxes_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
         'experiment': '2021-06-20_boxes_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 4,
