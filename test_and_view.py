@@ -230,7 +230,7 @@ def main(args=None):
 
     config = {
         'test_set' : output_dir+'2021-06-08_boxes_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
-        'experiment': '2021-06-25_boxes_binary',
+        'experiment': '2021-06-20_boxes_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 4,
 
@@ -257,7 +257,7 @@ def main(args=None):
     chosen_epoch = config['tested_epoch']
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
 
-    date = datetime.today().strftime('%Y-%m-%d'),
+    date = datetime.today().strftime('%Y-%m-%d')
     save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}/'
     output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
