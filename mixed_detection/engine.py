@@ -154,7 +154,7 @@ def evaluate_classification(model, data_loader, device,
     header = 'Test:'
     n_features = 1
 
-    x_regresion = np.zeros((len(data_loader.dataset),n_features))
+    x_regresion = np.zeros((len(data_loader.dataset), 7))
     y_regresion = np.zeros(len(data_loader.dataset))
     image_paths = []
     j = 0
@@ -205,7 +205,7 @@ def evaluate_classification(model, data_loader, device,
                 #print('before scores',psutil.virtual_memory().percent)
                 image_scores = output['scores']#.detach().numpy()
                 image_areas = output['areas']#.detach().numpy()
-                x_regresion[j,:] = update_regression_features(image_scores,image_areas)
+                x_regresion[j,:] = update_regression_features(image_scores, image_areas)
                 j += 1
                 #print('before del',psutil.virtual_memory().percent)
                 del gt,image_scores,image_areas,target
@@ -234,12 +234,12 @@ def evaluate_classification(model, data_loader, device,
             x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
                                                     test_size=0.2,
                                                     random_state=32)
-            clf = LogisticRegression(random_state=32, solver='newton-cg').fit(x_train, y_train)
+            clf = LogisticRegression(random_state=32, solver='newton-cg').fit(x_train[:,:n_features], y_train)
             print(pd.Series(y_regresion).value_counts())
             print(pd.Series(y_train).value_counts())
             print(pd.Series(y_test).value_counts())
 
-            preds = clf.predict(x_test)
+            preds = clf.predict(x_test[:,:n_features])
 
             print(pd.Series(preds).value_counts())
             if results_file:
