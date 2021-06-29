@@ -63,6 +63,8 @@ def saveAsFiles(tqdm_loader,model,device,
                                  max_detections=max_detections,
                                  min_box_proportionArea=min_box_proportionArea,
                                  min_score_threshold=min_score_threshold)
+
+        outputs = [{k: v.numpy() for k, v in t.items()} for t in outputs][0]
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
         if save_figures:
@@ -105,7 +107,7 @@ def saveAsFiles(tqdm_loader,model,device,
                     pred = 1 if test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]>posterior_th else 0
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
-                
+
                 gt = 1 if len(targets)>0 else 0
                 if gt ==0: print(targets)
                 print(pred,gt)
