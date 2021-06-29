@@ -64,7 +64,8 @@ def saveAsFiles(tqdm_loader,model,device,
                                  min_box_proportionArea=min_box_proportionArea,
                                  min_score_threshold=min_score_threshold)
 
-        outputs = [{k: v.numpy() for k, v in t.items()} for t in outputs][0]
+        print(type(outputs))
+        outputs = {k: v.numpy() for k, v in outputs.items()}
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
         if save_figures:
