@@ -102,9 +102,10 @@ def saveAsFiles(tqdm_loader,model,device,
                 with open(binary_classifier, 'rb') as f:
                     test_clf = pickle.load(f)
                 if posterior_th is not None:
-                    pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:1]>posterior_th
+                    pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]>posterior_th
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
+                print(pred.shape)
                 gt = 1 if len(targets)>0 else 0
                 if gt ==0: print(targets)
                 print(pred,gt)
