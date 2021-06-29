@@ -98,15 +98,16 @@ def saveAsFiles(tqdm_loader,model,device,
             #try:
             #predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
             if binary_classifier is not None:
+                pred = None
                 with open(binary_classifier, 'rb') as f:
                     test_clf = pickle.load(f)
                 if posterior_th is not None:
                     pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:1]>posterior_th
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
-                print(targets)
-                gt = len(targets)>0
-                print(idx,pred,gt)
+                print(targets['labels'])
+                gt = len(targets['labels'])>0
+                print(pred,gt)
                 if np.all(pred == gt):
                     if np.all(gt == 0):
                         folder = 'TrueNegative'
