@@ -127,6 +127,9 @@ def saveAsFiles(tqdm_loader,model,device,
 
             saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                                image_source, os.path.basename(image_path.replace('\\', '/')))
+            if cont_pred is not None:
+                cont_pred_str = str(cont_pred).replace('.','-')
+                saving_path = saving_path.replace('.jpg',f'_{cont_pred_str}.jpg')
             cv2.imwrite(saving_path, colorimage)
 
             print('Saved ', saving_path)
