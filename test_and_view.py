@@ -80,7 +80,7 @@ def saveAsFiles(tqdm_loader,model,device,
                 # draw annotations on the image
             if len(targets)>0:
                 if len(targets['boxes'])==0:
-                    caption = 'Image GT: '+','.join([label_to_name(lbl) for lbl in targets['labels']])
+                    caption = 'Image GT: opacidad'#+','.join([label_to_name(lbl) for lbl in targets['labels']])
                     cv2.putText(colorimage, caption,
                             (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
                 else:
@@ -102,7 +102,7 @@ def saveAsFiles(tqdm_loader,model,device,
                 with open(binary_classifier, 'rb') as f:
                     test_clf = pickle.load(f)
                 if posterior_th is not None:
-                    pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]>posterior_th
+                    pred = 1 if test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]>posterior_th else 0
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
                 print(pred.shape)
