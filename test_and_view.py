@@ -8,7 +8,7 @@ from tqdm import tqdm
 import cv2
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
-from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn, process_output, get_object_detection_model
+from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn, process_output, get_object_detection_model, update_regression_features
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 from datetime import datetime
@@ -29,13 +29,14 @@ def label_to_name(label):
 def saveAsFiles(tqdm_loader,model,device,
                 save_fig_dir,
                 save_figures=True,
-                max_detections=None,
+                max_detections=None,binary_classifier=None,posterior_th=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
                 min_box_proportionArea=None, draw='boxes',binary=False,results_file='',
                 save_csv=None, #If not None, should be a str with filepath where to save dataframe with targets and predictions
 
                 ):
     j = 0
+
     if save_csv is not None:
         df = pd.DataFrame(columns=['image_name','box_type','label','score','x1','x2','y1','y2','original_file_name','image_source'])
 
@@ -50,15 +51,18 @@ def saveAsFiles(tqdm_loader,model,device,
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         outputs = model(image)
-        outputs = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs][0]
+
         height = image[0].shape[1]
         width = image[0].shape[2]
         total_area = height*width
+        outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
+
+        outputs = process_output(outputs,total_area)
+        x_reg = update_regression_features(outputs['scores'], outputs['areas'])
         outputs = process_output(outputs,total_area,
                                  max_detections=max_detections,
                                  min_box_proportionArea=min_box_proportionArea,
                                  min_score_threshold=min_score_threshold)
-
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
         if save_figures:
@@ -92,26 +96,26 @@ def saveAsFiles(tqdm_loader,model,device,
             os.makedirs(save_fig_dir+'TrueNegative',exist_ok=True)
             folder = ''
             #try:
-            predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
-            if os.path.exists(predspath):
-                with open(predspath, 'rb') as f:
-                    classification_data = pickle.load(f)
-                if 'paths' in classification_data.keys():
-                    idx = np.argwhere([image_path in dir for dir in classification_data['paths']]).flatten()
-
-                    pred = classification_data['preds_test'][idx].astype(np.int)
-                    gt = classification_data['y_test'][idx].astype(np.int)
-                    print(idx,pred,gt)
-                    if np.all(pred == gt):
-                        if np.all(gt == 0):
-                            folder = 'TrueNegative'
-                        else:
-                            folder = 'TruePositive'
+            #predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
+            if binary_classifier is not None:
+                with open(binary_classifier, 'rb') as f:
+                    test_clf = pickle.load(f)
+                if posterior_th is not None:
+                    pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:1]>posterior_th
+                else:
+                    pred = test_clf.predict(x_reg.reshape(1, -1))
+                gt = classification_data['y_test'][idx].astype(np.int)
+                print(idx,pred,gt)
+                if np.all(pred == gt):
+                    if np.all(gt == 0):
+                        folder = 'TrueNegative'
                     else:
-                        if np.all(gt == 0):
-                            folder = 'FalsePositive'
-                        else:
-                            folder = 'FalseNegative'
+                        folder = 'TruePositive'
+                else:
+                    if np.all(gt == 0):
+                        folder = 'FalsePositive'
+                    else:
+                        folder = 'FalseNegative'
             saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                                image_source, os.path.basename(image_path.replace('\\', '/')))
             cv2.imwrite(saving_path, colorimage)
@@ -229,7 +233,7 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : output_dir+'2021-06-25_boxes_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'),
+        'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
         'experiment': '2021-06-20_boxes_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 4,
@@ -237,11 +241,12 @@ def main(args=None):
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
 
-
+        'posterior_th': 0.08,
         'calculate_coco': False,
-        'calculate_classification': True,
-        'adjust_new_LR': True,
-        'save_figures': False,
+        'calculate_classification': False,
+        'binary_classifier': output_dir+'2021-06-20_boxes_binary/test-2021-06-28_/classification_data-test-epoch_4RF',
+        'adjust_new_LR': False,
+        'save_figures': True,
         'only_best_datasets': False,
         'save_csv': False,
         'view_in_window': False,
@@ -335,13 +340,18 @@ def main(args=None):
             wandb_valid.update(results_coco)
         test_clf = None
         if not config['adjust_new_LR']:
-            if os.path.exists(classification_data):
-                with open(classification_data,'rb') as f:
-                    classification_data_dict = pickle.load(f)
-                print('Loaded logistic regressor for classification')
-                test_clf = classification_data_dict['clf']
+            if config['binary_classifier'] is not None:
+                if os.path.exists(config['binary_classifier']):
+                    with open(config['binary_classifier'], 'rb') as f:
+                        test_clf = pickle.load(f)
             else:
-                print('no existe archivo ',classification_data)
+                if os.path.exists(classification_data):
+                    with open(classification_data,'rb') as f:
+                        classification_data_dict = pickle.load(f)
+                    print('Loaded logistic regressor for classification')
+                    test_clf = classification_data_dict['clf']
+                else:
+                    print('no existe archivo ',classification_data)
 
 
 
@@ -353,7 +363,7 @@ def main(args=None):
                 dataset_test, batch_size=1, shuffle=False, num_workers=0,
                 collate_fn=collate_fn)
             results_classif = evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
-                                    results_file=results_coco_file,test_clf=test_clf)
+                                    results_file=results_coco_file,test_clf=test_clf,cost_ratios=config['cost_ratios'])
             wandb_valid.update(results_classif)
         #Redefinir solo las que quiero guardar la imagen
         if config['only_best_datasets']:
@@ -389,6 +399,8 @@ def main(args=None):
 
             while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                               max_detections=8, min_score_threshold=min_score_thresholds,
+                              binary_classifier=config['binary_classifier'],
+                              posterior_th=config['posterior_th'],
                               min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
                               save_csv=output_csv_path,save_figures=config['save_figures']):
                 pass

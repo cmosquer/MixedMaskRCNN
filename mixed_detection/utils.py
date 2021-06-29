@@ -347,18 +347,19 @@ def get_instance_segmentation_model(num_classes, pretrained_backbone=None, pretr
     return model
 
 
-def getClassificationMetrics(preds, labels_test, print_results=True):
-
+def getClassificationMetrics(preds, labels_test, print_results=True,cont_preds=None):
+    if cont_preds is None:
+        cont_preds = preds.copy()
     try:
-        fpr, tpr, th = roc_curve(labels_test, preds)
-        aucroc = roc_auc_score(labels_test, preds)
+        fpr, tpr, th = roc_curve(labels_test, cont_preds)
+        aucroc = roc_auc_score(labels_test, cont_preds)
         print('AUCROC: {:.3f}'.format(aucroc))
     except Exception as e:
         print('couldnt calculate roc curve because error: {}'.format(e))
         aucroc = np.nan
 
     try:
-        precision, recall, thresholds = precision_recall_curve(labels_test, preds)
+        precision, recall, thresholds = precision_recall_curve(labels_test, cont_preds)
         aucpr = sklearnAUC(recall, precision)
         print('AUCPR: {:.3f}'.format(aucpr))
     except Exception as e:
@@ -377,10 +378,10 @@ def getClassificationMetrics(preds, labels_test, print_results=True):
     #TODO agregar brier score + y -
     positive_labels = labels_test[labels_test == 1]
     Npos = len(positive_labels)
-    positive_preds = preds[labels_test == 1]
+    positive_preds = cont_preds[labels_test == 1]
 
     negative_labels = labels_test[labels_test == 0]
-    negative_preds = preds[labels_test == 0]
+    negative_preds = cont_preds[labels_test == 0]
 
     assert len(positive_labels) + len(negative_labels) == len(labels_test)
 

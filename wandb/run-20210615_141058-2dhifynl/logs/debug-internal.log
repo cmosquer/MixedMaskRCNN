@@ -1,0 +1,144 @@
+2021-06-15 14:10:59,385 INFO    MainThread:12323 [internal.py:wandb_internal():91] W&B internal server running at pid: 12323, started at: 2021-06-15 14:10:59.385723
+2021-06-15 14:10:59,388 INFO    WriterThread:12323 [datastore.py:open_for_write():77] open: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/run-2dhifynl.wandb
+2021-06-15 14:10:59,390 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: check_version
+2021-06-15 14:10:59,392 DEBUG   SenderThread:12323 [sender.py:send():176] send: header
+2021-06-15 14:10:59,392 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: check_version
+2021-06-15 14:10:59,558 DEBUG   SenderThread:12323 [sender.py:send():176] send: run
+2021-06-15 14:10:59,864 INFO    SenderThread:12323 [dir_watcher.py:__init__():168] watching files in: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files
+2021-06-15 14:10:59,865 INFO    SenderThread:12323 [sender.py:_start_run_threads():699] run started: 2dhifynl with start time 1623777058
+2021-06-15 14:10:59,865 DEBUG   SenderThread:12323 [sender.py:send():176] send: summary
+2021-06-15 14:10:59,866 INFO    SenderThread:12323 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-06-15 14:10:59,869 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: run_start
+2021-06-15 14:10:59,874 DEBUG   HandlerThread:12323 [meta.py:__init__():39] meta init
+2021-06-15 14:10:59,874 DEBUG   HandlerThread:12323 [meta.py:__init__():53] meta init done
+2021-06-15 14:10:59,874 DEBUG   HandlerThread:12323 [meta.py:probe():210] probe
+2021-06-15 14:10:59,882 DEBUG   HandlerThread:12323 [meta.py:_setup_git():200] setup git
+2021-06-15 14:10:59,903 DEBUG   HandlerThread:12323 [meta.py:_setup_git():207] setup git done
+2021-06-15 14:10:59,903 DEBUG   HandlerThread:12323 [meta.py:_save_pip():57] save pip
+2021-06-15 14:10:59,904 DEBUG   HandlerThread:12323 [meta.py:_save_pip():71] save pip done
+2021-06-15 14:10:59,904 DEBUG   HandlerThread:12323 [meta.py:_save_conda():78] save conda
+2021-06-15 14:11:00,866 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/wandb-summary.json
+2021-06-15 14:11:00,867 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/requirements.txt
+2021-06-15 14:11:00,867 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/conda-environment.yaml
+2021-06-15 14:11:01,865 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_modified():229] file/dir modified: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/conda-environment.yaml
+2021-06-15 14:11:05,867 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/output.log
+2021-06-15 14:11:15,873 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_modified():229] file/dir modified: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/output.log
+2021-06-15 14:11:41,768 DEBUG   HandlerThread:12323 [meta.py:_save_conda():86] save conda done
+2021-06-15 14:11:41,768 DEBUG   HandlerThread:12323 [meta.py:probe():252] probe done
+2021-06-15 14:11:41,772 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: stop_status
+2021-06-15 14:11:41,772 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: stop_status
+2021-06-15 14:11:41,777 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:41,777 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:41,777 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:41,778 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:41,778 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:41,778 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:41,888 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/wandb-metadata.json
+2021-06-15 14:11:41,985 DEBUG   SenderThread:12323 [sender.py:send():176] send: telemetry
+2021-06-15 14:11:41,985 DEBUG   SenderThread:12323 [sender.py:send():176] send: exit
+2021-06-15 14:11:41,985 INFO    SenderThread:12323 [sender.py:send_exit():281] handling exit code: 1
+2021-06-15 14:11:41,987 INFO    SenderThread:12323 [sender.py:send_exit():289] send defer
+2021-06-15 14:11:41,992 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:41,992 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:41,992 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:41,993 DEBUG   SenderThread:12323 [sender.py:send():176] send: stats
+2021-06-15 14:11:41,993 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:41,994 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:41,995 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:41,996 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:41,996 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 0
+2021-06-15 14:11:41,997 DEBUG   SenderThread:12323 [sender.py:send():176] send: files
+2021-06-15 14:11:41,998 INFO    SenderThread:12323 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-06-15 14:11:41,998 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:41,998 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 0
+2021-06-15 14:11:41,999 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 1
+2021-06-15 14:11:41,999 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:41,999 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 1
+2021-06-15 14:11:42,070 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,070 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 1
+2021-06-15 14:11:42,071 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 2
+2021-06-15 14:11:42,071 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:42,071 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 2
+2021-06-15 14:11:42,072 DEBUG   SenderThread:12323 [sender.py:send():176] send: stats
+2021-06-15 14:11:42,072 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,073 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 2
+2021-06-15 14:11:42,073 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 3
+2021-06-15 14:11:42,073 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:42,073 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 3
+2021-06-15 14:11:42,073 DEBUG   SenderThread:12323 [sender.py:send():176] send: summary
+2021-06-15 14:11:42,074 INFO    SenderThread:12323 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-06-15 14:11:42,074 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,075 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 3
+2021-06-15 14:11:42,075 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 4
+2021-06-15 14:11:42,075 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:42,075 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 4
+2021-06-15 14:11:42,075 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,076 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 4
+2021-06-15 14:11:42,100 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:42,539 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 5
+2021-06-15 14:11:42,539 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:42,540 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:42,540 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 5
+2021-06-15 14:11:42,541 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,541 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 5
+2021-06-15 14:11:42,541 INFO    SenderThread:12323 [dir_watcher.py:finish():282] shutting down directory watcher
+2021-06-15 14:11:42,642 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:42,706 INFO    Thread-11 :12323 [upload_job.py:push():133] Uploaded file /tmp/tmp_6ep781vwandb/tar4974w-wandb-metadata.json
+2021-06-15 14:11:42,889 INFO    Thread-8  :12323 [dir_watcher.py:_on_file_modified():229] file/dir modified: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/wandb-summary.json
+2021-06-15 14:11:42,890 INFO    SenderThread:12323 [dir_watcher.py:_on_file_modified():229] file/dir modified: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/config.yaml
+2021-06-15 14:11:42,891 INFO    SenderThread:12323 [dir_watcher.py:finish():312] scan: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files
+2021-06-15 14:11:42,891 INFO    SenderThread:12323 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/output.log output.log
+2021-06-15 14:11:42,891 INFO    SenderThread:12323 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/wandb-metadata.json wandb-metadata.json
+2021-06-15 14:11:42,892 INFO    SenderThread:12323 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/requirements.txt requirements.txt
+2021-06-15 14:11:42,901 INFO    SenderThread:12323 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/wandb-summary.json wandb-summary.json
+2021-06-15 14:11:42,909 INFO    SenderThread:12323 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/config.yaml config.yaml
+2021-06-15 14:11:42,915 INFO    SenderThread:12323 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/conda-environment.yaml conda-environment.yaml
+2021-06-15 14:11:42,915 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 6
+2021-06-15 14:11:42,916 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:42,917 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:42,931 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 6
+2021-06-15 14:11:42,931 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,931 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 6
+2021-06-15 14:11:42,932 INFO    SenderThread:12323 [file_pusher.py:finish():176] shutting down file pusher
+2021-06-15 14:11:42,932 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 7
+2021-06-15 14:11:42,933 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:42,933 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 7
+2021-06-15 14:11:42,933 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:42,934 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 7
+2021-06-15 14:11:43,019 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:43,530 INFO    Thread-12 :12323 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/output.log
+2021-06-15 14:11:43,546 INFO    Thread-14 :12323 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/wandb-summary.json
+2021-06-15 14:11:43,599 INFO    Thread-16 :12323 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/conda-environment.yaml
+2021-06-15 14:11:43,626 INFO    Thread-13 :12323 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/requirements.txt
+2021-06-15 14:11:43,636 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 8
+2021-06-15 14:11:43,637 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:43,638 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:43,638 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 8
+2021-06-15 14:11:43,639 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:43,639 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 8
+2021-06-15 14:11:43,639 INFO    SenderThread:12323 [sender.py:send_request_defer():336] send defer: 9
+2021-06-15 14:11:43,640 DEBUG   SenderThread:12323 [sender.py:send():176] send: final
+2021-06-15 14:11:43,641 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: defer
+2021-06-15 14:11:43,642 DEBUG   SenderThread:12323 [sender.py:send():176] send: footer
+2021-06-15 14:11:43,642 INFO    HandlerThread:12323 [handler.py:handle_request_defer():138] handle defer: 9
+2021-06-15 14:11:43,643 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: defer
+2021-06-15 14:11:43,643 INFO    SenderThread:12323 [sender.py:send_request_defer():298] handle sender defer: 9
+2021-06-15 14:11:43,740 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:43,740 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:43,752 INFO    Thread-15 :12323 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/files/config.yaml
+2021-06-15 14:11:43,843 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:43,844 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:43,947 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:43,947 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:44,050 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: poll_exit
+2021-06-15 14:11:44,050 DEBUG   SenderThread:12323 [sender.py:send_request():186] send_request: poll_exit
+2021-06-15 14:11:44,051 INFO    SenderThread:12323 [file_pusher.py:join():181] waiting for file pusher
+2021-06-15 14:11:44,053 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: get_summary
+2021-06-15 14:11:44,055 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: sampled_history
+2021-06-15 14:11:44,057 DEBUG   HandlerThread:12323 [handler.py:handle_request():121] handle_request: shutdown
+2021-06-15 14:11:44,057 INFO    HandlerThread:12323 [handler.py:finish():632] shutting down handler
+2021-06-15 14:11:44,642 INFO    WriterThread:12323 [datastore.py:close():258] close: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210615_141058-2dhifynl/run-2dhifynl.wandb
+2021-06-15 14:11:45,051 INFO    SenderThread:12323 [sender.py:finish():925] shutting down sender
+2021-06-15 14:11:45,052 INFO    SenderThread:12323 [file_pusher.py:finish():176] shutting down file pusher
+2021-06-15 14:11:45,052 INFO    SenderThread:12323 [file_pusher.py:join():181] waiting for file pusher
+2021-06-15 14:11:45,053 INFO    MainThread:12323 [internal.py:handle_exit():78] Internal process exited
