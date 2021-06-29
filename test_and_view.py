@@ -104,7 +104,8 @@ def saveAsFiles(tqdm_loader,model,device,
                     pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:1]>posterior_th
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
-                gt = classification_data['y_test'][idx].astype(np.int)
+                print(targets)
+                gt = len(targets)>0
                 print(idx,pred,gt)
                 if np.all(pred == gt):
                     if np.all(gt == 0):
