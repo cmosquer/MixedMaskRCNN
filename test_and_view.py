@@ -105,8 +105,8 @@ def saveAsFiles(tqdm_loader,model,device,
                     pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:1]>posterior_th
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
-                print(targets['labels'])
-                gt = len(targets['labels'])>0
+                gt = 1 if len(targets)>0 else 0
+                if gt ==0: print(targets)
                 print(pred,gt)
                 if np.all(pred == gt):
                     if np.all(gt == 0):
