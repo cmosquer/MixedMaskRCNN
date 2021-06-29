@@ -105,7 +105,7 @@ def saveAsFiles(tqdm_loader,model,device,
                     pred = 1 if test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]>posterior_th else 0
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
-                print(pred.shape)
+                
                 gt = 1 if len(targets)>0 else 0
                 if gt ==0: print(targets)
                 print(pred,gt)
