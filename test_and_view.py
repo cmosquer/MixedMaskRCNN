@@ -93,25 +93,27 @@ def saveAsFiles(tqdm_loader,model,device,
                     #if draw=='masks':
                     #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
 
+            print('TARGET for {} is {}'.format(image_path,targets['labels']))
             os.makedirs(save_fig_dir+'TruePositive',exist_ok=True)
             os.makedirs(save_fig_dir+'FalsePositive',exist_ok=True)
             os.makedirs(save_fig_dir+'FalseNegative',exist_ok=True)
-            os.makedirs(save_fig_dir+'TrueNegative',exist_ok=True)
+            #os.makedirs(save_fig_dir+'TrueNegative',exist_ok=True)
             folder = ''
             #try:
             #predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
             if binary_classifier is not None:
                 pred = None
+                cont_pred = None
                 with open(binary_classifier, 'rb') as f:
                     test_clf = pickle.load(f)
                 if posterior_th is not None:
-                    pred = 1 if test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]>posterior_th else 0
+                    cont_pred = test_clf.predict_proba(x_reg.reshape(1, -1))[:,1]
+                    pred = 1 if cont_pred>posterior_th else 0
                 else:
                     pred = test_clf.predict(x_reg.reshape(1, -1))
-
-                gt = 1 if len(targets)>0 else 0
-                if gt ==0: print(targets)
-                print(pred,gt)
+                    cont_pred = pred.copy()
+                gt = 1 if len(targets['labels']) > 0 else 0
+                print(cont_pred,pred,gt)
                 if np.all(pred == gt):
                     if np.all(gt == 0):
                         folder = 'TrueNegative'
@@ -122,6 +124,7 @@ def saveAsFiles(tqdm_loader,model,device,
                         folder = 'FalsePositive'
                     else:
                         folder = 'FalseNegative'
+
             saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                                image_source, os.path.basename(image_path.replace('\\', '/')))
             cv2.imwrite(saving_path, colorimage)
@@ -143,6 +146,8 @@ def saveAsFiles(tqdm_loader,model,device,
                           'y1': int(outputs['boxes'][i][1]),
                           'x2': int(outputs['boxes'][i][2]),
                           'y2': int(outputs['boxes'][i][3]),
+                          'overall_pred': pred,
+                          'overall_prob': cont_pred,
                           'original_file_name': image_path,
                           'image_source':image_source
                           }
