@@ -5,10 +5,11 @@ from mixed_detection import vision_transforms as T
 from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score, precision_recall_curve,brier_score_loss
 from sklearn.metrics import auc as sklearnAUC
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
-
+from matplotlib import pyplot as plt
+from matplotlib.colors import Normalize
 from collections import Counter
 import os
-import random
+import random, math
 import numpy as np
 import torch
 from torch import Tensor
@@ -431,10 +432,11 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
             #x1 = int(detect[1])
             #y2 = int(detect[2])
             #x2 = int(detect[3])
-            height = int(y2-y1)
+            height = int(y2 - y1)
+            width = int(x2 - x1)
             gradientPadding_x = int(0.2 * width)
             gradientPadding_y = int(0.2 * height)
-            width = int(x2-x1)
+
             try:
                 xlow = max(0,x1-gradientPadding_x)
                 ylow= max(0,y1-gradientPadding_y)
