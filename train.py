@@ -91,7 +91,7 @@ def main(args=None):
         if config['experiment_type']=='boxes':
             # get the model using our helper function
             model = get_object_detection_model(num_classes,
-                                                pretrained_on_coco=True,
+                                                pretrained_on_coco=False,
                                                 # rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
                                                 pretrained_backbone=pretrained_backbone_path,
                                                 # trainable_layers=0

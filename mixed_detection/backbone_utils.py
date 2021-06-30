@@ -104,7 +104,7 @@ def resnet_fpn_backbone(
             a new list of feature maps and their corresponding names. By
             default a ``LastLevelMaxPool`` is used.
     """
-
+    print('Pretrained with imagenet: ', pretrained)
     if pretrained_state_dict is not None:
             pretrained = False
     print('Pretrained with imagenet: ',pretrained)

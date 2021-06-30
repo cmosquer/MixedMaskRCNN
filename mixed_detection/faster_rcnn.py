@@ -365,7 +365,7 @@ def fasterrcnn_resnet50_fpn(pretrained_coco=False, progress=True,
     if pretrained_coco:
         # no need to download the backbone if pretrained is set
         pretrained_imagenet_backbone = False
-
+    print('pretrained imagenet backcbone',pretrained_imagenet_backbone)
     backbone = resnet_fpn_backbone('resnet50', pretrained=pretrained_imagenet_backbone,
                                    trainable_layers=trainable_backbone_layers,
                                    pretrained_state_dict=pretrained_backbone_checkpoint)

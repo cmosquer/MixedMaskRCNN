@@ -317,7 +317,7 @@ def get_transform(train):
 
 def get_object_detection_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False,**kwargs):
     # load an instance segmentation model pre-trained on COCO
-    model = fasterrcnn_resnet50_fpn(pretrained_coco=pretrained_on_coco,
+    model = fasterrcnn_resnet50_fpn(pretrained_coco=pretrained_on_coco,pretrained_imagenet_backbone=True,
                                   pretrained_backbone_checkpoint=pretrained_backbone,**kwargs)
 
     # get the number of input features for the classifier
@@ -330,7 +330,7 @@ def get_object_detection_model(num_classes, pretrained_backbone=None, pretrained
 
 def get_instance_segmentation_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False,**kwargs):
     # load an instance segmentation model pre-trained on COCO
-    model = maskrcnn_resnet50_fpn(pretrained_coco=pretrained_on_coco,
+    model = maskrcnn_resnet50_fpn(pretrained_coco=pretrained_on_coco,pretrained_imagenet_backbone=True,
                                   pretrained_backbone_checkpoint=pretrained_backbone,**kwargs)
 
     # get the number of input features for the classifier
