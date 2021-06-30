@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import psutil
 import wandb
+from sklearn.ensemble import RandomForestClassifier
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None,wandb_interval=200):
 
@@ -156,7 +157,7 @@ def evaluate_classification(model, data_loader, device,
     model.eval()
     metric_logger = vision_utils.MetricLogger(delimiter="  ")
     header = 'Test:'
-    n_features = 1
+    n_features = 7
 
     x_regresion = np.zeros((len(data_loader.dataset), 7))
     y_regresion = np.zeros(len(data_loader.dataset))
@@ -247,20 +248,27 @@ def evaluate_classification(model, data_loader, device,
             x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
                                                     test_size=0.2,
                                                     random_state=32)
-            clf = LogisticRegression(random_state=32, solver='newton-cg').fit(x_train[:,:n_features], y_train)
+            #clf = LogisticRegression(random_state=32, solver='newton-cg').fit(x_train[:,:n_features], y_train)
+            clf = RandomForestClassifier(random_state=32).fit(x_train[:, :n_features], y_train)
             print(pd.Series(y_regresion).value_counts())
             print(pd.Series(y_train).value_counts())
             print(pd.Series(y_test).value_counts())
 
             preds = clf.predict(x_test[:,:n_features])
-
+            cont_preds = clf.predict_proba(x_test[:,:n_features])[:,1]
             print(pd.Series(preds).value_counts())
             if results_file:
                 with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
                     classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
                                            'preds_test': preds, 'clf': clf}
                     pickle.dump(classification_data, f)
-        (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc, aucpr), (brier, brierPos, brierNeg) = getClassificationMetrics(preds, y_test, cont_preds=cont_preds)
+        (tn, fp, fn, tp), (sens,
+                           spec, ppv, npv), (acc,
+                                             f1score,
+                                             aucroc,
+                                             aucpr), (brier,
+                                                       brierPos,
+                                                      brierNeg) = getClassificationMetrics(preds, y_test, cont_preds=cont_preds)
         classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                         'sens': sens, 'spec': spec, 'ppv': ppv, 'npv':npv,
                         'acc': acc, 'f1': f1score, 'aucroc': aucroc, 'aucpr': aucpr,
