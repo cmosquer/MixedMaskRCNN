@@ -1,7 +1,7 @@
 from mixed_detection.faster_rcnn import FastRCNNPredictor, fasterrcnn_resnet50_fpn
 from mixed_detection.mask_rcnn import MaskRCNNPredictor, maskrcnn_resnet50_fpn
 from mixed_detection import vision_transforms as T
-from torchvision import transforms as torchT
+
 from sklearn.metrics import roc_curve, classification_report, confusion_matrix, roc_auc_score, precision_recall_curve,brier_score_loss
 from sklearn.metrics import auc as sklearnAUC
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
@@ -124,7 +124,7 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
     csv_test = csv[30000:].reset_index() """
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
-    dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), #transforms=train_transform,
+    dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), colorjitter=config['data_augmentation'],
                                  binary_opacity=config['opacityies_as_binary'],
                                  masks_as_boxes=config['masks_as_boxes'])
     dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),
@@ -312,7 +312,7 @@ def get_transform(train):
     if train:
 
         transforms.append(T.RandomHorizontalFlip(0.5))
-        transforms.append(torchT.ColorJitter(brightness=0.4, saturation=0.4, contrast=0.4, hue=0.4))
+
     return T.Compose(transforms)
 
 def get_object_detection_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False,**kwargs):

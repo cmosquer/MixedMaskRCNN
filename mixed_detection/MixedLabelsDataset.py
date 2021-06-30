@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import os, cv2
 
-
+from torchvision import transforms as torchT
 
 class ImageLabelsDataset(torch.utils.data.Dataset):
     def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
@@ -54,15 +54,18 @@ class ImageLabelsDataset(torch.utils.data.Dataset):
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
 
-    def __init__(self, csv, class_numbers, transforms=None,
+    def __init__(self, csv, class_numbers, transforms=None, colorjitter=False,
                  return_image_source=False,binary_opacity=False,
                  masks_as_boxes=False):
         self.csv = csv
         self.class_numbers = class_numbers
-        self.transforms = transforms
+        self.transforms = transforms #Transforms that have to be applied both to image and boxes/masks
+        self.colorjitter = colorjitter #Transform the image brightness,contrast,etc
+
         self.return_image_source = return_image_source
         self.binary = binary_opacity
         self.masks_as_boxes = masks_as_boxes
+
 
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
@@ -178,6 +181,9 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["iscrowd"] = iscrowd
         if self.transforms is not None:
             img, target = self.transforms(img, target)
+        if self.colorjitter:
+            img = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)(img)
+
         if self.return_image_source:
             return img, target, image_source, img_path
         else:
