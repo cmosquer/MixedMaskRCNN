@@ -444,7 +444,8 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
                 yhigh = min(y2+gradientPadding_y,imageHeight)
                 #print('coords: [{},{}] - [{},{}]'.format(xlow,ylow,xhigh,yhigh))
                 merged_heatmap[xlow:xhigh,ylow:yhigh,:] += gradientCircle(xhigh-xlow,yhigh-ylow,score)
-            except:
+            except Exception as e:
+                print(e)
                 print('Error inserting gradient circle in coords : [{},{}] - [{},{}]. \nOriginal detection was: [{},{}] - [{},{}]. Heatmap shape was: {} '.format(
                     xlow,ylow,xhigh,yhigh,x1,y1,x2,y2,merged_heatmap.shape))
                 return None
