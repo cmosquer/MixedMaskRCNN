@@ -472,6 +472,7 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         #final_hm[:,:,1] = one_channel_heatmap
         #final_hm[:,:,2] = one_channel_heatmap
         final_hm[..., -1] = alphas_norm
+        print(final_hm.shape,final_hm.dtype)
         #final_hm[..., -1] = alphas
     return final_hm
 

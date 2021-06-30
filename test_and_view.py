@@ -109,9 +109,7 @@ def saveAsFiles(tqdm_loader,model,device,
 
         if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
-            colorimage[:, :, 0] = 255 * image
-            colorimage[:, :, 1] = 255 * image
-            colorimage[:, :, 2] = 255 * image
+
 
 
             if save_figures=='heatmap':
@@ -124,6 +122,9 @@ def saveAsFiles(tqdm_loader,model,device,
                 plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
                 plt.close(fig)
             if save_figures=='boxes':
+                colorimage[:, :, 0] = 255 * image
+                colorimage[:, :, 1] = 255 * image
+                colorimage[:, :, 2] = 255 * image
                 if len(outputs['labels']) > 0:
 
                     if draw=='boxes':
