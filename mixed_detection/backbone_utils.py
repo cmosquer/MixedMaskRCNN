@@ -107,7 +107,7 @@ def resnet_fpn_backbone(
 
     if pretrained_state_dict is not None:
             pretrained = False
-
+    print('Pretrained with imagenet: ',pretrained)
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained,
         norm_layer=norm_layer)

@@ -25,7 +25,7 @@ def main(args=None):
         'dataset': "TX-RX-ds-20210625-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': False,
-        'data_augmentation': False,
+        'data_augmentation': True,
         'existing_valid_set': None,#'{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
@@ -37,7 +37,7 @@ def main(args=None):
         'epochs': 20,
         'random_seed': 40,
         'pretrained_checkpoint': None, #experiment_dir + '/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth',
-        'pretrained_backbone_path': experiment_dir + '/17-04-21/resnetBackbone-8.pth',
+        'pretrained_backbone_path': None #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
     }
 
     class_numbers = {
@@ -58,17 +58,13 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = config['pretrained_checkpoint']
     pretrained_backbone_path = config['pretrained_backbone_path']
-    #experiment_id = '06-05-21_masksOnly'o
-    experiment_number = config['date']
-    experiment_type = config['experiment_type']
-    wandb_valid = {'epoch': epoch}
+    experiment_id = '06-05-21_masksOnly'
     if config['opacityies_as_binary']:
         experiment_id+='_binary'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
     dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
-
 
 
     with wandb.init(config=config, project=project, name=experiment_id):

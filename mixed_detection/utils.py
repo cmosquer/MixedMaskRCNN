@@ -311,6 +311,7 @@ def get_transform(train):
     if train:
 
         transforms.append(T.RandomHorizontalFlip(0.5))
+        transforms.append(T.ColorJitter(brightness=0.4, saturation=0.4, contrast=0.4, hue=0.4))
     return T.Compose(transforms)
 
 def get_object_detection_model(num_classes, pretrained_backbone=None, pretrained_on_coco=False,**kwargs):
