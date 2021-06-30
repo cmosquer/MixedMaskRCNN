@@ -478,7 +478,7 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
     return final_hm
 
 
-def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=0.15,min_alfa=0):
+def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=0.05,min_alfa=0):
     circle = np.zeros((height,width,2))
 
     innerColor = score * innerColor
