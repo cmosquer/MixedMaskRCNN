@@ -8,7 +8,7 @@ from tqdm import tqdm
 import cv2
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
-from mixed_detection.utils import get_transform,get_instance_segmentation_model, collate_fn, process_output, get_object_detection_model, update_regression_features
+import mixed_detection.utils as ut
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 from datetime import datetime
@@ -28,7 +28,7 @@ def label_to_name(label):
 
 def saveAsFiles(tqdm_loader,model,device,
                 save_fig_dir,
-                save_figures=True,
+                save_figures=None,   #puede ser 'heatmap','boxes',o None
                 max_detections=None,binary_classifier=None,posterior_th=None,
                 min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
                 min_box_proportionArea=None, draw='boxes',binary=False,results_file='',
@@ -57,9 +57,9 @@ def saveAsFiles(tqdm_loader,model,device,
         total_area = height*width
         outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
 
-        outputs = process_output(outputs,total_area)
-        x_reg = update_regression_features(outputs['scores'], outputs['areas'])
-        outputs = process_output(outputs,total_area,
+        outputs = ut.process_output(outputs,total_area)
+        x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'])
+        outputs = ut.process_output(outputs,total_area,
                                  max_detections=max_detections,
                                  min_box_proportionArea=min_box_proportionArea,
                                  min_score_threshold=min_score_threshold)
@@ -68,69 +68,84 @@ def saveAsFiles(tqdm_loader,model,device,
         outputs = {k: v.numpy() for k, v in outputs.items()}
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
-        if save_figures:
+        print('TARGET for {} is {}'.format(image_path, targets['labels']))
+        os.makedirs(save_fig_dir + 'TruePositive', exist_ok=True)
+        os.makedirs(save_fig_dir + 'FalsePositive', exist_ok=True)
+        os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
+        os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
+        folder = ''
+        # try:
+        # predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
+        if binary_classifier is not None:
+            pred = None
+            cont_pred = None
+            with open(binary_classifier, 'rb') as f:
+                test_clf = pickle.load(f)
+            if posterior_th is not None:
+                cont_pred = test_clf.predict_proba(x_reg.reshape(1, -1))[0, 1]
+                pred = 1 if cont_pred > posterior_th else 0
+            else:
+                pred = test_clf.predict(x_reg.reshape(1, -1))
+                cont_pred = pred.copy()
+            gt = 1 if len(targets['labels']) > 0 else 0
+            print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
+            if np.all(pred == gt):
+                if np.all(gt == 0):
+                    folder = 'TrueNegative'
+                else:
+                    folder = 'TruePositive'
+            else:
+                if np.all(gt == 0):
+                    folder = 'FalsePositive'
+                else:
+                    folder = 'FalseNegative'
+
+        saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
+                                           image_source, os.path.basename(image_path.replace('\\', '/')))
+        if cont_pred is not None:
+            cont_pred_str = str(cont_pred).replace('.', '-')
+            saving_path = saving_path.replace('.jpg', f'_{cont_pred_str}.jpg')
+
+
+        if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
             colorimage[:, :, 0] = 255 * image
             colorimage[:, :, 1] = 255 * image
             colorimage[:, :, 2] = 255 * image
-            if len(outputs['labels']) > 0:
 
-                if draw=='boxes':
-                    draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name,binary=binary)
-                if draw=='masks':
-                    draw_masks(colorimage, outputs, label_to_name=label_to_name,binary=binary)
 
-                # draw annotations on the image
-            if len(targets)>0:
-                if len(targets['boxes'])==0:
-                    caption = 'Image GT: opacidad'#+','.join([label_to_name(lbl) for lbl in targets['labels']])
-                    cv2.putText(colorimage, caption,
-                            (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
-                else:
-                    # draw annotations in red
+            if save_figures=='heatmap':
+                ready_heatmap = ut.getObjectDetectionHeatmap(outputs['boxes'], outputs['scores'],
+                                                          (image.shape[0], image.shape[1]), max_alfa=0.2, min_alfa=0)
+                fig, ax = plt.subplots(1, 1, figsize=(40, 40))
+                ax.imshow(colorimage, cmap='gray')
+                ax.imshow(ready_heatmap, cmap='jet')
+                ax.set_axis_off()
+                plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
+                plt.close(fig)
+            if save_figures=='boxes':
+                if len(outputs['labels']) > 0:
+
                     if draw=='boxes':
-                        draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name,binary=binary)
-                    #if draw=='masks':
-                    #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
+                        draw_annotations(colorimage, outputs, color=(0, 255, 0),label_to_name=label_to_name,binary=binary)
+                    if draw=='masks':
+                        draw_masks(colorimage, outputs, label_to_name=label_to_name,binary=binary)
 
-            print('TARGET for {} is {}'.format(image_path,targets['labels']))
-            os.makedirs(save_fig_dir+'TruePositive',exist_ok=True)
-            os.makedirs(save_fig_dir+'FalsePositive',exist_ok=True)
-            os.makedirs(save_fig_dir+'FalseNegative',exist_ok=True)
-            os.makedirs(save_fig_dir+'TrueNegative',exist_ok=True)
-            folder = ''
-            #try:
-            #predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
-            if binary_classifier is not None:
-                pred = None
-                cont_pred = None
-                with open(binary_classifier, 'rb') as f:
-                    test_clf = pickle.load(f)
-                if posterior_th is not None:
-                    cont_pred = test_clf.predict_proba(x_reg.reshape(1, -1))[0,1]
-                    pred = 1 if cont_pred>posterior_th else 0
-                else:
-                    pred = test_clf.predict(x_reg.reshape(1, -1))
-                    cont_pred = pred.copy()
-                gt = 1 if len(targets['labels']) > 0 else 0
-                print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred,pred,gt))
-                if np.all(pred == gt):
-                    if np.all(gt == 0):
-                        folder = 'TrueNegative'
+                    # draw annotations on the image
+                if len(targets)>0:
+                    if len(targets['boxes'])==0:
+                        caption = 'Image GT: opacidad'#+','.join([label_to_name(lbl) for lbl in targets['labels']])
+                        cv2.putText(colorimage, caption,
+                                (10, 10), cv2.FONT_HERSHEY_PLAIN, 4, (255, 0, 0), thickness=2)
                     else:
-                        folder = 'TruePositive'
-                else:
-                    if np.all(gt == 0):
-                        folder = 'FalsePositive'
-                    else:
-                        folder = 'FalseNegative'
+                        # draw annotations in red
+                        if draw=='boxes':
+                            draw_annotations(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name,binary=binary)
+                        #if draw=='masks':
+                        #    draw_masks(colorimage, targets, color=(255, 0, 0),label_to_name=label_to_name)
 
-            saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
-                                               image_source, os.path.basename(image_path.replace('\\', '/')))
-            if cont_pred is not None:
-                cont_pred_str = str(cont_pred).replace('.','-')
-                saving_path = saving_path.replace('.jpg',f'_{cont_pred_str}.jpg')
-            cv2.imwrite(saving_path, colorimage)
+
+                cv2.imwrite(saving_path, colorimage)
 
             print('Saved ', saving_path)
 
@@ -260,7 +275,7 @@ def main(args=None):
         'calculate_classification': False,
         'binary_classifier': output_dir+'2021-06-20_boxes_binary/test-2021-06-28_/classification_data-test-epoch_4RF',
         'adjust_new_LR': False,
-        'save_figures': True,
+        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': False,
         'view_in_window': False,
@@ -318,10 +333,10 @@ def main(args=None):
 
     if config['experiment_type']=='boxes':
         # get the model using our helper function
-        model = get_object_detection_model(num_classes)
+        model = ut.get_object_detection_model(num_classes)
     if config['experiment_type']=='masks':
         # get the model using our helper function
-        model = get_instance_segmentation_model(num_classes)
+        model = ut.get_instance_segmentation_model(num_classes)
 
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
@@ -341,12 +356,12 @@ def main(args=None):
         config = wandb.config
         wandb_valid = {}
         if config['calculate_coco']:
-            dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers, ut.get_transform(train=False),
                                               binary_opacity=binary_opacity,
                                               return_image_source=False)
             data_loader_test = torch.utils.data.DataLoader(
                 dataset_test, batch_size=1, shuffle=False, num_workers=0,
-                collate_fn=collate_fn)
+                collate_fn=ut.collate_fn)
             print('DATASET FOR COCO:')
             dataset_test.quantifyClasses()
             results_coco = evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
@@ -370,12 +385,12 @@ def main(args=None):
 
 
         if config['calculate_classification']:
-            dataset_test = MixedLabelsDataset(csv_test, class_numbers, get_transform(train=False),
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers, ut.get_transform(train=False),
                                               binary_opacity=binary_opacity,
                                               return_image_source=True)
             data_loader_test = torch.utils.data.DataLoader(
                 dataset_test, batch_size=1, shuffle=False, num_workers=0,
-                collate_fn=collate_fn)
+                collate_fn=ut.collate_fn)
             results_classif = evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
                                     results_file=results_coco_file,test_clf=test_clf,cost_ratios=config['cost_ratios'])
             wandb_valid.update(results_classif)
@@ -391,11 +406,11 @@ def main(args=None):
         else:
             csv_test_files = csv_test.copy()
         dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers,
-                                                get_transform(train=False), binary_opacity=binary_opacity,
+                                                ut.get_transform(train=False), binary_opacity=binary_opacity,
                                                 return_image_source=True)
         data_loader_test_files = torch.utils.data.DataLoader(
             dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
-            collate_fn=collate_fn)
+            collate_fn=ut.collate_fn)
         tqdm_loader_files = tqdm(data_loader_test_files)
         print('DATASET FOR FIGURES:')
         print(dataset_test_files.quantifyClasses())

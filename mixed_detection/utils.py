@@ -401,3 +401,102 @@ def getClassificationMetrics(preds, labels_test, print_results=True,cont_preds=N
         print('brier {:.3f}. brier+ {:.3f}. brier- {:.3f}'.format(brier,brierPos,brierNeg))
 
     return (tn, fp, fn, tp), (sens, spec, ppv, npv), (acc, f1score, aucroc,aucpr), (brier,brierPos,brierNeg)
+
+
+
+def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
+    '''
+
+    :param retinanetDetects: concatenated array of boxes, scores, labels for an image
+    :param heatmap: heatmap for prediction of a classification model for the image
+
+    :return: new heatmap incorporating retinaNet predictions
+
+
+    '''
+
+    if not boxes.shape[0]>0:
+        final_hm = np.zeros((dims[0],dims[1],4))
+        #print('no detections')
+    else:
+        imageHeight,imageWidth = dims[0], dims[1]
+        merged_heatmap = np.zeros((imageHeight,imageWidth, 2))
+
+        for score,box in zip(list(scores),list(boxes)):
+            x1 = int(box[0])
+            y1 = int(box[1])
+            x2 = int(box[2])
+            y2 = int(box[3])
+            #y1 = int(detect[0])
+            #x1 = int(detect[1])
+            #y2 = int(detect[2])
+            #x2 = int(detect[3])
+            height = int(y2-y1)
+            gradientPadding_x = int(0.2 * width)
+            gradientPadding_y = int(0.2 * height)
+            width = int(x2-x1)
+            try:
+                xlow = max(0,x1-gradientPadding_x)
+                ylow= max(0,y1-gradientPadding_y)
+                xhigh = min(x2+gradientPadding_x,imageWidth)
+                yhigh = min(y2+gradientPadding_y,imageHeight)
+                #print('coords: [{},{}] - [{},{}]'.format(xlow,ylow,xhigh,yhigh))
+                merged_heatmap[xlow:xhigh,ylow:yhigh,:] += gradientCircle(xhigh-xlow,yhigh-ylow,score)
+            except:
+                print('Error inserting gradient circle in coords : [{},{}] - [{},{}]. \nOriginal detection was: [{},{}] - [{},{}]. Heatmap shape was: {} '.format(
+                    xlow,ylow,xhigh,yhigh,x1,y1,x2,y2,merged_heatmap.shape))
+                return None
+
+        one_channel_heatmap = merged_heatmap[:,:,0]
+        # Create an alpha channel of linearly increasing values moving to the right.
+        vmax = one_channel_heatmap.max()
+        vmin = one_channel_heatmap.min()
+
+        # Normalize the colors b/w 0 and 1, we'll then pass an MxNx4 array to imshow
+
+
+        alphas = merged_heatmap[:,:,1]
+        max_alpha =  alphas.max()
+        min_alpha = alphas.min()
+        if max_alpha-min_alpha!=0:
+            alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
+        else:
+            alphas_norm = alphas
+        cmap = plt.cm.jet
+        colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
+        final_hm = cmap(colors)
+        #final_hm = np.zeros((one_channel_heatmap.shape[0],one_channel_heatmap.shape[1],3))
+        #final_hm[:,:,0] = one_channel_heatmap
+        #final_hm[:,:,1] = one_channel_heatmap
+        #final_hm[:,:,2] = one_channel_heatmap
+        final_hm[..., -1] = alphas_norm
+        #final_hm[..., -1] = alphas
+    return final_hm
+
+
+def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=0.15,min_alfa=0):
+    circle = np.zeros((width,height,2))
+
+    innerColor = score * innerColor
+    outerColor = score * outerColor
+    for y in range(height):
+        for x in range(width):
+
+            #Find the distance to the center1
+            distanceToCenter = math.sqrt((x - width/2) ** 2 + (y - height/2) ** 2)
+
+            #Make it on a scale from 0 to 1
+            distanceToCenter = float(distanceToCenter) / (math.sqrt(2) * width/2)
+            #Calculate r, g, and b values
+            r = outerColor * distanceToCenter + innerColor * (1 - distanceToCenter)
+            if ((x - width/2)**2/(width/2)**2 + (y - height/2)**2/(height/2)**2) > 1:
+                alpha = 0
+                r = 0
+            else:
+                alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
+
+            circle[x, y, 0] = r #Color
+            circle[x,y,1] = alpha #Transparency
+
+    return circle
+
