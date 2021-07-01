@@ -116,15 +116,8 @@ def saveAsFiles(tqdm_loader,model,device,
             print('Memory after colorimage: ', psutil.virtual_memory().percent)
 
             if save_figures=='heatmap':
-                ready_heatmap = ut.getObjectDetectionHeatmap(outputs['boxes'], outputs['scores'],
-                                                          (image.shape[0], image.shape[1]), max_alfa=0.2, min_alfa=0)
-                fig, ax = plt.subplots(1, 1, figsize=(40, 40))
-                ax.imshow(colorimage, cmap='gray')
-                ax.imshow(ready_heatmap, cmap='jet')
-                ax.set_axis_off()
-                plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
-                plt.close(fig)
-                del fig, ready_heatmap,colorimage
+
+                ut.save_heatmap(saving_path,colorimage,outputs)
                 print('Memory after delete heatmap: ', psutil.virtual_memory().percent)
 
             if save_figures=='boxes':

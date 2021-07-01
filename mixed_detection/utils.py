@@ -477,6 +477,16 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         #final_hm[..., -1] = alphas
     return final_hm
 
+def save_heatmap(saving_path,colorimage,outputs):
+    ready_heatmap = getObjectDetectionHeatmap(outputs['boxes'], outputs['scores'],
+                                                 (colorimage.shape[0], colorimage.shape[1]), max_alfa=0.2, min_alfa=0)
+    fig, ax = plt.subplots(1, 1, figsize=(40, 40))
+    ax.imshow(colorimage, cmap='gray')
+    ax.imshow(ready_heatmap, cmap='jet')
+    ax.set_axis_off()
+    plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
+    plt.close(fig)
+
 
 def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=1,min_alfa=0):
     circle = np.zeros((height,width,2))
