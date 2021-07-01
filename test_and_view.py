@@ -275,9 +275,9 @@ def main(args=None):
         'calculate_classification': False,
         'binary_classifier': output_dir+'2021-06-20_boxes_binary/test-2021-06-28_/classification_data-test-epoch_4RF',
         'adjust_new_LR': False,
-        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
+        'save_figures': None,#'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': False,
+        'save_csv': True,
         'view_in_window': False,
         'loop': False,
         'force_cpu': False,
@@ -293,7 +293,10 @@ def main(args=None):
 
     date = datetime.today().strftime('%Y-%m-%d')
     save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}/'
-    output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
+    if config['save_csv']:
+        output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
+    else:
+        output_csv_path = None
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
     classification_data = f'{output_dir}/{chosen_experiment}/test-{date}/classification_data-{chosen_epoch}'
     binary_opacity=config['opacityies_as_binary']
