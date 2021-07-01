@@ -58,7 +58,7 @@ def main(args=None):
         num_classes = len(class_numbers.keys())+1 #patologias + background
     pretrained_checkpoint = config['pretrained_checkpoint']
     pretrained_backbone_path = config['pretrained_backbone_path']
-    experiment_id = '06-05-21_masksOnly'
+    experiment_id = config['date']
     if config['opacityies_as_binary']:
         experiment_id+='_binary'
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
@@ -137,7 +137,7 @@ def main(args=None):
         for epoch in range(config.epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
-            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,breaking_step=10,
+            train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=500,#breaking_step=10,
                             wandb_interval=interval_steps
                             )
 
