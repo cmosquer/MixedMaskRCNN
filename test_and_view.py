@@ -118,7 +118,7 @@ def saveAsFiles(tqdm_loader,model,device,
             if save_figures=='heatmap':
 
                 ut.save_heatmap(saving_path,colorimage,outputs)
-                print('Memory after delete heatmap: ', psutil.virtual_memory().percent)
+                print('Memory after save  heatmap: ', psutil.virtual_memory().percent)
 
             if save_figures=='boxes':
                 colorimage = 255*colorimage
@@ -275,7 +275,7 @@ def main(args=None):
         'calculate_classification': False,
         'binary_classifier': output_dir+'2021-06-20_boxes_binary/test-2021-06-28_/classification_data-test-epoch_4RF',
         'adjust_new_LR': False,
-        'save_figures': None,#'heatmap',  #puede ser 'heatmap','boxes', o None
+        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': True,
         'view_in_window': False,
