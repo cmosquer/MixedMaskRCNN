@@ -6,6 +6,7 @@ import pandas as pd
 import torch.utils.data
 from tqdm import tqdm
 import cv2
+import psutil
 from matplotlib import pyplot as plt
 from mixed_detection.visualization import draw_annotations, draw_masks
 import mixed_detection.utils as ut
@@ -106,13 +107,13 @@ def saveAsFiles(tqdm_loader,model,device,
             cont_pred_str = str(cont_pred).replace('.', '-')
             saving_path = saving_path.replace('.jpg', f'_{cont_pred_str}.jpg')
 
-
+        print('Memory before save figres: ', psutil.virtual_memory().percent)
         if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
             colorimage[:, :, 0] = image
             colorimage[:, :, 1] = image
             colorimage[:, :, 2] = image
-
+            print('Memory after colorimage: ', psutil.virtual_memory().percent)
 
             if save_figures=='heatmap':
                 ready_heatmap = ut.getObjectDetectionHeatmap(outputs['boxes'], outputs['scores'],
@@ -124,6 +125,8 @@ def saveAsFiles(tqdm_loader,model,device,
                 plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
                 plt.close(fig)
                 del fig, ready_heatmap,colorimage
+                print('Memory after delete heatmap: ', psutil.virtual_memory().percent)
+
             if save_figures=='boxes':
                 colorimage = 255*colorimage
                 if len(outputs['labels']) > 0:
@@ -194,6 +197,8 @@ def saveAsFiles(tqdm_loader,model,device,
             df = df.append(results_list,ignore_index=True)
 
         del outputs,targets, image
+        print('Memory after delete outputs: ', psutil.virtual_memory().percent)
+
     if save_csv is not None:
         df.to_csv(save_csv,index=False)
 
