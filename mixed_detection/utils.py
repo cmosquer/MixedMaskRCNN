@@ -490,14 +490,15 @@ def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=0.0
             distanceToCenter = math.sqrt((x - width/2) ** 2 + (y - height/2) ** 2)
 
             #Make it on a scale from 0 to 1
-            distanceToCenter = float(distanceToCenter) / (math.sqrt(2) * width/2)
+            max_axis = max(width/2,height/2)
+            distanceToCenter = float(distanceToCenter) / max_axis
             #Calculate r, g, and b values
             r = outerColor * distanceToCenter + innerColor * (1 - distanceToCenter)
             if ((x - width/2)**2/(width/2)**2 + (y - height/2)**2/(height/2)**2) > 1:
                 alpha = 0
                 r = 0
             else:
-                alpha = max_alfa * (1-distanceToCenter)
+                alpha = max(0,max_alfa * (1-distanceToCenter))
             print('alpha',alpha,'distance to center',distanceToCenter)
             circle[y, x, 0] = r #Color
             circle[y,x,1] = alpha #Transparency
