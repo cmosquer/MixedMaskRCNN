@@ -8,7 +8,7 @@ from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSample
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
 from collections import Counter
-import os
+import os, gc
 import random, math
 import numpy as np
 import torch
@@ -480,13 +480,18 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
 def save_heatmap(saving_path,colorimage,outputs):
     ready_heatmap = getObjectDetectionHeatmap(outputs['boxes'], outputs['scores'],
                                                  (colorimage.shape[0], colorimage.shape[1]), max_alfa=0.2, min_alfa=0)
-    #fig, ax = plt.subplots(1, 1, figsize=(40, 40))
-    #ax.imshow(colorimage, cmap='gray')
-    #ax.imshow(ready_heatmap, cmap='jet')
-    #ax.set_axis_off()
-    #plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
-    #plt.close(fig)
-
+    fig, ax = plt.subplots(1, 1, figsize=(40, 40))
+    ax.imshow(colorimage, cmap='gray')
+    ax.imshow(ready_heatmap, cmap='jet')
+    ax.set_axis_off()
+    plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
+    plt.cla()
+    # Clear the current figure.
+    plt.clf()
+    # Closes all the figure windows.
+    plt.close('all')
+    plt.close(fig)
+    gc.collect()
 
 def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=1,min_alfa=0):
     circle = np.zeros((height,width,2))
