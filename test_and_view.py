@@ -123,6 +123,7 @@ def saveAsFiles(tqdm_loader,model,device,
                 ax.set_axis_off()
                 plt.savefig(saving_path, bbox_inches='tight', pad_inches=0)
                 plt.close(fig)
+                del fig, ready_heatmap,colorimage
             if save_figures=='boxes':
                 colorimage = 255*colorimage
                 if len(outputs['labels']) > 0:

@@ -497,8 +497,8 @@ def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=0.0
                 alpha = 0
                 r = 0
             else:
-                alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
-
+                alpha = max_alfa * (1-distanceToCenter)
+            print('alpha',alpha,'distance to center',distanceToCenter)
             circle[y, x, 0] = r #Color
             circle[y,x,1] = alpha #Transparency
 
