@@ -121,18 +121,22 @@ class ColorJitter(object):
     def reset_params(self):
         self.transform = None
 
-    def __call__(self, img, target):
+    def __call__(self, img):
         """
         Args:
             img (PIL Image): Input image.
         Returns:
             PIL Image: Color jittered image.
         """
-        print('entered call')
+        print('entered call', type(img))
+        try:
+            print(img.shape)
+        except Exception as e:
+            print(e)
         if self.transform is None:
             self.get_params(self.brightness, self.contrast,
                             self.saturation, self.hue)
-        return self.transform(img), target
+        return self.transform(img)
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
@@ -161,7 +165,11 @@ class Compose(object):
 
         for t in self.transforms:
             print('transforming')
-            image, target = t(image, target)
+            if hasattr(t,'hue'):
+                print('has hue')
+                image = t(image)
+            else:
+                image, target = t(image, target)
         return image, target
 
 
