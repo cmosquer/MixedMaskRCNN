@@ -169,11 +169,7 @@ class ColorJitter(object):
         Returns:
             PIL Image: Color jittered image.
         """
-        print('entered call', type(img))
-        try:
-            print(img.shape, self.transform)
-        except Exception as e:
-            print(e)
+
         if self.transform is None:
             self.get_params(self.brightness, self.contrast,
                             self.saturation, self.hue)
@@ -205,9 +201,7 @@ class Compose(object):
     def __call__(self, image, target):
 
         for t in self.transforms:
-            print('transforming')
             if hasattr(t,'hue'):
-                print('has hue')
                 image = t(image)
             else:
                 image, target = t(image, target)
