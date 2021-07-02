@@ -20,19 +20,7 @@ else:
     Sequence = collections.abc.Sequence
     Iterable = collections.abc.Iterable
 
-__all__ = ["Compose", "ToTensor", "ToPILImage", "Normalize", "Resize", "Scale", "CenterCrop", "Pad",
-           "Lambda", "RandomApply", "RandomChoice", "RandomOrder", "RandomCrop", "RandomHorizontalFlip",
-           "RandomVerticalFlip", "RandomResizedCrop", "RandomSizedCrop", "FiveCrop", "TenCrop", "LinearTransformation",
-           "ColorJitter", "RandomRotation", "RandomAffine", "Grayscale", "RandomGrayscale"]
 
-_pil_interpolation_to_str = {
-    Image.NEAREST: 'PIL.Image.NEAREST',
-    Image.BILINEAR: 'PIL.Image.BILINEAR',
-    Image.BICUBIC: 'PIL.Image.BICUBIC',
-    Image.LANCZOS: 'PIL.Image.LANCZOS',
-    Image.HAMMING: 'PIL.Image.HAMMING',
-    Image.BOX: 'PIL.Image.BOX',
-}
 
 class BaseTransformation(object):
     def get_params(self):
@@ -196,7 +184,10 @@ class RandomHorizontalFlip(object):
                 target["keypoints"] = keypoints
         return image, target
 
-
+    def __repr__(self):
+        format_string = self.__class__.__name__ + '('
+        format_string += 'prob={0})'.format(self.prob)
+        return format_string
 class ToTensor(object):
     def __call__(self, image, target):
         image = F.to_tensor(image)
