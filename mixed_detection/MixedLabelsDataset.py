@@ -185,11 +185,11 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         if self.transforms is not None:
             img, target = self.transforms(img, target)
             print('Memory after transforms: %', psutil.virtual_memory().percent)
-
+        """
         if self.colorjitter:
             img = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)(img)
             print('Memory after jitter: %', psutil.virtual_memory().percent)
-
+        """
         if self.return_image_source:
             return img, target, image_source, img_path
         else:
