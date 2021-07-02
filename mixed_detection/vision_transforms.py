@@ -133,7 +133,7 @@ class ColorJitter(BaseTransformation):
     def reset_params(self):
         self.transform = None
 
-    def __call__(self, img):
+    def __call__(self, img, target):
         """
         Args:
             img (PIL Image): Input image.
@@ -143,7 +143,7 @@ class ColorJitter(BaseTransformation):
         if self.transform is None:
             self.get_params(self.brightness, self.contrast,
                             self.saturation, self.hue)
-        return self.transform(img)
+        return self.transform(img), target
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
