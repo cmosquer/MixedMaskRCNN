@@ -76,13 +76,13 @@ def main(args=None):
 
         # define training and validation data loaders
         data_loader = torch.utils.data.DataLoader(
-            dataset, batch_size=config.batch_size, shuffle=True, num_workers=1,
+            dataset, batch_size=config.batch_size, shuffle=True, num_workers=0,
             collate_fn=collate_fn,
             #sampler=train_sampler
              )
 
         data_loader_valid = torch.utils.data.DataLoader(
-            dataset_valid, batch_size=config.batch_size_valid, shuffle=False, num_workers=1,
+            dataset_valid, batch_size=config.batch_size_valid, shuffle=False, num_workers=0,
             collate_fn=collate_fn)
 
         print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))

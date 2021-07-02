@@ -128,7 +128,7 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
     dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), colorjitter=config['data_augmentation'],
                                  binary_opacity=config['opacityies_as_binary'],
                                  masks_as_boxes=config['masks_as_boxes'])
-    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False),
+    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False), colorjitter=False,
                                        binary_opacity=config['opacityies_as_binary'],
                                        masks_as_boxes=config['masks_as_boxes'])
     print('TRAIN:')
