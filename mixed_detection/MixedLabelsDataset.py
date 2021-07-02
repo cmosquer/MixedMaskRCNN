@@ -180,11 +180,11 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["image_id"] = image_id
         target["area"] = area
         target["iscrowd"] = iscrowd
-        print('Memory before transforms: %', psutil.virtual_memory().percent)
+        #print('Memory before transforms: %', psutil.virtual_memory().percent)
 
         if self.transforms is not None:
             img, target = self.transforms(img, target)
-            print('Memory after transforms: %', psutil.virtual_memory().percent)
+            #print('Memory after transforms: %', psutil.virtual_memory().percent)
         """
         if self.colorjitter:
             img = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)(img)
