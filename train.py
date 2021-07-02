@@ -25,7 +25,7 @@ def main(args=None):
         'dataset': "TX-RX-ds-20210625-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': False,
-        'data_augmentation': True,
+        'data_augmentation': False,
         'existing_valid_set': None,#'{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
@@ -76,13 +76,13 @@ def main(args=None):
 
         # define training and validation data loaders
         data_loader = torch.utils.data.DataLoader(
-            dataset, batch_size=config.batch_size, shuffle=True, num_workers=0,
+            dataset, batch_size=config.batch_size, shuffle=True, num_workers=1,
             collate_fn=collate_fn,
             #sampler=train_sampler
              )
 
         data_loader_valid = torch.utils.data.DataLoader(
-            dataset_valid, batch_size=config.batch_size_valid, shuffle=False, num_workers=0,
+            dataset_valid, batch_size=config.batch_size_valid, shuffle=False, num_workers=1,
             collate_fn=collate_fn)
 
         print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))
