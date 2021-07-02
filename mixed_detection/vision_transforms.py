@@ -58,7 +58,7 @@ class Lambda(BaseTransformation):
         return self.__class__.__name__ + '()'
 
 
-class ColorJitter(BaseTransformation):
+class ColorJitter(object):
     """Randomly change the brightness, contrast and saturation of an image.
     Args:
         brightness (float or tuple of float (min, max)): How much to jitter brightness.
@@ -140,6 +140,7 @@ class ColorJitter(BaseTransformation):
         Returns:
             PIL Image: Color jittered image.
         """
+        print('entered call')
         if self.transform is None:
             self.get_params(self.brightness, self.contrast,
                             self.saturation, self.hue)
@@ -171,6 +172,7 @@ class Compose(object):
     def __call__(self, image, target):
 
         for t in self.transforms:
+            print('transforming')
             image, target = t(image, target)
         return image, target
 
