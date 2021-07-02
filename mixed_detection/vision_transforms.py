@@ -44,7 +44,48 @@ class Lambda(BaseTransformation):
 
     def __repr__(self):
         return self.__class__.__name__ + '()'
+class ComposeNoTarget(object):
+    """Composes several transforms together.
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+    Example:
+        >>> transforms.Compose([
+        >>>     transforms.CenterCrop(10),
+        >>>     transforms.ToTensor(),
+        >>> ])
+    """
 
+    def __init__(self, transforms, dim=None):
+        self.transforms = transforms
+        self.dim = dim
+
+    def __call__(self, inpt):
+        if isinstance(inpt, (list, tuple)):
+            return self.apply_sequence(inpt)
+        else:
+            return self.apply_img(inpt)
+
+    def apply_img(self, img):
+        for t in self.transforms:
+            img = t(img)
+        return img
+
+    def apply_sequence(self, seq):
+        output = list(map(self.apply_img, seq))
+        if self.dim is not None:
+            assert isinstance(self.dim, int)
+            output = torch.stack(output, dim=self.dim)
+        for t in self.transforms:
+            t.reset_params()
+        return output
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + '('
+        for t in self.transforms:
+            format_string += '\n'
+            format_string += '    {0}'.format(t)
+        format_string += '\n)'
+        return format_string
 
 class ColorJitter(object):
     """Randomly change the brightness, contrast and saturation of an image.
@@ -116,7 +157,7 @@ class ColorJitter(object):
             transforms.append(Lambda(lambda img: F.adjust_hue(img, hue_factor)))
 
         random.shuffle(transforms)
-        self.transform = Compose(transforms)
+        self.transform = ComposeNoTarget(transforms)
 
     def reset_params(self):
         self.transform = None
@@ -130,7 +171,7 @@ class ColorJitter(object):
         """
         print('entered call', type(img))
         try:
-            print(img.shape)
+            print(img.shape, self.transform)
         except Exception as e:
             print(e)
         if self.transform is None:
