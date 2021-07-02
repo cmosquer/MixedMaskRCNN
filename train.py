@@ -17,7 +17,7 @@ def main(args=None):
     experiment_dir = trx_dir+'Experiments/'
 
     config = {
-        "batch_size": 4,
+        "batch_size": 2,
         "batch_size_valid":1,
         "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
