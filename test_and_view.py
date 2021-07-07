@@ -263,7 +263,7 @@ def main(args=None):
 
     config = {
         'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
-        'experiment': '2021-06-20_boxes_binary',
+        'experiment': '2021-07-05_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 4,
 
@@ -271,9 +271,9 @@ def main(args=None):
         'masks_as_boxes': True,
 
         'posterior_th': 0.08,
-        'calculate_coco': False,
-        'calculate_classification': False,
-        'binary_classifier': output_dir+'2021-06-20_boxes_binary/test-2021-06-28_/classification_data-test-epoch_4RF',
+        'calculate_coco': True,
+        'calculate_classification': True,
+        'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0RF',
         'adjust_new_LR': False,
         'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
