@@ -265,17 +265,17 @@ def main(args=None):
         'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
         'experiment': '2021-07-05_binary',
         'experiment_type': 'boxes',
-        'tested_epoch': 4,
+        'tested_epoch': 0,
 
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
 
-        'posterior_th': 0.08,
+        'posterior_th': 0.4,
         'calculate_coco': True,
         'calculate_classification': True,
         'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0RF',
         'adjust_new_LR': False,
-        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
+        'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': True,
         'view_in_window': False,
