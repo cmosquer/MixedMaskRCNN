@@ -497,10 +497,19 @@ def save_heatmap(saving_path,colorimage,outputs):
     gc.collect()
 
 def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=1,min_alfa=0):
-    circle = np.zeros((height,width,2))
-
     innerColor = score * innerColor
     outerColor = score * outerColor
+    x_arr, y_arr = np.mgrid[0:width, 0:height]
+    center = (height // 2 - 1, width // 2 - 1)
+    max_dist = np.sqrt((height - center[0]) ** 2 + (width - center[1]) ** 2)
+    distanceToCenter = np.sqrt((x_arr - center[1]) ** 2 + (y_arr - center[0]) ** 2) / max_dist
+
+    r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
+    alpha = 0 * distanceToCenter + 0.9 * (distanceToCenter.max() - distanceToCenter)
+    alpha = np.where(existing_alpha != 0, 0, alpha)
+    circle = np.stack((r, alpha), axis=-1)
+
+    """
     for y in range(height):
         for x in range(width):
 
@@ -522,7 +531,7 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
                 else:
                     print(existing_alpha[y, x])
             circle[y, x, 0] = r #Color
-
+    """
 
     return circle
 
