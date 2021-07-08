@@ -444,7 +444,8 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
                 xhigh = min(x2+gradientPadding_x,imageWidth)
                 yhigh = min(y2+gradientPadding_y,imageHeight)
                 #print('coords: [{},{}] - [{},{}]'.format(xlow,ylow,xhigh,yhigh))
-                merged_heatmap[ylow:yhigh,xlow:xhigh,:] += gradientCircle(xhigh-xlow,yhigh-ylow,score)
+                new_gradient = gradientCircle(xhigh-xlow,yhigh-ylow,score,existing_alpha=merged_heatmap[ylow:yhigh,xlow:xhigh,1])
+                merged_heatmap[ylow:yhigh,xlow:xhigh,:] += new_gradient
 
             except Exception as e:
                 print(e)
@@ -495,7 +496,7 @@ def save_heatmap(saving_path,colorimage,outputs):
     plt.close(fig)
     gc.collect()
 
-def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=1,min_alfa=0):
+def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=1,min_alfa=0):
     circle = np.zeros((height,width,2))
 
     innerColor = score * innerColor
@@ -514,8 +515,9 @@ def gradientCircle(width,height, score, innerColor=1,outerColor=0.3,max_alfa=1,m
                 alpha = 0
                 r = 0
             else:
-                alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
 
+                alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
+                alpha[existing_alpha!=0] = 0
             circle[y, x, 0] = r #Color
             circle[y,x,1] = alpha #Transparency
 
