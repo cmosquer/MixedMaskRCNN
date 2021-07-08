@@ -395,7 +395,9 @@ def main(args=None):
                 dataset_test, batch_size=1, shuffle=False, num_workers=0,
                 collate_fn=ut.collate_fn)
             results_classif = evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
-                                    results_file=results_coco_file,test_clf=test_clf,cost_ratios=config['cost_ratios'])
+                                    results_file=results_coco_file,test_clf=test_clf,
+                                                      #cost_ratios=config['cost_ratios']
+                                                      )
             wandb_valid.update(results_classif)
         #Redefinir solo las que quiero guardar la imagen
         if config['only_best_datasets']:
