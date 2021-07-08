@@ -466,7 +466,6 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         for row in range(alphas.shape[0]):
             for col in range(alphas.shape[1]):
                 val = alphas[row,col]
-                print('val', val)
                 if val>0:
                     alphas[row,col] = ((max_alfa-min_alfa)*(val - min_alpha) /(max_alpha-min_alpha)) + min_alfa
 
