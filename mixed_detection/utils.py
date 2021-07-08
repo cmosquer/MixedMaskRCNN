@@ -517,15 +517,12 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
             else:
 
                 alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
-                print('LEN',len(np.argwhere(existing_alpha!=0)))
-                if len(np.argwhere(existing_alpha!=0))>0:
-                    print(np.argwhere(existing_alpha!=0))
-
-                    print(type(alpha[np.argwhere(existing_alpha!=0)]))
-                    print(alpha[np.argwhere(existing_alpha!=0)].shape)
-                    alpha[np.argwhere(existing_alpha!=0)] = 0  #Donde ya exisita heatmap previo, no overlapeo transparencia
+                if existing_alpha[y,x] == 0:
+                    circle[y, x, 1] = alpha  #Transparency Donde ya exisita heatmap previo, no overlapeo transparencia
+                else:
+                    print(existing_alpha[y, x])
             circle[y, x, 0] = r #Color
-            circle[y,x,1] = alpha #Transparency
+
 
     return circle
 
