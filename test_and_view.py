@@ -271,7 +271,7 @@ def main(args=None):
         'masks_as_boxes': True,
 
         'posterior_th': 0.4,
-        'calculate_coco': True,
+        'calculate_coco': False,
         'calculate_classification': True,
         'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0RF',
         'adjust_new_LR': False,
