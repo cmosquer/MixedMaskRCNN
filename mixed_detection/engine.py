@@ -146,7 +146,7 @@ def evaluate_classification(model, data_loader, device,
                             results_file=None, test_clf=None,log_wandb=True,
                             max_detections=None,min_box_proportionArea=None,
                             min_score_threshold=None,
-                            cost_ratios=1/20, #Costo FP/CostoFN
+                            costs_ratio=1/10, #Costo FP/CostoFN
                             prior_esperada = 0.1,
                              ):
     print('STARTING VALIDATION')
@@ -164,6 +164,8 @@ def evaluate_classification(model, data_loader, device,
     image_paths = []
     j = 0
     leave=False
+    tau_bayes = costs_ratio * (1 - prior_esperada) / prior_esperada
+    posteriors_th = tau_bayes / (1 + tau_bayes)
     with torch.no_grad():
         #print('initial',psutil.virtual_memory().percent)
         for batch in metric_logger.log_every(data_loader, 5, header):
@@ -226,8 +228,7 @@ def evaluate_classification(model, data_loader, device,
             print('Using existing regressor')
             if hasattr(test_clf,'predict_proba'):
                 cont_preds = test_clf.predict_proba(x_regresion)[:,1]
-                tau_bayes = cost_ratios*(1-prior_esperada)/prior_esperada
-                posteriors_th = tau_bayes/(1+tau_bayes)
+
                 print('threshold: ',posteriors_th)
                 preds = cont_preds>posteriors_th
             else:

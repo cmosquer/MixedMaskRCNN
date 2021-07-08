@@ -44,8 +44,6 @@ def saveAsFiles(tqdm_loader,model,device,
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
         j += 1
-        if j < 15:
-            continue
         image_source = image_sources[0]
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
@@ -272,7 +270,9 @@ def main(args=None):
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
 
-        'posterior_th': 0.08,
+        'costs_ratio': 1/10,
+        'positive_prior_esperada': 0.1,
+
         'calculate_coco': False,
         'calculate_classification': False,
         'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0DT_SIG',
@@ -398,7 +398,7 @@ def main(args=None):
                 collate_fn=ut.collate_fn)
             results_classif = evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
                                     results_file=results_coco_file,test_clf=test_clf,
-                                                      #cost_ratios=config['cost_ratios']
+                                    costs_ratio=config['costs_ratio'], prior_esperada=config['positive_prior_esperada']
                                                       )
             wandb_valid.update(results_classif)
         #Redefinir solo las que quiero guardar la imagen
@@ -430,13 +430,14 @@ def main(args=None):
            }"""
         min_score_thresholds = 0.2
         min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
-
+        tau_bayes = config['costs_ratio'] * (1 - config['positive_prior_esperada']) / config['positive_prior_esperada']
+        posterior_th = tau_bayes / (1 + tau_bayes)
         if config['save_figures'] or config['save_csv']:
 
             while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                               max_detections=8, min_score_threshold=min_score_thresholds,
                               binary_classifier=config['binary_classifier'],
-                              posterior_th=config['posterior_th'],
+                              posterior_th=posterior_th,
                               min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
                               save_csv=output_csv_path,save_figures=config['save_figures']):
                 pass
