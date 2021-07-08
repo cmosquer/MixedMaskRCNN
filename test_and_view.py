@@ -65,11 +65,11 @@ def saveAsFiles(tqdm_loader,model,device,
                                  min_box_proportionArea=min_box_proportionArea,
                                  min_score_threshold=min_score_threshold)
 
-        print(type(outputs))
+        #print(type(outputs))
         outputs = {k: v.numpy() for k, v in outputs.items()}
         image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
-        print('TARGET for {} is {}'.format(image_path, targets['labels']))
+        #print('TARGET for {} is {}'.format(image_path, targets['labels']))
         os.makedirs(save_fig_dir + 'TruePositive', exist_ok=True)
         os.makedirs(save_fig_dir + 'FalsePositive', exist_ok=True)
         os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
@@ -107,18 +107,18 @@ def saveAsFiles(tqdm_loader,model,device,
             cont_pred_str = str(cont_pred).replace('.', '-')
             saving_path = saving_path.replace('.jpg', f'_{cont_pred_str}.jpg')
 
-        print('Memory before save figres: ', psutil.virtual_memory().percent)
+        #print('Memory before save figres: ', psutil.virtual_memory().percent)
         if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
             colorimage[:, :, 0] = image
             colorimage[:, :, 1] = image
             colorimage[:, :, 2] = image
-            print('Memory after colorimage: ', psutil.virtual_memory().percent)
+            #print('Memory after colorimage: ', psutil.virtual_memory().percent)
 
             if save_figures=='heatmap':
 
                 ut.save_heatmap(saving_path,colorimage,outputs)
-                print('Memory after save  heatmap: ', psutil.virtual_memory().percent)
+                #print('Memory after save  heatmap: ', psutil.virtual_memory().percent)
 
             if save_figures=='boxes':
                 colorimage = 255*colorimage
@@ -145,7 +145,7 @@ def saveAsFiles(tqdm_loader,model,device,
 
                 cv2.imwrite(saving_path, colorimage)
 
-            print('Saved ', saving_path)
+            #print('Saved ', saving_path)
 
             #except:
             #    print('COULDNT SAVE ',image_path)
@@ -190,7 +190,7 @@ def saveAsFiles(tqdm_loader,model,device,
             df = df.append(results_list,ignore_index=True)
 
         del outputs,targets, image
-        print('Memory after delete outputs: ', psutil.virtual_memory().percent)
+        #print('Memory after delete outputs: ', psutil.virtual_memory().percent)
 
     if save_csv is not None:
         df.to_csv(save_csv,index=False)
@@ -270,12 +270,12 @@ def main(args=None):
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
 
-        'posterior_th': 0.4,
+        'posterior_th': 0.08,
         'calculate_coco': False,
         'calculate_classification': True,
-        'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0RF',
+        'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0DT_SIG',
         'adjust_new_LR': False,
-        'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
+        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': True,
         'view_in_window': False,
