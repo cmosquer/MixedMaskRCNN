@@ -145,7 +145,7 @@ def saveAsFiles(tqdm_loader,model,device,
 
                 cv2.imwrite(saving_path, colorimage)
 
-            #print('Saved ', saving_path)
+            print('Saved ', saving_path)
 
             #except:
             #    print('COULDNT SAVE ',image_path)
@@ -292,9 +292,9 @@ def main(args=None):
     chosen_experiment = config['experiment']
     chosen_epoch = config['tested_epoch']
     trainedModelPath = "{}/{}/mixedMaskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
-
+    save_figures = config['save_figures']
     date = datetime.today().strftime('%Y-%m-%d')
-    save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}/'
+    save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}_{save_figures}/'
     if config['save_csv']:
         output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
     else:
