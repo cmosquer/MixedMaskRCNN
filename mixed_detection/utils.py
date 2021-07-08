@@ -517,7 +517,7 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
             else:
 
                 alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
-                if len(np.where(existing_alpha!=0)):
+                if len(np.where(existing_alpha!=0))>0:
                     print(np.where(existing_alpha!=0))
 
                     print(type(alpha[np.where(existing_alpha!=0)]))
