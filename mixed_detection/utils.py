@@ -445,6 +445,7 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
                 yhigh = min(y2+gradientPadding_y,imageHeight)
                 #print('coords: [{},{}] - [{},{}]'.format(xlow,ylow,xhigh,yhigh))
                 merged_heatmap[ylow:yhigh,xlow:xhigh,:] += gradientCircle(xhigh-xlow,yhigh-ylow,score)
+
             except Exception as e:
                 print(e)
                 print('Error inserting gradient circle in coords : [{},{}] - [{},{}]. \nOriginal detection was: [{},{}] - [{},{}]. Heatmap shape was: {} '.format(
@@ -460,20 +461,25 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
 
 
         alphas = merged_heatmap[:,:,1]
-        max_alpha =  alphas.max()
-        min_alpha = alphas.min()
-        if max_alpha-min_alpha!=0:
-            alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
-        else:
-            alphas_norm = alphas
+        max_alpha = 0.6 #alphas.max()
+        min_alpha = 0 #alphas.min()
+        for row in range(alphas.shape[0]):
+            for col in range(alphas.shape[1]):
+                val = alphas[row,col]
+                print('val', val)
+                if val>0:
+                    alphas[row,col] = ((max_alfa-min_alfa)*(val - min_alpha) /(max_alpha-min_alpha)) + min_alfa
+
+        #if max_alpha-min_alpha!=0:
+        #    alphas_norm = ((max_alfa-min_alfa)*(alphas_activated - min_alpha) /(max_alpha-min_alpha)) + min_alfa
+        #else:
+        #    alphas_norm = alphas
+
         cmap = plt.cm.jet
         colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
         final_hm = cmap(colors)
-        #final_hm = np.zeros((one_channel_heatmap.shape[0],one_channel_heatmap.shape[1],3))
-        #final_hm[:,:,0] = one_channel_heatmap
-        #final_hm[:,:,1] = one_channel_heatmap
-        #final_hm[:,:,2] = one_channel_heatmap
-        final_hm[..., -1] = alphas_norm
+        final_hm[..., -1] = alphas #_norm
+
         print(final_hm.shape,final_hm.dtype)
         #final_hm[..., -1] = alphas
     return final_hm

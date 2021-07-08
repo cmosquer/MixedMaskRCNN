@@ -98,10 +98,11 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         boxes = []
         target = {}
+        """
         try:
             print(self.csv.box_type.values[idx])
         except:
-            pass
+            pass"""
         if isinstance(self.csv.mask_path[idx] ,str):
 
             mask_path = self.csv.mask_path.values[idx]
