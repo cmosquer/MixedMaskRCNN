@@ -439,8 +439,8 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
             height = int(y2 - y1)
             width = int(x2 - x1)
 
-            gradientPadding_x = 0#int(width)
-            gradientPadding_y = 0#int(0.2 * height)
+            gradientPadding_x = int(0.2* width)
+            gradientPadding_y = int(0.2 * height)
 
             try:
                 xlow = max(0,x1-gradientPadding_x)
@@ -503,17 +503,21 @@ def save_heatmap(saving_path,colorimage,outputs):
 def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.8,min_alfa=0):
     innerColor = score * innerColor
     outerColor = score * outerColor
-    x_arr, y_arr = np.mgrid[0:height, 0:width]
-    center = (height // 2, width // 2)
-    #max_dist = max(height//2,width//2)# np.sqrt((height - center[0]) ** 2 + (width - center[1]) ** 2)
-    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) #/ max_dist
-    distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
+    min_dim = min(height,width)
+    x_arr, y_arr = np.mgrid[0:min_dim, 0:min_dim]
+    center = (min_dim // 2, min_dim // 2)
+    max_dist = np.sqrt((min_dim - center[0]) ** 2 + (min_dim - center[1]) ** 2)
+    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / max_dist
+    #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
-    alpha = min_alfa * 0.8*distanceToCenter + max_alfa * (distanceToCenter.max() - 0.8*distanceToCenter)
+    alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
     alpha = np.where(existing_alpha != 0, 0, alpha)
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     circle = np.stack((r, alpha), axis=-1)
-
+    border_y = (height-min_dim)//2
+    border_x = (width-min_dim)//2
+    ellipse = np.zeros((height,width,2))
+    ellipse[border_y:border_y+height+(height-min_dim)%2,border_x:border_x+width+(width-min_dim)%2,:] = circle
     """
     for y in range(height):
         for x in range(width):
@@ -538,5 +542,5 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
             circle[y, x, 0] = r #Color
     """
 
-    return circle
+    return ellipse
 
