@@ -517,7 +517,7 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
     print(circle.shape)
     border_y = (height-min_dim)//2
     border_x = (width-min_dim)//2
-    print(height,width,border_y,border_x)
+    print(height,width,border_y,border_y+height,(height-min_dim)%2)
     ellipse = np.zeros((height,width,2))
     print(ellipse[border_y:border_y+height+(height-min_dim)%2,border_x:border_x+width+(width-min_dim)%2,:].shape)
     ellipse[border_y:border_y+height+(height-min_dim)%2,border_x:border_x+width+(width-min_dim)%2,:] = circle
