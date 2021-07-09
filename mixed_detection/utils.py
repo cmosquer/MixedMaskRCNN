@@ -496,7 +496,7 @@ def save_heatmap(saving_path,colorimage,outputs):
     plt.close(fig)
     gc.collect()
 
-def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.8,min_alfa=0):
+def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.5,min_alfa=0):
     innerColor = score * innerColor
     outerColor = score * outerColor
     x_arr, y_arr = np.mgrid[0:height, 0:width]
@@ -505,7 +505,7 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
     distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / max_dist
 
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
-    alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max() - distanceToCenter)
+    alpha = min_alfa * distanceToCenter + max_alfa * (1 - distanceToCenter)
     alpha = np.where(existing_alpha != 0, 0, alpha)
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     circle = np.stack((r, alpha), axis=-1)
