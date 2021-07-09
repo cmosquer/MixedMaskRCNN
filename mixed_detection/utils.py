@@ -504,9 +504,9 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
     outerColor = score * outerColor
     x_arr, y_arr = np.mgrid[0:height, 0:width]
     center = (height // 2, width // 2)
-    max_dist = max(height//2,width//2)# np.sqrt((height - center[0]) ** 2 + (width - center[1]) ** 2)
-    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / max_dist
-
+    #max_dist = max(height//2,width//2)# np.sqrt((height - center[0]) ** 2 + (width - center[1]) ** 2)
+    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) #/ max_dist
+    distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
     alpha = min_alfa * distanceToCenter + max_alfa * (1 - distanceToCenter)
     alpha = np.where(existing_alpha != 0, 0, alpha)
