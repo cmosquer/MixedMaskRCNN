@@ -460,14 +460,14 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
 
         # Normalize the colors b/w 0 and 1, we'll then pass an MxNx4 array to imshow
 
-
+        """
         alphas = merged_heatmap[:,:,1]
         max_alpha = alphas.max()
         min_alpha = alphas.min()
         if max_alpha-min_alpha!=0:
             alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
         else:
-            alphas_norm = alphas
+            alphas_norm = alphas"""
         cmap = plt.cm.jet
         colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
         final_hm = cmap(colors)
@@ -475,8 +475,8 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         #final_hm[:,:,0] = one_channel_heatmap
         #final_hm[:,:,1] = one_channel_heatmap
         #final_hm[:,:,2] = one_channel_heatmap
-        final_hm[..., -1] = 0.6*alphas_norm
-        print(final_hm.shape,final_hm.dtype)
+        final_hm[..., -1] = merged_heatmap[:,:,1]
+        #print(final_hm.shape,final_hm.dtype)
         #final_hm[..., -1] = alphas
     return final_hm
 
@@ -506,7 +506,7 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
 
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max() - distanceToCenter)
-    #alpha = np.where(existing_alpha != 0, 0, alpha)
+    alpha = np.where(existing_alpha != 0, 0, alpha)
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     circle = np.stack((r, alpha), axis=-1)
 
