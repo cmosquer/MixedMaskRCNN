@@ -423,8 +423,11 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
     else:
         imageHeight,imageWidth = dims[0], dims[1]
         merged_heatmap = np.zeros((imageHeight,imageWidth, 2))
-
+        j=0
         for score,box in zip(list(scores),list(boxes)):
+            if j>0:
+                break
+            j+=1
             x1 = int(box[0])
             y1 = int(box[1])
             x2 = int(box[2])
