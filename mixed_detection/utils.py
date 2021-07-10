@@ -500,6 +500,15 @@ def save_heatmap(saving_path,colorimage,outputs):
     plt.close(fig)
     gc.collect()
 
+def to_shape(a, shape):
+    y_, x_ = shape
+    y, x = a.shape
+    y_pad = (y_-y)
+    x_pad = (x_-x)
+    return np.pad(a,((y_pad//2, y_pad//2 + y_pad%2),
+                     (x_pad//2, x_pad//2 + x_pad%2)),
+                  mode = 'constant')
+
 def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.8,min_alfa=0):
     innerColor = score * innerColor
     outerColor = score * outerColor
@@ -513,19 +522,10 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
 
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
+    alpha = to_shape(alpha,(height,width))
+    r = to_shape(r, (height, width))
     circle = np.stack((r, alpha), axis=-1)
-    print(circle.shape)
-    border_y = (height-min_dim)//2
-    border_x = (width-min_dim)//2
-    print(height,width,border_y,border_y+height,(height-min_dim)%2)
-    ellipse = np.zeros((height,width,2))
-    supx=border_x+width+(width-min_dim)%2
-    supy=border_y+height+(height-min_dim)%2
-    print(supx,supy)
-    print(ellipse[border_y:supy,border_x:supx,:].shape)
-    ellipse[border_y:border_y+height+(height-min_dim)%2,border_x:border_x+width+(width-min_dim)%2,:] = circle
 
-    ellipse[:,:,1] = np.where(existing_alpha != 0, 0, ellipse[:,:,1])
     """
     for y in range(height):
         for x in range(width):
@@ -550,5 +550,5 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
             circle[y, x, 0] = r #Color
     """
 
-    return ellipse
+    return circle
 
