@@ -505,14 +505,14 @@ def to_shape(a, shape):
                      (x_pad//2, x_pad//2 + x_pad%2)),
                   mode = 'constant')
 
-def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.7,min_alfa=0):
+def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.9,min_alfa=0):
     innerColor = score * innerColor
     outerColor = score * outerColor
     min_dim = min(height,width)
     x_arr, y_arr = np.mgrid[0:min_dim, 0:min_dim]
     center = (min_dim // 2, min_dim // 2)
     max_dist = np.sqrt((min_dim - center[0]) ** 2 + (min_dim - center[1]) ** 2)
-    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / (0.8*max_dist)
+    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / (1.2*max_dist)
     #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
