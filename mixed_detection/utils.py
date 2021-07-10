@@ -464,19 +464,19 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
 
         # Normalize the colors b/w 0 and 1, we'll then pass an MxNx4 array to imshow
 
-        """
+
         alphas = merged_heatmap[:,:,1]
         max_alpha = alphas.max()
         min_alpha = alphas.min()
         if max_alpha-min_alpha!=0:
             alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
         else:
-            alphas_norm = alphas"""
+            alphas_norm = alphas
         cmap = plt.cm.jet
         colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
         final_hm = cmap(colors)
 
-        final_hm[..., -1] = merged_heatmap[:,:,1]
+        final_hm[..., -1] = alphas_norm#merged_heatmap[:,:,1]
 
     return final_hm
 
