@@ -467,11 +467,10 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         alphas = merged_heatmap[:,:,1]
         max_alpha = alphas.max()
         min_alpha = alphas.min()
-        alphas_norm = Normalize(min_alpha, max_alpha, clip=True)(one_channel_heatmap)
-        #if max_alpha-min_alpha!=0:
-        #    alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
-        #else:
-        #    alphas_norm = alphas
+        if max_alpha-min_alpha!=0:
+            alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
+        else:
+            alphas_norm = alphas
 
 
         final_hm[..., -1] = alphas_norm#merged_heatmap[:,:,1]
@@ -517,7 +516,7 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
 
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     alpha = to_shape(alpha,(height,width))
-    #alpha = np.where(existing_alpha!=0,0,alpha)
+    alpha = np.where(alpha<np.quantile(alpha,0.95),0,alpha)
     r = to_shape(r, (height, width))
     circle = np.stack((r, alpha), axis=-1)
     max_alpha = alpha.max()
