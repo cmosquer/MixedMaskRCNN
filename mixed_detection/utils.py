@@ -458,23 +458,21 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
                 return None
 
         one_channel_heatmap = merged_heatmap[:,:,0]
-        # Create an alpha channel of linearly increasing values moving to the right.
         vmax = one_channel_heatmap.max()
         vmin = one_channel_heatmap.min()
-
-        # Normalize the colors b/w 0 and 1, we'll then pass an MxNx4 array to imshow
-
+        cmap = plt.cm.jet
+        colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
+        final_hm = cmap(colors)
 
         alphas = merged_heatmap[:,:,1]
         max_alpha = alphas.max()
         min_alpha = alphas.min()
-        if max_alpha-min_alpha!=0:
-            alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
-        else:
-            alphas_norm = alphas
-        cmap = plt.cm.jet
-        colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
-        final_hm = cmap(colors)
+        alphas_norm = Normalize(min_alpha, max_alpha, clip=True)(one_channel_heatmap)
+        #if max_alpha-min_alpha!=0:
+        #    alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
+        #else:
+        #    alphas_norm = alphas
+
 
         final_hm[..., -1] = alphas_norm#merged_heatmap[:,:,1]
 
@@ -522,6 +520,10 @@ def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0
     #alpha = np.where(existing_alpha!=0,0,alpha)
     r = to_shape(r, (height, width))
     circle = np.stack((r, alpha), axis=-1)
+    max_alpha = alpha.max()
+    min_alpha = alpha.min()
+    #if max_alpha - min_alpha != 0:
+    #    alpha = ((max_alfa - min_alfa) * (alpha - min_alpha) / (max_alpha - min_alpha)) + min_alfa
 
     """
     for y in range(height):
