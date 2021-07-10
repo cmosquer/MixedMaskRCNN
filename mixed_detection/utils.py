@@ -464,24 +464,20 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
 
         # Normalize the colors b/w 0 and 1, we'll then pass an MxNx4 array to imshow
 
-
+        """
         alphas = merged_heatmap[:,:,1]
         max_alpha = alphas.max()
         min_alpha = alphas.min()
         if max_alpha-min_alpha!=0:
             alphas_norm = ((max_alfa-min_alfa)*(alphas - min_alpha) /(max_alpha-min_alpha)) + min_alfa
         else:
-            alphas_norm = alphas
+            alphas_norm = alphas"""
         cmap = plt.cm.jet
         colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
         final_hm = cmap(colors)
-        #final_hm = np.zeros((one_channel_heatmap.shape[0],one_channel_heatmap.shape[1],3))
-        #final_hm[:,:,0] = one_channel_heatmap
-        #final_hm[:,:,1] = one_channel_heatmap
-        #final_hm[:,:,2] = one_channel_heatmap
-        final_hm[..., -1] = alphas_norm #merged_heatmap[:,:,1]
-        #print(final_hm.shape,final_hm.dtype)
-        #final_hm[..., -1] = alphas
+
+        final_hm[..., -1] = merged_heatmap[:,:,1]
+
     return final_hm
 
 def save_heatmap(saving_path,colorimage,outputs):
@@ -509,14 +505,14 @@ def to_shape(a, shape):
                      (x_pad//2, x_pad//2 + x_pad%2)),
                   mode = 'constant')
 
-def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.8,min_alfa=0):
+def gradientCircle(width,height, score, existing_alpha,innerColor=1,outerColor=0.3,max_alfa=0.7,min_alfa=0):
     innerColor = score * innerColor
     outerColor = score * outerColor
     min_dim = min(height,width)
     x_arr, y_arr = np.mgrid[0:min_dim, 0:min_dim]
     center = (min_dim // 2, min_dim // 2)
     max_dist = np.sqrt((min_dim - center[0]) ** 2 + (min_dim - center[1]) ** 2)
-    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / max_dist
+    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / (1.1*max_dist)
     #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
