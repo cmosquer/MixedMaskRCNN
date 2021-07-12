@@ -517,10 +517,11 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
 
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
     alpha = np.where(distanceToCenter>0.8,0,alpha)
-    if existing_alpha:
-        alpha = np.where(existing_alpha!=0, 0, alpha)
+
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     alpha = to_shape(alpha,(height,width))
+    if existing_alpha:
+        alpha = np.where(existing_alpha!=0, 0, alpha)
     #alpha = np.where(alpha<np.quantile(alpha,0.85),0,alpha)
     r = to_shape(r, (height, width))
     circle = np.stack((r, alpha), axis=-1)
