@@ -520,6 +520,7 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
 
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     alpha = to_shape(alpha,(height,width))
+    assert alpha.shape == existing_alpha.shape, "Error in shapes alpha {} existing alpha {} ".format(alpha.shape, existing_alpha.shape)
     if existing_alpha:
         alpha = np.where(existing_alpha!=0, 0, alpha)
     #alpha = np.where(alpha<np.quantile(alpha,0.85),0,alpha)
