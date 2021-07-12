@@ -423,11 +423,11 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
     else:
         imageHeight,imageWidth = dims[0], dims[1]
         merged_heatmap = np.zeros((imageHeight,imageWidth, 2))
-        j=0
+        #j=0
         for score,box in zip(list(scores),list(boxes)):
-            if j>0:
-                break
-            j+=1
+            #if j>0:
+            #    break
+            #j+=1
             x1 = int(box[0])
             y1 = int(box[1])
             x2 = int(box[2])
@@ -515,6 +515,7 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
     #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
     distanceToCenter = np.where(distanceToCenter>0.8,0,distanceToCenter)
+
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
 
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
