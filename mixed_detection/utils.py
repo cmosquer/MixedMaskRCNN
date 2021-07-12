@@ -440,8 +440,8 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
             height = int(y2 - y1)
             width = int(x2 - x1)
 
-            gradientPadding_x = int(0.2* width)
-            gradientPadding_y = int(0.2 * height)
+            gradientPadding_x = 0#int(width)
+            gradientPadding_y = 0#int(height)
 
             try:
                 xlow = max(0,x1-gradientPadding_x)
