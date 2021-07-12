@@ -6,6 +6,7 @@ from sklearn.metrics import roc_curve, classification_report, confusion_matrix, 
 from sklearn.metrics import auc as sklearnAUC
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset #, MixedSampler
 from matplotlib import pyplot as plt
+
 from matplotlib.colors import Normalize
 from collections import Counter
 import os, gc
@@ -462,7 +463,7 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         one_channel_heatmap = merged_heatmap[:,:,0]
         vmax = one_channel_heatmap.max()
         vmin = one_channel_heatmap.min()
-        cmap = plt.cm.jet
+        cmap = plt.cm.Reds
         colors = Normalize(vmin, vmax, clip=True)(one_channel_heatmap)
         final_hm = cmap(colors)
 
