@@ -449,7 +449,7 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
                 yhigh = min(y2+gradientPadding_y,imageHeight)
                 #print('coords: [{},{}] - [{},{}]'.format(xlow,ylow,xhigh,yhigh))
                 new_gradient = gradientCircle(xhigh-xlow,yhigh-ylow,score,
-                                              #existing_alpha=merged_heatmap[ylow:yhigh,xlow:xhigh,1]
+                                              existing_alpha=merged_heatmap[ylow:yhigh,xlow:xhigh,1]
                                               )
                 merged_heatmap[ylow:yhigh,xlow:xhigh,:] += new_gradient
 
@@ -502,7 +502,7 @@ def to_shape(a, shape):
     x_pad = (x_-x)
     return np.pad(a,((y_pad//2, y_pad//2 + y_pad%2),
                      (x_pad//2, x_pad//2 + x_pad%2)),
-                  mode = 'constant')
+                  mode = 'constant', constant_values=0)
 
 def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerColor=0.3,max_alfa=1,min_alfa=0):
     innerColor = score * innerColor
@@ -514,10 +514,11 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
     distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / (1.2*max_dist)
     #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
-    distanceToCenter = np.where(distanceToCenter>0.8,0,distanceToCenter)
 
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
-
+    alpha = np.where(distanceToCenter>0.8,0,alpha)
+    if existing_alpha:
+        alpha = np.where(existing_alpha!=0, 0, alpha)
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     alpha = to_shape(alpha,(height,width))
     #alpha = np.where(alpha<np.quantile(alpha,0.85),0,alpha)
