@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.4.0-74-generic-x86_64-with-debian-buster-sid",
+    "python": "3.6.9",
+    "heartbeatAt": "2021-07-02T17:12:59.182333",
+    "startedAt": "2021-07-02T17:12:57.715039",
+    "docker": null,
+    "gpu": "TITAN V",
+    "gpu_count": 1,
+    "cpu_count": 4,
+    "cuda": "10.2.89",
+    "args": [],
+    "state": "running",
+    "program": "train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/cmosquer/MixedMaskRCNN.git",
+        "commit": "6dc6f69d86f285a6d9df7fae74e2c6ab22a72e2f"
+    },
+    "email": "cmosquer@itba.edu.ar",
+    "root": "/home/usuariohi/Documentos/Repos/MixedMaskRCNN",
+    "host": "usuariohi-Precision-T3600",
+    "username": "usuariohi",
+    "executable": "/home/usuariohi/anaconda3/envs/pytorch-opacidad/bin/python"
+}

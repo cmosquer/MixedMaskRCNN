@@ -1,0 +1,56 @@
+2021-07-01 08:33:45,481 INFO    MainThread:418 [internal.py:wandb_internal():91] W&B internal server running at pid: 418, started at: 2021-07-01 08:33:45.481420
+2021-07-01 08:33:45,484 INFO    WriterThread:418 [datastore.py:open_for_write():77] open: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/run-cyrz17xw.wandb
+2021-07-01 08:33:45,485 DEBUG   HandlerThread:418 [handler.py:handle_request():121] handle_request: check_version
+2021-07-01 08:33:45,488 DEBUG   SenderThread:418 [sender.py:send():176] send: header
+2021-07-01 08:33:45,488 DEBUG   SenderThread:418 [sender.py:send_request():186] send_request: check_version
+2021-07-01 08:33:45,671 DEBUG   SenderThread:418 [sender.py:send():176] send: run
+2021-07-01 08:33:45,940 INFO    SenderThread:418 [dir_watcher.py:__init__():168] watching files in: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files
+2021-07-01 08:33:45,941 INFO    SenderThread:418 [sender.py:_start_run_threads():699] run started: cyrz17xw with start time 1625139224
+2021-07-01 08:33:45,941 DEBUG   SenderThread:418 [sender.py:send():176] send: summary
+2021-07-01 08:33:45,941 INFO    SenderThread:418 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-07-01 08:33:45,944 DEBUG   HandlerThread:418 [handler.py:handle_request():121] handle_request: run_start
+2021-07-01 08:33:45,948 DEBUG   HandlerThread:418 [meta.py:__init__():39] meta init
+2021-07-01 08:33:45,948 DEBUG   HandlerThread:418 [meta.py:__init__():53] meta init done
+2021-07-01 08:33:45,948 DEBUG   HandlerThread:418 [meta.py:probe():210] probe
+2021-07-01 08:33:45,956 DEBUG   HandlerThread:418 [meta.py:_setup_git():200] setup git
+2021-07-01 08:33:45,974 DEBUG   HandlerThread:418 [meta.py:_setup_git():207] setup git done
+2021-07-01 08:33:45,974 DEBUG   HandlerThread:418 [meta.py:_save_pip():57] save pip
+2021-07-01 08:33:45,975 DEBUG   HandlerThread:418 [meta.py:_save_pip():71] save pip done
+2021-07-01 08:33:45,975 DEBUG   HandlerThread:418 [meta.py:_save_conda():78] save conda
+2021-07-01 08:33:46,943 INFO    Thread-8  :418 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/requirements.txt
+2021-07-01 08:33:46,943 INFO    Thread-8  :418 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/wandb-summary.json
+2021-07-01 08:33:46,943 INFO    Thread-8  :418 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/conda-environment.yaml
+2021-07-01 08:33:47,999 DEBUG   HandlerThread:418 [meta.py:_save_conda():86] save conda done
+2021-07-01 08:33:48,000 DEBUG   HandlerThread:418 [meta.py:probe():252] probe done
+2021-07-01 08:33:48,005 DEBUG   SenderThread:418 [sender.py:send():176] send: files
+2021-07-01 08:33:48,005 INFO    SenderThread:418 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-07-01 08:33:48,014 DEBUG   HandlerThread:418 [handler.py:handle_request():121] handle_request: stop_status
+2021-07-01 08:33:48,015 DEBUG   SenderThread:418 [sender.py:send_request():186] send_request: stop_status
+2021-07-01 08:33:48,726 INFO    Thread-11 :418 [upload_job.py:push():133] Uploaded file /tmp/tmpuifnknhpwandb/2wkjbtka-wandb-metadata.json
+2021-07-01 08:33:48,941 INFO    Thread-8  :418 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/output.log
+2021-07-01 08:33:48,942 INFO    Thread-8  :418 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/wandb-metadata.json
+2021-07-01 08:34:03,228 DEBUG   HandlerThread:418 [handler.py:handle_request():121] handle_request: stop_status
+2021-07-01 08:34:03,229 DEBUG   SenderThread:418 [sender.py:send_request():186] send_request: stop_status
+2021-07-01 08:34:14,326 DEBUG   SenderThread:418 [sender.py:send():176] send: stats
+2021-07-01 08:34:18,439 DEBUG   HandlerThread:418 [handler.py:handle_request():121] handle_request: stop_status
+2021-07-01 08:34:18,439 DEBUG   SenderThread:418 [sender.py:send_request():186] send_request: stop_status
+2021-07-01 08:34:30,870 WARNING MainThread:418 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-07-01 08:34:31,088 WARNING MainThread:418 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-07-01 08:34:31,088 ERROR   MainThread:418 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-07-01 08:34:31,439 INFO    WriterThread:418 [datastore.py:close():258] close: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/run-cyrz17xw.wandb
+2021-07-01 08:34:31,660 INFO    SenderThread:418 [sender.py:finish():925] shutting down sender
+2021-07-01 08:34:31,660 INFO    SenderThread:418 [dir_watcher.py:finish():282] shutting down directory watcher
+2021-07-01 08:34:31,663 INFO    HandlerThread:418 [handler.py:finish():632] shutting down handler
+2021-07-01 08:34:31,956 INFO    SenderThread:418 [dir_watcher.py:finish():312] scan: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files
+2021-07-01 08:34:31,956 INFO    SenderThread:418 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/output.log output.log
+2021-07-01 08:34:31,957 INFO    SenderThread:418 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/wandb-metadata.json wandb-metadata.json
+2021-07-01 08:34:31,957 INFO    SenderThread:418 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/requirements.txt requirements.txt
+2021-07-01 08:34:31,957 INFO    SenderThread:418 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/wandb-summary.json wandb-summary.json
+2021-07-01 08:34:31,967 INFO    SenderThread:418 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/config.yaml config.yaml
+2021-07-01 08:34:31,977 INFO    SenderThread:418 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/conda-environment.yaml conda-environment.yaml
+2021-07-01 08:34:31,985 INFO    SenderThread:418 [file_pusher.py:finish():176] shutting down file pusher
+2021-07-01 08:34:31,986 INFO    SenderThread:418 [file_pusher.py:join():181] waiting for file pusher
+2021-07-01 08:34:32,765 INFO    Thread-12 :418 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/requirements.txt
+2021-07-01 08:34:32,771 INFO    Thread-13 :418 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/wandb-summary.json
+2021-07-01 08:34:32,775 INFO    Thread-14 :418 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_083344-cyrz17xw/files/config.yaml
+2021-07-01 08:34:33,189 INFO    MainThread:418 [internal.py:handle_exit():78] Internal process exited

@@ -1,0 +1,54 @@
+2021-07-01 08:29:31,500 INFO    MainThread:31423 [internal.py:wandb_internal():91] W&B internal server running at pid: 31423, started at: 2021-07-01 08:29:31.499668
+2021-07-01 08:29:31,503 INFO    WriterThread:31423 [datastore.py:open_for_write():77] open: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/run-335ga2mb.wandb
+2021-07-01 08:29:31,506 DEBUG   HandlerThread:31423 [handler.py:handle_request():121] handle_request: check_version
+2021-07-01 08:29:31,509 DEBUG   SenderThread:31423 [sender.py:send():176] send: header
+2021-07-01 08:29:31,509 DEBUG   SenderThread:31423 [sender.py:send_request():186] send_request: check_version
+2021-07-01 08:29:31,729 DEBUG   SenderThread:31423 [sender.py:send():176] send: run
+2021-07-01 08:29:31,994 INFO    SenderThread:31423 [dir_watcher.py:__init__():168] watching files in: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files
+2021-07-01 08:29:31,995 INFO    SenderThread:31423 [sender.py:_start_run_threads():699] run started: 335ga2mb with start time 1625138970
+2021-07-01 08:29:31,998 DEBUG   SenderThread:31423 [sender.py:send():176] send: summary
+2021-07-01 08:29:31,998 INFO    SenderThread:31423 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-07-01 08:29:32,001 DEBUG   HandlerThread:31423 [handler.py:handle_request():121] handle_request: run_start
+2021-07-01 08:29:32,026 DEBUG   HandlerThread:31423 [meta.py:__init__():39] meta init
+2021-07-01 08:29:32,027 DEBUG   HandlerThread:31423 [meta.py:__init__():53] meta init done
+2021-07-01 08:29:32,027 DEBUG   HandlerThread:31423 [meta.py:probe():210] probe
+2021-07-01 08:29:32,036 DEBUG   HandlerThread:31423 [meta.py:_setup_git():200] setup git
+2021-07-01 08:29:32,057 DEBUG   HandlerThread:31423 [meta.py:_setup_git():207] setup git done
+2021-07-01 08:29:32,057 DEBUG   HandlerThread:31423 [meta.py:_save_pip():57] save pip
+2021-07-01 08:29:32,058 DEBUG   HandlerThread:31423 [meta.py:_save_pip():71] save pip done
+2021-07-01 08:29:32,058 DEBUG   HandlerThread:31423 [meta.py:_save_conda():78] save conda
+2021-07-01 08:29:33,001 INFO    Thread-8  :31423 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/conda-environment.yaml
+2021-07-01 08:29:33,002 INFO    Thread-8  :31423 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/wandb-summary.json
+2021-07-01 08:29:33,002 INFO    Thread-8  :31423 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/requirements.txt
+2021-07-01 08:29:37,998 INFO    Thread-8  :31423 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/output.log
+2021-07-01 08:29:42,922 DEBUG   HandlerThread:31423 [meta.py:_save_conda():86] save conda done
+2021-07-01 08:29:42,922 DEBUG   HandlerThread:31423 [meta.py:probe():252] probe done
+2021-07-01 08:29:42,951 DEBUG   HandlerThread:31423 [handler.py:handle_request():121] handle_request: stop_status
+2021-07-01 08:29:42,952 DEBUG   SenderThread:31423 [sender.py:send_request():186] send_request: stop_status
+2021-07-01 08:29:43,001 INFO    Thread-8  :31423 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/wandb-metadata.json
+2021-07-01 08:29:43,165 DEBUG   SenderThread:31423 [sender.py:send():176] send: files
+2021-07-01 08:29:43,165 INFO    SenderThread:31423 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-07-01 08:29:43,884 INFO    Thread-11 :31423 [upload_job.py:push():133] Uploaded file /tmp/tmpr63v58twwandb/me7yzy2p-wandb-metadata.json
+2021-07-01 08:29:58,179 DEBUG   HandlerThread:31423 [handler.py:handle_request():121] handle_request: stop_status
+2021-07-01 08:29:58,179 DEBUG   SenderThread:31423 [sender.py:send_request():186] send_request: stop_status
+2021-07-01 08:30:00,433 DEBUG   SenderThread:31423 [sender.py:send():176] send: stats
+2021-07-01 08:30:02,095 WARNING MainThread:31423 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-07-01 08:30:02,344 WARNING MainThread:31423 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-07-01 08:30:02,344 ERROR   MainThread:31423 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-07-01 08:30:02,799 INFO    SenderThread:31423 [sender.py:finish():925] shutting down sender
+2021-07-01 08:30:02,799 INFO    SenderThread:31423 [dir_watcher.py:finish():282] shutting down directory watcher
+2021-07-01 08:30:02,800 INFO    HandlerThread:31423 [handler.py:finish():632] shutting down handler
+2021-07-01 08:30:02,810 INFO    WriterThread:31423 [datastore.py:close():258] close: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/run-335ga2mb.wandb
+2021-07-01 08:30:03,006 INFO    SenderThread:31423 [dir_watcher.py:finish():312] scan: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files
+2021-07-01 08:30:03,006 INFO    SenderThread:31423 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/output.log output.log
+2021-07-01 08:30:03,006 INFO    SenderThread:31423 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/wandb-metadata.json wandb-metadata.json
+2021-07-01 08:30:03,007 INFO    SenderThread:31423 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/requirements.txt requirements.txt
+2021-07-01 08:30:03,007 INFO    SenderThread:31423 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/wandb-summary.json wandb-summary.json
+2021-07-01 08:30:03,007 INFO    SenderThread:31423 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/config.yaml config.yaml
+2021-07-01 08:30:03,008 INFO    SenderThread:31423 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/conda-environment.yaml conda-environment.yaml
+2021-07-01 08:30:03,009 INFO    SenderThread:31423 [file_pusher.py:finish():176] shutting down file pusher
+2021-07-01 08:30:03,009 INFO    SenderThread:31423 [file_pusher.py:join():181] waiting for file pusher
+2021-07-01 08:30:03,660 INFO    Thread-13 :31423 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/wandb-summary.json
+2021-07-01 08:30:03,696 INFO    Thread-14 :31423 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/config.yaml
+2021-07-01 08:30:03,908 INFO    Thread-12 :31423 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210701_082930-335ga2mb/files/requirements.txt
+2021-07-01 08:30:04,715 INFO    MainThread:31423 [internal.py:handle_exit():78] Internal process exited

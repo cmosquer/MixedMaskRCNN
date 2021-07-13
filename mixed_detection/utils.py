@@ -475,7 +475,7 @@ def getObjectDetectionHeatmap(boxes,scores,dims,max_alfa=0.2, min_alfa=0):
         else:
             alphas_norm = alphas
 
-
+        print(alphas_norm.max())
         final_hm[..., -1] = alphas_norm#merged_heatmap[:,:,1]
 
     return final_hm
@@ -512,25 +512,26 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
     x_arr, y_arr = np.mgrid[0:min_dim, 0:min_dim]
     center = (min_dim // 2, min_dim // 2)
     max_dist = np.sqrt((min_dim - center[0]) ** 2 + (min_dim - center[1]) ** 2)
-    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) / (1.2*max_dist)
+    distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) #/ max_dist
     #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
 
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
-    alpha = np.where(distanceToCenter>0.8,0,alpha)
-    r = np.where(distanceToCenter>0.8,0,r)
+    alpha = np.where(distanceToCenter>0.9*max_dist,0,alpha)
+    r = np.where(distanceToCenter>0.9*max_dist,0,r)
 
     assert r.shape == alpha.shape, "Error in shapes {} {}".format(r.shape, alpha.shape)
     alpha = to_shape(alpha,(height,width))
     r = to_shape(r, (height, width))
     assert alpha.shape == existing_alpha.shape, "Error in shapes alpha {} existing alpha {} ".format(alpha.shape, existing_alpha.shape)
     if existing_alpha is not None:
-        alpha = np.where(existing_alpha!=0, 0, alpha)
+        print(len(np.argwhere(existing_alpha!=0)))
+        #alpha = np.where(existing_alpha!=0, 0, alpha)
         r = np.where(existing_alpha!=0, 0, r)
 
     #alpha = np.where(alpha<np.quantile(alpha,0.85),0,alpha)
 
-    circle = np.stack((alpha, r), axis=-1)
+    circle = np.stack((r, alpha), axis=-1)
     #max_alpha = alpha.max()
     #min_alpha = alpha.min()
     #if max_alpha - min_alpha != 0:
