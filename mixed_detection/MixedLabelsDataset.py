@@ -139,7 +139,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
             #del masks, mask
             if self.masks_as_boxes:
-                print("Using mask {} as box".format(img_path))
+                #print("Using mask {} as box".format(img_path))
                 masks = np.zeros((len(boxes), img.shape[0], img.shape[1]))
 
         else:
