@@ -122,7 +122,7 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
             prop_0 = config["no_findings_examples_in_train"]
             prop_1 = 1-prop_0
             train_1 = len(csv_train)
-            train_required_0 = min(int(1-prop_1*train_1/prop_0),len(nofindings)-val_required_0)
+            train_required_0 = min(int((1-(prop_1*train_1))/prop_0),len(nofindings)-val_required_0)
             print('Len before appending no finding to train set: {}'.format(len(csv_train)))
             csv_train = csv_train.append(nofindings[val_required_0:train_required_0+val_required_0], ignore_index=True).reset_index(drop=True)
             print('Len AFTER appending no finding to train set: {}'.format(len(csv_train)))
