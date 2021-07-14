@@ -189,7 +189,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         if self.colorjitter is not None:
             img = self.colorjitter(img)
-            print('Memory after jitter: %', psutil.virtual_memory().percent)
+            #print('Memory after jitter: %', psutil.virtual_memory().percent)
 
         if self.return_image_source:
             return img, target, image_source, img_path
