@@ -28,7 +28,7 @@ def main(args=None):
         'data_augmentation': False,
         'existing_valid_set': '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),#None,#'{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
-        'no_findings_examples_in_valid': True,
+        'no_findings_examples_in_valid': False,
         'no_findings_examples_in_train': 0.5,#None,
         'max_valid_set_size': 1000,
         'masks_as_boxes': True,

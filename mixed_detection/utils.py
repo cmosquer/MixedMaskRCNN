@@ -85,6 +85,8 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
             prop_1 = 1 - prop_0
             train_1 = len(csv)
             train_required_0 = min(int(1 - prop_1 * train_1 / prop_0), len(nofindings))
+            print('train_required_0',train_required_0)
+
             csv = csv.append(nofindings[:train_required_0],ignore_index=True).reset_index(drop=True)
 
         valid_idx = list(set(csv_valid.file_name.values))
