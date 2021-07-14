@@ -260,8 +260,9 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        #'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
-        'test_set' : '{}/{}'.format(output_dir,'unitest.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
+        'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
+
+        #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
         'experiment': '2021-07-05_binary',
         'experiment_type': 'boxes',
@@ -274,8 +275,8 @@ def main(args=None):
         'positive_prior_esperada': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': False,
-        'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0DT_SIG',
+        'calculate_classification': True,
+        'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0RF',
         'adjust_new_LR': False,
         'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
