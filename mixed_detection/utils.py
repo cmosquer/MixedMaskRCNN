@@ -80,9 +80,15 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
     print('Len of csv after keeping only {} annotations: {}'.format(validAnnotations,len(csv)))
     if config["existing_valid_set"]:
         csv_valid = pd.read_csv(config["existing_valid_set"])
+        if config['no_findings_examples_in_train'] is not None:
+            prop_0 = config["no_findings_examples_in_train"]
+            prop_1 = 1 - prop_0
+            train_1 = len(csv)
+            train_required_0 = min(int(1 - prop_1 * train_1 / prop_0), len(nofindings))
+            csv = csv.append(nofindings[:train_required_0],ignore_index=True).reset_index(drop=True)
+
         valid_idx = list(set(csv_valid.file_name.values))
         csv_train = csv[~csv.file_name.isin(valid_idx)].reset_index(drop=True)
-        train_idx = list(set(csv_train.file_name.values))
     else:
         print('Creating new validation set ... ')
 
