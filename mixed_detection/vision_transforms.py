@@ -217,6 +217,7 @@ class RandomHorizontalFlip(object):
             height, width = image.shape[-2:]
             image = image.flip(-1)
             bbox = target["boxes"]
+            print(len(bbox))
             if len(bbox)>0:
                 bbox[:, [0, 2]] = width - bbox[:, [2, 0]]
             target["boxes"] = bbox
