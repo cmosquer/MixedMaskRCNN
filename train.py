@@ -34,7 +34,7 @@ def main(args=None):
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
-        'epochs': 4,
+        'epochs': 8,
         'random_seed': 40,
         'pretrained_checkpoint': experiment_dir + '/2021-07-05_binary/mixedMaskRCNN-0.pth',
         'pretrained_backbone_path': None #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
