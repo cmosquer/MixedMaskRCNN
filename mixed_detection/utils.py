@@ -68,12 +68,13 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
 
     # --Only accept images with boxes or masks--#
     validAnnotations = []
-
+    nofindings = raw_csv[raw_csv.label_level == 'nofinding'].sample(frac=1).reset_index(drop=True)
     if 'mask' in config["experiment_type"].lower() or config['masks_as_boxes']:
         validAnnotations.append('mask')
     if 'box' in config["experiment_type"].lower():
         validAnnotations.append('box')
 
+    val_required_0 = 0
 
     csv = raw_csv[raw_csv.label_level.isin(validAnnotations)].reset_index(drop=True)
     print('Len of csv after keeping only {} annotations: {}'.format(validAnnotations,len(csv)))
@@ -98,18 +99,26 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
         if config["no_findings_examples_in_valid"]:
             print('Len before appending no finding to valid set: {}'.format(len(csv_valid)))
             if isinstance(config["max_valid_set_size"],int):
-                nofindings = raw_csv[raw_csv.label_level=='nofinding'].reset_index(drop=True)[:(config["max_valid_set_size"]-len(csv_valid))]
+                val_required_0 = config["max_valid_set_size"]-len(csv_valid)
             else:
                 if config["max_valid_set_size"]=='balanced':
                     current_0 = len(csv_valid[csv_valid.label_level=='nofinding'])
                     current_1 = len(csv_valid) - current_0
-                    required_0 = current_1 - current_0
-                    print('Adding {} no finding images'.format(required_0))
-                    nofindings = raw_csv[raw_csv.label_level == 'nofinding'].reset_index(drop=True)[
-                                 :required_0]
+                    val_required_0 = current_1 - current_0
+                    print('Adding {} no finding images'.format(val_required_0))
 
-            csv_valid = csv_valid.append(nofindings,ignore_index=True).reset_index(drop=True)
+            nofindings_valid = nofindings[:val_required_0]
+            csv_valid = csv_valid.append(nofindings_valid,ignore_index=True).reset_index(drop=True)
             print('Len AFTER appending no finding to valid set: {}'.format(len(csv_valid)))
+        if config["no_findings_examples_in_train"] is not None:
+            prop_0 = config["no_findings_examples_in_train"]
+            prop_1 = 1-prop_0
+            train_1 = len(csv_train)
+            train_required_0 = min(int(1-prop_1*train_1/prop_0),len(nofindings)-val_required_0)
+            print('Len before appending no finding to train set: {}'.format(len(csv_train)))
+            csv_train = csv_train.append(nofindings[val_required_0:train_required_0+val_required_0], ignore_index=True).reset_index(drop=True)
+            print('Len AFTER appending no finding to train set: {}'.format(len(csv_train)))
+
     assert len(set(csv_train.file_name).intersection(csv_valid.file_name)) == 0
 
     print('Len csv train: {}, len csv test: {}'.format(len(csv_train),len(csv_valid)))

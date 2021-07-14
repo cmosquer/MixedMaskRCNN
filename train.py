@@ -19,7 +19,7 @@ def main(args=None):
     config = {
         "batch_size": 4,
         "batch_size_valid":1,
-        "initial_lr": 0.001,
+        "initial_lr": 0.01,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210625-00_ubuntu",
@@ -29,14 +29,14 @@ def main(args=None):
         'existing_valid_set': None,#'{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': True,
-        'no_findings_examples_in_train': False,
+        'no_findings_examples_in_train': 0.8,#None,
         'max_valid_set_size': 9150,
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 20,
         'random_seed': 40,
-        'pretrained_checkpoint': None, #experiment_dir + '/2021-06-08_boxes_binary/mixedMaskRCNN-4.pth',
+        'pretrained_checkpoint': experiment_dir + '/2021-07-05_binary/mixedMaskRCNN-0.pth',
         'pretrained_backbone_path': None #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
     }
 
