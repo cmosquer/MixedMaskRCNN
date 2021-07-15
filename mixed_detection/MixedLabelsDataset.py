@@ -63,6 +63,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         self.transforms = transforms #Transforms that have to be applied both to image and boxes/masks
         if colorjitter: #Transform the image brightness,contrast,etc
             self.colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
+        else:
+            self.colorjitter = None
         self.return_image_source = return_image_source
         self.binary = binary_opacity
         self.masks_as_boxes = masks_as_boxes
