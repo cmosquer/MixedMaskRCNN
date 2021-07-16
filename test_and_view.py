@@ -75,16 +75,15 @@ def saveAsFiles(tqdm_loader,model,device,
         folder = ''
         # try:
         # predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
+        pred = None
+        cont_pred = None
         if binary_classifier is not None:
-            pred = None
-            cont_pred = None
-            with open(binary_classifier, 'rb') as f:
-                test_clf = pickle.load(f)
+
             if posterior_th is not None:
-                cont_pred = test_clf.predict_proba(x_reg.reshape(1, -1))[0, 1]
+                cont_pred = binary_classifier.predict_proba(x_reg.reshape(1, -1))[0, 1]
                 pred = 1 if cont_pred > posterior_th else 0
             else:
-                pred = test_clf.predict(x_reg.reshape(1, -1))
+                pred = binary_classifier.predict(x_reg.reshape(1, -1))
                 cont_pred = pred.copy()
             gt = 1 if len(targets['labels']) > 0 else 0
             print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
@@ -275,7 +274,7 @@ def main(args=None):
         'positive_prior_esperada': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': True,
+        'calculate_classification': False,
         'binary_classifier': None,#output_dir+'2021-07-05_binary/classification_data-0RF', #Specificy only if it is different from the original one
         'adjust_new_LR': False,
         'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
@@ -385,6 +384,7 @@ def main(args=None):
                     classification_data_dict = pickle.load(f)
                 print('Loaded logistic regressor for classification')
                 test_clf = classification_data_dict['clf']
+
             else:
                 print('no existe archivo ',classification_data)
 
@@ -437,7 +437,7 @@ def main(args=None):
 
             while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                               max_detections=8, min_score_threshold=min_score_thresholds,
-                              binary_classifier=config['binary_classifier'],
+                              binary_classifier=test_clf,
                               posterior_th=posterior_th,
                               min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
                               save_csv=output_csv_path,save_figures=config['save_figures']):
