@@ -150,6 +150,7 @@ def evaluate_classification(model, data_loader, device,
                             prior_esperada = 0.1,
                              ):
     print('STARTING VALIDATION')
+    assert data_loader.batch_size == 1
     n_threads = torch.get_num_threads()
     # FIXME remove this and make paste_masks_in_image run on the GPU
     torch.set_num_threads(1)
@@ -263,6 +264,7 @@ def evaluate_classification(model, data_loader, device,
                     classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
                                            'preds_test': preds, 'clf': clf}
                     pickle.dump(classification_data, f)
+
         (tn, fp, fn, tp), (sens,
                            spec, ppv, npv), (acc,
                                              f1score,

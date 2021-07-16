@@ -81,7 +81,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             except AssertionError:
                 f"{path} does not exist, excluding from dataset"
                 self.csv = self.csv[~self.csv.file_name==path].reset_index(drop=True)
+        self.ids = list(set(self.csv.file_name))
+
     def quantifyClasses(self):
+
         all_labels_strings = '-'.join([c if isinstance(c, str) else 'no_finding' for c in self.csv.class_name])
         all_labels = all_labels_strings.split('-')
         for name, c in self.class_numbers.items():
@@ -91,9 +94,9 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         print('N de {}: {} ({:.2f}%)'.format('no_finding', all_labels.count('no_finding'),
                                              100 * all_labels.count('no_finding') / len(all_labels)))
     def __getitem__(self, idx):
-        img_path = self.csv.file_name.values[idx]
-
-        image_source = self.csv.image_source.values[idx]
+        img_path = self.ids[idx]
+        img_rows = self.csv[self.csv.file_name == img_path]
+        image_source = img_rows.image_source.values[0]
 
         #img = Image.open(img_path.replace('\\','/')).convert("RGB")
         img = cv2.imread(img_path.replace('\\','/'))
@@ -105,9 +108,9 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             print(self.csv.box_type.values[idx])
         except:
             pass"""
-        if isinstance(self.csv.mask_path[idx] ,str):
+        if isinstance(img_rows.mask_path.values[0],str):
 
-            mask_path = self.csv.mask_path.values[idx]
+            mask_path = img_rows.mask_path.values
             # each color corresponds to a different instance with 0 being background
             with open(mask_path, 'rb') as f:
                 mask = np.load(f)
@@ -117,7 +120,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             labels=[]
             # split the color-encoded mask into a set of binary masks
             masks = mask == obj_ids[:, None, None]
-            raw_labels = [self.class_numbers[c] for c in self.csv.class_name.values[idx].split('-')]
+            raw_labels = [self.class_numbers[c] for c in img_rows.class_name.values[0].split('-')]
             # get bounding box coordinates for each mask
 
             num_objs = len(obj_ids)
@@ -146,7 +149,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         else:
             labels = []
-            img_rows = self.csv[self.csv.file_name==img_path]
+
             for i,row in img_rows.iterrows():
                 xmin = row['x1']
                 xmax = row['x2']
@@ -199,7 +202,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             return img, target
 
     def __len__(self):
-        return len(self.csv)
+        return len(self.ids)
 
 
 
