@@ -266,7 +266,7 @@ def main(args=None):
 
         'experiment': '2021-07-15_binary',
         'experiment_type': 'boxes',
-        'tested_epoch': 0,
+        'tested_epoch': 3,
 
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
