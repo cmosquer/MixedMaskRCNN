@@ -264,19 +264,19 @@ def main(args=None):
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-07-05_binary',
+        'experiment': '2021-07-15_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 0,
 
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
 
-        'costs_ratio': 1/10,
+        'costs_ratio': 1/5, #Costo FP/CostoFN
         'positive_prior_esperada': 0.1,
 
         'calculate_coco': False,
         'calculate_classification': True,
-        'binary_classifier': output_dir+'2021-07-05_binary/classification_data-0RF',
+        'binary_classifier': None,#output_dir+'2021-07-05_binary/classification_data-0RF', #Specificy only if it is different from the original one
         'adjust_new_LR': False,
         'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
@@ -379,14 +379,14 @@ def main(args=None):
                 if os.path.exists(config['binary_classifier']):
                     with open(config['binary_classifier'], 'rb') as f:
                         test_clf = pickle.load(f)
+        if test_clf is None:
+            if os.path.exists(classification_data):
+                with open(classification_data,'rb') as f:
+                    classification_data_dict = pickle.load(f)
+                print('Loaded logistic regressor for classification')
+                test_clf = classification_data_dict['clf']
             else:
-                if os.path.exists(classification_data):
-                    with open(classification_data,'rb') as f:
-                        classification_data_dict = pickle.load(f)
-                    print('Loaded logistic regressor for classification')
-                    test_clf = classification_data_dict['clf']
-                else:
-                    print('no existe archivo ',classification_data)
+                print('no existe archivo ',classification_data)
 
 
 

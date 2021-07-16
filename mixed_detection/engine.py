@@ -270,10 +270,13 @@ def evaluate_classification(model, data_loader, device,
                                              aucpr), (brier,
                                                        brierPos,
                                                       brierNeg) = getClassificationMetrics(preds, y_test, cont_preds=cont_preds)
-        classif_dict = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
+        classif_dict = {'brier': brier, 'brierPos': brierPos, 'brierNeg': brierNeg,
+                        'aucroc': aucroc, 'aucpr': aucpr,
+                        'posteriors_th': posteriors_th,
+                        'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp,
                         'sens': sens, 'spec': spec, 'ppv': ppv, 'npv':npv,
-                        'acc': acc, 'f1': f1score, 'aucroc': aucroc, 'aucpr': aucpr,
-                        'brier': brier, 'brierPos': brierPos, 'brierNeg': brierNeg}
+                        'acc': acc, 'f1': f1score
+                        }
 
         if results_file:
             if log_wandb:
@@ -281,7 +284,8 @@ def evaluate_classification(model, data_loader, device,
             with open(results_file, 'a') as f:
                 f.write('\nClassification metrics\n')
                 for k, v in classif_dict.items():
-                    f.write("{}: {:.4f}\n".format(k.upper(), v))
+                    f.write("{}: {:.4f}.\n".format(k.upper(), v))
+                    f.write("\n")
         return classif_dict
     else:
         return {'memory_reached':psutil.virtual_memory().percent}
