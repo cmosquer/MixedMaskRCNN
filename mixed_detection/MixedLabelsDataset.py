@@ -110,7 +110,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             pass"""
         if isinstance(img_rows.mask_path.values[0],str):
 
-            mask_path = img_rows.mask_path.values
+            mask_path = img_rows.mask_path.values[0]
             # each color corresponds to a different instance with 0 being background
             with open(mask_path, 'rb') as f:
                 mask = np.load(f)
