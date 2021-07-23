@@ -80,7 +80,7 @@ def saveAsFiles(tqdm_loader,model,device,
         if binary_classifier is not None:
 
             if posterior_th is not None:
-                cont_pred = binary_classifier.predict_proba(x_reg.reshape(1, -1))[0, 1]
+                cont_pred = binary_classifier.predict_proba(x_reg.reshape(1, -1))[:,1]
                 pred = 1 if cont_pred > posterior_th else 0
             else:
                 pred = binary_classifier.predict(x_reg.reshape(1, -1))
@@ -306,7 +306,7 @@ def main(args=None):
     os.makedirs(save_fig_dir,exist_ok=True)
 
 
-    csv_test = pd.read_csv(config['test_set'])
+    csv_test = pd.read_csv(config['test_set']).drop_duplicates('file_name')
 
     image_ids_test = set(csv_test.file_name)
     print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))
