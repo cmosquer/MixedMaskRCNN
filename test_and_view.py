@@ -13,6 +13,7 @@ import mixed_detection.utils as ut
 from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 from datetime import datetime
+from mixed_detection.BinaryClassifier import BinaryClassifier
 
 import wandb
 
@@ -56,7 +57,7 @@ def saveAsFiles(tqdm_loader,model,device,
         total_area = height*width
         outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
 
-        outputs = ut.process_output(outputs,total_area)
+        outputs = ut.process_output(outputs,total_area,max_detections=None,min_box_proportionArea=None,min_score_threshold=None)
         x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'])
         outputs = ut.process_output(outputs,total_area,
                                  max_detections=max_detections,
@@ -78,13 +79,7 @@ def saveAsFiles(tqdm_loader,model,device,
         pred = None
         cont_pred = None
         if binary_classifier is not None:
-
-            if posterior_th is not None:
-                cont_pred = binary_classifier.predict_proba(x_reg.reshape(1, -1))[:,1]
-                pred = 1 if cont_pred > posterior_th else 0
-            else:
-                pred = binary_classifier.predict(x_reg.reshape(1, -1))
-                cont_pred = pred.copy()
+            pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
             gt = 1 if len(targets['labels']) > 0 else 0
             print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
             if np.all(pred == gt):
@@ -259,7 +254,7 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : '{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #output_dir+'2021-06-25_boxes_binary/testCSV.csv',#
+        'test_set' : output_dir+'2021-07-15_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
@@ -270,22 +265,22 @@ def main(args=None):
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
 
-        'costs_ratio': 1/5, #Costo FP/CostoFN
-        'positive_prior_esperada': 0.1,
+        'costs_ratio': 1/1, #Costo FP/CostoFN
+        'expected_prevalence': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': False,
+        'calculate_classification': True,
         'binary_classifier': None,#output_dir+'2021-07-05_binary/classification_data-0RF', #Specificy only if it is different from the original one
-        'adjust_new_LR': False,
-        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
+        'adjust_new_binary_classifier': False,
+        'save_figures': None,  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': True,
+        'save_csv': False,
         'view_in_window': False,
         'loop': False,
         'force_cpu': False,
     }
     print('starting test script')
-
+    clf_from_old_model = False
     force_cpu = config['force_cpu'] #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
@@ -300,19 +295,15 @@ def main(args=None):
     else:
         output_csv_path = None
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
-    classification_data = f'{output_dir}/{chosen_experiment}/test-{date}/classification_data-{chosen_epoch}'
+    classification_data = f'{output_dir}/{chosen_experiment}/classification_data-{chosen_epoch}'
     binary_opacity=config['opacityies_as_binary']
 
     os.makedirs(save_fig_dir,exist_ok=True)
 
-
     csv_test = pd.read_csv(config['test_set']).drop_duplicates('file_name')
-
+    csv_train = pd.read_csv(output_dir+'2021-07-15_binary/trainCSV.csv')
     image_ids_test = set(csv_test.file_name)
     print('Images in test:{}. Instances total: {}'.format(len(image_ids_test),len(csv_test)))
-
-    #csv_test = csv[:30].reset_index()
-    #csv_test = pd.read_csv(f'{output_dir}/{chosen_experiment}/testCSV.csv').reset_index(drop=True)
 
     print('{} images to evaluate'.format(len(csv_test)))
 
@@ -320,10 +311,7 @@ def main(args=None):
      'Consolidacion': 2,
      'PatronIntersticial': 3,
      'Atelectasia': 4,
-     'LesionesDeLaPared': 5
-     }
-
-    #
+     'LesionesDeLaPared': 5}
 
     if force_cpu:
         device = torch.device('cpu')
@@ -346,17 +334,27 @@ def main(args=None):
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
     model.to(device)
-
-    """#Change model parameters?
-    model.box_score_thresh = 0.05
-    model.box_nms_thresh = 0.3
-    model.box_detections_per_img = 100
-    model.rpn_nms_thresh = 0.5"""
-
     model.eval()
-    # define data loader
-    print('Model loaded')
     experiment_id = f"test_{date}_{chosen_experiment}"
+    if clf_from_old_model:
+        dataset_train = MixedLabelsDataset(csv_train, class_numbers,
+                                          ut.get_transform(train=False),
+                                          binary_opacity=binary_opacity,check_files=False,
+                                          return_image_source=False)
+        data_loader_train = torch.utils.data.DataLoader(
+            dataset_train, batch_size=4, shuffle=False, num_workers=0,
+            collate_fn=ut.collate_fn)
+        clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'], costs_ratio=config['costs_ratio'])
+        print('Getting data...')
+        clf.get_data_from_model(model,data_loader_train,device)
+        print('Training classifier...')
+        clf.train()
+        print(clf.calibration_parameters)
+        classification_data_dict = {}
+        classification_data_dict['clf'] = clf
+        with open(classification_data, 'wb') as f:
+            pickle.dump(classification_data_dict, f)
+
     with wandb.init(config=config, project=project, name=experiment_id):
         config = wandb.config
         wandb_valid = {}
@@ -372,26 +370,29 @@ def main(args=None):
             results_coco = evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
                      results_file=results_coco_file)
             wandb_valid.update(results_coco)
-        test_clf = None
-        if not config['adjust_new_LR']:
-            if config['binary_classifier'] is not None:
-                if os.path.exists(config['binary_classifier']):
-                    with open(config['binary_classifier'], 'rb') as f:
-                        test_clf = pickle.load(f)
-        if test_clf is None:
-            if os.path.exists(classification_data):
-                with open(classification_data,'rb') as f:
-                    classification_data_dict = pickle.load(f)
-                print('Loaded logistic regressor for classification')
-                test_clf = classification_data_dict['clf']
 
-            else:
-                print('no existe archivo ',classification_data)
+
+        if os.path.exists(classification_data):
+            with open(classification_data,'rb') as f:
+                classification_data_dict = pickle.load(f)
+            print('Loaded binary model for classification')
+            test_clf = classification_data_dict['clf']
+            print('CLASSIFIER ', test_clf)
+            if test_clf.costs_ratio!=config['costs_ratio'] or test_clf.expected_prevalence!=config['expected_prevalence']:
+                print('Reseting params')
+                test_clf.reset_params(config['expected_prevalence'],config['costs_ratio'])
+
+
+        else:
+            print('No se encontro clasificador binario',classification_data)
+            return
 
 
 
         if config['calculate_classification']:
-            dataset_test = MixedLabelsDataset(csv_test, class_numbers, ut.get_transform(train=False),
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers,
+                                              ut.get_transform(train=False),colorjitter=False,
+                                              masks_as_boxes=config['masks_as_boxes'],
                                               binary_opacity=binary_opacity,
                                               return_image_source=True)
             data_loader_test = torch.utils.data.DataLoader(
@@ -399,7 +400,7 @@ def main(args=None):
                 collate_fn=ut.collate_fn)
             results_classif = evaluate_classification(model, data_loader_test, device=device,log_wandb=False,
                                     results_file=results_coco_file,test_clf=test_clf,
-                                    costs_ratio=config['costs_ratio'], prior_esperada=config['positive_prior_esperada']
+
                                                       )
             wandb_valid.update(results_classif)
         #Redefinir solo las que quiero guardar la imagen
@@ -431,15 +432,14 @@ def main(args=None):
            }"""
         min_score_thresholds = 0.2
         min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
-        tau_bayes = config['costs_ratio'] * (1 - config['positive_prior_esperada']) / config['positive_prior_esperada']
-        posterior_th = tau_bayes / (1 + tau_bayes)
+
         if config['save_figures'] or config['save_csv']:
 
             while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
                               max_detections=8, min_score_threshold=min_score_thresholds,
                               binary_classifier=test_clf,
-                              posterior_th=posterior_th,
-                              min_box_proportionArea=min_box_proportionArea,results_file=results_coco_file,
+                              min_box_proportionArea=min_box_proportionArea,
+                              results_file=results_coco_file,
                               save_csv=output_csv_path,save_figures=config['save_figures']):
                 pass
         if config['view_in_window']:

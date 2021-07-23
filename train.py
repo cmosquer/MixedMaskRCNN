@@ -8,6 +8,7 @@ import numpy as np
 import wandb
 from datetime import datetime
 import albumentations as A
+from mixed_detection.BinaryClassifier import BinaryClassifier
 
 def main(args=None):
     project = "mixed_mask_rcnn"
@@ -19,25 +20,28 @@ def main(args=None):
     config = {
         "batch_size": 4,
         "batch_size_valid":1,
-        "initial_lr": 0.01,
+        "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210625-00_ubuntu",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': False,
         'data_augmentation': True,
-        'existing_valid_set': '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),#None,#'{}/2021-06-16_boxes_binary/testCSV_debug.csv'.format(experiment_dir),
+        'existing_valid_set': '{}/2021-07-15_binary/testCSV.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': False,
-        'no_findings_examples_in_train': 0.5,#None,
+        'no_findings_examples_in_train': 0.6,#None,
         'max_valid_set_size': 1000,
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 8,
         'random_seed': 40,
-        'pretrained_checkpoint': experiment_dir + '/2021-07-05_binary/mixedMaskRCNN-0.pth',
-        'pretrained_backbone_path': None #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
+        'pretrained_checkpoint': experiment_dir + '/2021-07-15_binary/mixedMaskRCNN-3.pth',
+        'pretrained_backbone_path': None, #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
+        'costs_ratio': 1 / 1,  # Costo FP/CostoFN
+        'expected_prevalence': 0.1,
+
     }
 
     class_numbers = {
@@ -64,31 +68,31 @@ def main(args=None):
     output_dir = '{}/{}/'.format(experiment_dir,experiment_id)
     os.makedirs(output_dir, exist_ok=True)
     config["raw_csv"] = trx_dir + 'Datasets/Opacidades/{}.csv'.format(config['dataset'])
-    dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,output_dir=output_dir)
+
+    dataset,dataset_valid = prepareDatasets(config,class_numbers=class_numbers,
+                                            output_dir=output_dir,check_files=False)
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    print('DEVICE-->', device)
+
+    # split the dataset in train and test set
+    torch.manual_seed(1)
 
 
     with wandb.init(config=config, project=project, name=experiment_id):
-        config=wandb.config
-
-
-        # split the dataset in train and test set
-        torch.manual_seed(1)
-
+        config = wandb.config
         # define training and validation data loaders
         data_loader = torch.utils.data.DataLoader(
             dataset, batch_size=config.batch_size, shuffle=True, num_workers=0,
             collate_fn=collate_fn,
-            #sampler=train_sampler
-             )
+            # sampler=train_sampler
+        )
 
         data_loader_valid = torch.utils.data.DataLoader(
             dataset_valid, batch_size=config.batch_size_valid, shuffle=False, num_workers=0,
             collate_fn=collate_fn)
-
         print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))
-        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-        if config['experiment_type']=='boxes':
+        if config['experiment_type'] == 'boxes':
             # get the model using our helper function
             model = get_object_detection_model(num_classes,
                                                 pretrained_on_coco=False,
@@ -96,7 +100,7 @@ def main(args=None):
                                                 pretrained_backbone=pretrained_backbone_path,
                                                 # trainable_layers=0
                                                 )
-        if config['experiment_type']=='masks':
+        if config['experiment_type'] == 'masks':
             # get the model using our helper function
             model = get_instance_segmentation_model(num_classes,
                                                     pretrained_on_coco=True,
@@ -124,9 +128,8 @@ def main(args=None):
         optimizer = torch.optim.SGD(params, lr=config.initial_lr,
                                     momentum=0.9, weight_decay=0.0005)
 
-        # and a learning rate scheduler which decreases the learning rate by
+        # learning rate scheduler which decreases the learning rate by
         # a gamma factor every interval of N epochs
-
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                        step_size=config.lr_scheduler_epochs_interval,
                                                        gamma=config.lr_scheduler_factor)
@@ -138,6 +141,9 @@ def main(args=None):
 
         absolute_epochs = int(config.epochs*(len(data_loader)/steps_per_epoch))
         print('{} epochs of {} steps'.format(absolute_epochs,steps_per_epoch))
+
+        clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'],
+                               costs_ratio=config['costs_ratio'])
         for epoch in range(absolute_epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
@@ -160,11 +166,21 @@ def main(args=None):
             else:
                 iou_types = ["bbox"]
             results_coco_file = '{}/cocoStats-{}.txt'.format(output_dir,epoch)
+
             results_coco = evaluate_coco(model, data_loader_valid, device=device,
                                          results_file=results_coco_file,use_cpu=True, iou_types=iou_types)
             wandb_valid.update(results_coco)
 
-            results_classif = evaluate_classification(model, data_loader_valid, device=device, results_file=results_coco_file)
+            # Ajustar clasificador binario y calibrarlo
+            data_loader_calibration = torch.utils.data.DataLoader(
+                dataset_train, batch_size=4, shuffle=False, num_workers=0,
+                collate_fn=ut.collate_fn)
+            clf.get_data_from_model(model, data_loader, device)
+            clf.train()
+
+
+            results_classif = evaluate_classification(model, data_loader_valid, device=device,
+                                                      results_file=results_coco_file, test_clf=clf)
             wandb_valid.update(results_classif)
 
             #evaluate_dice(model, data_loader_valid, device=device, results_file=results_coco_file)

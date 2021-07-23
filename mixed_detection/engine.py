@@ -13,7 +13,6 @@ from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import psutil
 import wandb
-from sklearn.ensemble import RandomForestClassifier
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq,breaking_step=None,wandb_interval=200):
 
@@ -165,8 +164,7 @@ def evaluate_classification(model, data_loader, device,
     image_paths = []
     j = 0
     leave=False
-    tau_bayes = costs_ratio * (1 - prior_esperada) / prior_esperada
-    posteriors_th = tau_bayes / (1 + tau_bayes)
+
     with torch.no_grad():
         #print('initial',psutil.virtual_memory().percent)
         for batch in metric_logger.log_every(data_loader, 5, header):
@@ -198,7 +196,7 @@ def evaluate_classification(model, data_loader, device,
                 height = images[img_id].shape[1]
                 width = images[img_id].shape[2]
                 total_area = height * width
-                outputs = process_output(output, total_area,
+                output = process_output(output, total_area,
                                          max_detections=max_detections,
                                          min_box_proportionArea=min_box_proportionArea,
                                          min_score_threshold=min_score_threshold
@@ -225,53 +223,32 @@ def evaluate_classification(model, data_loader, device,
         metric_logger.synchronize_between_processes()
         print("Averaged stats:", metric_logger)
 
-        if test_clf: #Testear con un regresor ya ajustado
-            print('Using existing regressor')
-            if hasattr(test_clf,'predict_proba'):
-                cont_preds = test_clf.predict_proba(x_regresion)[:,1]
+        preds, cont_preds = test_clf.infere(x_regresion)
 
-                print('threshold: ',posteriors_th)
-                preds = cont_preds>posteriors_th
-            else:
-                preds = test_clf.predict(x_regresion)
-                cont_preds=None
+        print(pd.Series(preds).value_counts())
 
-            print(pd.Series(preds).value_counts())
-            y_test =y_regresion
-            if results_file:
-                with open(results_file.replace('cocoStats', 'test_classification_data').replace('.txt', ''), 'wb') as f:
-                    classification_data = {'x_test': x_regresion, 'y_test': y_test,
-                                           'preds_test': preds, 'clf': test_clf}
-                    if data_loader.dataset.return_image_source:
-                        classification_data['paths'] = image_paths
-                    pickle.dump(classification_data, f)
-        else:
-
-            x_train,x_test, y_train, y_test = train_test_split(x_regresion, y_regresion, stratify=y_regresion,
-                                                    test_size=0.2,
-                                                    random_state=32)
-            #clf = LogisticRegression(random_state=32, solver='newton-cg').fit(x_train[:,:n_features], y_train)
-            clf = RandomForestClassifier(random_state=32).fit(x_train[:, :n_features], y_train)
-            print(pd.Series(y_regresion).value_counts())
-            print(pd.Series(y_train).value_counts())
-            print(pd.Series(y_test).value_counts())
-
-            preds = clf.predict(x_test[:,:n_features])
-            cont_preds = clf.predict_proba(x_test[:,:n_features])[:,1]
-            print(pd.Series(preds).value_counts())
-            if results_file:
-                with open(results_file.replace('cocoStats', 'classification_data').replace('.txt', ''), 'wb') as f:
-                    classification_data = {'x_train': x_train, 'y_train': y_train, 'x_test': x_test, 'y_test': y_test,
-                                           'preds_test': preds, 'clf': clf}
-                    pickle.dump(classification_data, f)
+        if results_file:
+            with open(results_file.replace('cocoStats', 'test_classification_data').replace('.txt', ''), 'wb') as f:
+                classification_data = {'x_test': x_regresion, 'preds_test': preds, 'cont_preds_test':cont_preds,
+                                       'y_test': y_regresion, 'image_paths': image_paths,
+                                       'clf': test_clf}
+                if data_loader.dataset.return_image_source:
+                    classification_data['paths'] = image_paths
+                pickle.dump(classification_data, f)
+            pd.DataFrame.from_dict({'preds_test': list(preds), 'cont_preds_test':list(cont_preds),
+                                       'y_test': list(y_regresion), 'image_paths': list(image_paths)},orient='index').transpose().to_csv(results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')+'.csv',index=False)
 
         (tn, fp, fn, tp), (sens,
                            spec, ppv, npv), (acc,
                                              f1score,
                                              aucroc,
                                              aucpr), (brier,
-                                                       brierPos,
-                                                      brierNeg) = getClassificationMetrics(preds, y_test, cont_preds=cont_preds)
+                                                      brierPos,
+                                                      brierNeg) = getClassificationMetrics(preds, y_regresion, cont_preds=cont_preds)
+        try:
+            posteriors_th = test_clf.posteriors_th
+        except:
+            posteriors_th = None
         classif_dict = {'brier': brier, 'brierPos': brierPos, 'brierNeg': brierNeg,
                         'aucroc': aucroc, 'aucpr': aucpr,
                         'posteriors_th': posteriors_th,

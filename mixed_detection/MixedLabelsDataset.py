@@ -57,7 +57,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
     def __init__(self, csv, class_numbers, transforms=None, colorjitter=False,
                  return_image_source=False,binary_opacity=False,
-                 masks_as_boxes=False):
+                 masks_as_boxes=False, check_files=True):
         self.csv = csv
         self.class_numbers = class_numbers
         self.transforms = transforms #Transforms that have to be applied both to image and boxes/masks
@@ -74,13 +74,14 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                           'x1','x2','y1','y2',
                           'class_name','image_source',
                           'file_name']).isin(self.csv.columns).all()
-        for i,row in self.csv.iterrows():
-            path = row['file_name']
-            try:
-                assert os.path.exists(path.replace('\\','/'))
-            except AssertionError:
-                f"{path} does not exist, excluding from dataset"
-                self.csv = self.csv[~self.csv.file_name==path].reset_index(drop=True)
+        if check_files:
+            for i,row in self.csv.iterrows():
+                path = row['file_name']
+                try:
+                    assert os.path.exists(path.replace('\\','/'))
+                except AssertionError:
+                    f"{path} does not exist, excluding from dataset"
+                    self.csv = self.csv[~self.csv.file_name==path].reset_index(drop=True)
         self.ids = list(set(self.csv.file_name))
 
     def quantifyClasses(self):

@@ -22,7 +22,7 @@ try:
 except ModuleNotFoundError:  # pragma: no-cover
     box_iou = None
 
-def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
+def prepareDatasets(config,output_dir,class_numbers,train_transform=None,check_files=True):
 
     raw_csv = pd.read_csv(config["raw_csv"])
 
@@ -142,14 +142,19 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None):
     """
     csv_train = csv[:30000].reset_index()
     csv_test = csv[30000:].reset_index() """
+    print('Saving to csv...')
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
+    print('Initializing Datasets...')
     dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), colorjitter=config['data_augmentation'],
                                  binary_opacity=config['opacityies_as_binary'],
-                                 masks_as_boxes=config['masks_as_boxes'])
+                                 masks_as_boxes=config['masks_as_boxes'],
+                                 check_files=check_files)
     dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False), colorjitter=False,
                                        binary_opacity=config['opacityies_as_binary'],
-                                       masks_as_boxes=config['masks_as_boxes'])
+                                       masks_as_boxes=config['masks_as_boxes'],
+                                       check_files=check_files
+                                       )
     print('TRAIN:')
     dataset.quantifyClasses()
     print('\nVALID:')
@@ -531,7 +536,6 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
     center = (min_dim // 2, min_dim // 2)
     max_dist = np.sqrt((min_dim - center[0]) ** 2 + (min_dim - center[1]) ** 2)
     distanceToCenter = np.sqrt((x_arr - center[0]) ** 2 + (y_arr - center[1]) ** 2) #/ max_dist
-    #distanceToCenter = (distanceToCenter - distanceToCenter.min()) / (distanceToCenter.max() - distanceToCenter.min())
     r = outerColor * distanceToCenter + innerColor * (distanceToCenter.max() - distanceToCenter)
 
     alpha = min_alfa * distanceToCenter + max_alfa * (distanceToCenter.max()  - distanceToCenter)
@@ -544,40 +548,9 @@ def gradientCircle(width,height, score, existing_alpha=None,innerColor=1,outerCo
     assert alpha.shape == existing_alpha.shape, "Error in shapes alpha {} existing alpha {} ".format(alpha.shape, existing_alpha.shape)
     if existing_alpha is not None:
         print(len(np.argwhere(existing_alpha!=0)))
-        #alpha = np.where(existing_alpha!=0, 0, alpha)
         r = np.where(existing_alpha!=0, 0, r)
 
-    #alpha = np.where(alpha<np.quantile(alpha,0.85),0,alpha)
-
     circle = np.stack((r, alpha), axis=-1)
-    #max_alpha = alpha.max()
-    #min_alpha = alpha.min()
-    #if max_alpha - min_alpha != 0:
-    #    alpha = ((max_alfa - min_alfa) * (alpha - min_alpha) / (max_alpha - min_alpha)) + min_alfa
-
-    """
-    for y in range(height):
-        for x in range(width):
-
-            #Find the distance to the center1
-            distanceToCenter = math.sqrt((x - width/2) ** 2 + (y - height/2) ** 2)
-
-            #Make it on a scale from 0 to 1
-            distanceToCenter = min(1,float(distanceToCenter) / (math.sqrt(2) * width/2))
-            #Calculate r, g, and b values
-            r = outerColor * distanceToCenter + innerColor * (1 - distanceToCenter)
-            if ((x - width/2)**2/(width/2)**2 + (y - height/2)**2/(height/2)**2) > 1:
-                alpha = 0
-                r = 0
-            else:
-
-                alpha = min_alfa * distanceToCenter + max_alfa * (1-distanceToCenter)
-                if existing_alpha[y,x] == 0:
-                    circle[y, x, 1] = alpha  #Transparency Donde ya exisita heatmap previo, no overlapeo transparencia
-                else:
-                    print(existing_alpha[y, x])
-            circle[y, x, 0] = r #Color
-    """
 
     return circle
 

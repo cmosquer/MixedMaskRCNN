@@ -1,0 +1,25 @@
+2021-07-14 13:04:28,456 INFO    MainThread:4407 [wandb_setup.py:_flush():69] setting env: {}
+2021-07-14 13:04:28,456 INFO    MainThread:4407 [wandb_setup.py:_flush():69] setting login settings: {}
+2021-07-14 13:04:28,456 INFO    MainThread:4407 [wandb_init.py:_log_setup():336] Logging user logs to /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210714_130428-2ddk6a8e/logs/debug.log
+2021-07-14 13:04:28,456 INFO    MainThread:4407 [wandb_init.py:_log_setup():337] Logging internal logs to /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210714_130428-2ddk6a8e/logs/debug-internal.log
+2021-07-14 13:04:28,457 INFO    MainThread:4407 [wandb_init.py:init():369] calling init triggers
+2021-07-14 13:04:28,457 INFO    MainThread:4407 [wandb_init.py:init():376] wandb.init called with sweep_config: {}
+config: {'batch_size': 4, 'batch_size_valid': 1, 'initial_lr': 0.01, 'lr_scheduler_epochs_interval': 3, 'lr_scheduler_factor': 0.1, 'dataset': 'TX-RX-ds-20210625-00_ubuntu', 'revised_test_set': '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Experiments//test_groundtruth_validados.csv', 'unfreeze_only_mask': False, 'data_augmentation': False, 'existing_valid_set': None, 'opacityies_as_binary': True, 'no_findings_examples_in_valid': True, 'no_findings_examples_in_train': 0.5, 'max_valid_set_size': 9150, 'masks_as_boxes': True, 'experiment_type': 'boxes', 'date': '2021-07-14', 'epochs': 4, 'random_seed': 40, 'pretrained_checkpoint': '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Experiments//2021-07-05_binary/mixedMaskRCNN-0.pth', 'pretrained_backbone_path': None, 'raw_csv': '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Datasets/Opacidades/TX-RX-ds-20210625-00_ubuntu.csv'}
+2021-07-14 13:04:28,458 INFO    MainThread:4407 [wandb_init.py:init():418] starting backend
+2021-07-14 13:04:28,458 INFO    MainThread:4407 [backend.py:_multiprocessing_setup():72] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2021-07-14 13:04:28,472 INFO    MainThread:4407 [backend.py:ensure_launched():132] starting backend process...
+2021-07-14 13:04:28,478 INFO    MainThread:4407 [backend.py:ensure_launched():137] started backend process with pid: 5677
+2021-07-14 13:04:28,480 INFO    MainThread:4407 [wandb_init.py:init():423] backend started and connected
+2021-07-14 13:04:28,486 INFO    MainThread:4407 [wandb_init.py:init():465] updated telemetry
+2021-07-14 13:04:28,487 INFO    MainThread:4407 [wandb_init.py:init():484] communicating current version
+2021-07-14 13:04:30,039 INFO    MainThread:4407 [wandb_init.py:init():489] got version response upgrade_message: "wandb version 0.10.33 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2021-07-14 13:04:30,039 INFO    MainThread:4407 [wandb_init.py:init():497] communicating run to backend with 30 second timeout
+2021-07-14 13:04:30,324 INFO    MainThread:4407 [wandb_init.py:init():522] starting run threads in backend
+2021-07-14 13:04:33,210 INFO    MainThread:4407 [wandb_run.py:_console_start():1565] atexit reg
+2021-07-14 13:04:33,210 INFO    MainThread:4407 [wandb_run.py:_redirect():1412] redirect: SettingsConsole.REDIRECT
+2021-07-14 13:04:33,212 INFO    MainThread:4407 [wandb_run.py:_redirect():1417] Redirecting console.
+2021-07-14 13:04:33,216 INFO    MainThread:4407 [wandb_run.py:_redirect():1479] Redirects installed.
+2021-07-14 13:04:33,216 INFO    MainThread:4407 [wandb_init.py:init():546] run started, returning control to user process
+2021-07-14 13:04:44,378 INFO    MainThread:4407 [wandb_watch.py:watch():39] Watching
+2021-07-14 13:16:49,174 INFO    MainThread:4407 [wandb_run.py:finish():1208] finishing run cmosquera/mixed_mask_rcnn/2ddk6a8e
