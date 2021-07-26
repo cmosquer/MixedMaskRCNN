@@ -173,8 +173,8 @@ def main(args=None):
 
             # Ajustar clasificador binario y calibrarlo
             data_loader_calibration = torch.utils.data.DataLoader(
-                dataset_train, batch_size=4, shuffle=False, num_workers=0,
-                collate_fn=ut.collate_fn)
+                dataset, batch_size=4, shuffle=False, num_workers=0,
+                collate_fn=collate_fn)
             clf.get_data_from_model(model, data_loader, device)
             clf.train()
 
