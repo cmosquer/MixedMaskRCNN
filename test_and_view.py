@@ -314,6 +314,7 @@ def main(args=None):
 
     if force_cpu:
         device = torch.device('cpu')
+        print('device cpu')
     else:
         torch.manual_seed(1)
         torch.cuda.synchronize()
@@ -329,10 +330,10 @@ def main(args=None):
     if config['experiment_type']=='masks':
         # get the model using our helper function
         model = ut.get_instance_segmentation_model(num_classes)
-
+    model.to(device)
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
-    model.to(device)
+
     model.eval()
     experiment_id = f"test_{date}_{chosen_experiment}"
     if clf_from_old_model:
