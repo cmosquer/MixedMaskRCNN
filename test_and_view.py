@@ -80,6 +80,8 @@ def saveAsFiles(tqdm_loader,model,device,
         cont_pred = None
         if binary_classifier is not None:
             pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
+            cont_pred = cont_pred[0]
+            pred = pred[0]
             gt = 1 if len(targets['labels']) > 0 else 0
             print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
             if np.all(pred == gt):
@@ -96,8 +98,8 @@ def saveAsFiles(tqdm_loader,model,device,
         saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                            image_source, os.path.basename(image_path.replace('\\', '/')))
         if cont_pred is not None:
-            cont_pred_str = str(cont_pred).replace('.', '-')
-            saving_path = saving_path.replace('.jpg', f'_{cont_pred_str}.jpg')
+            cont_pred_str = str(100*cont_pred)
+            saving_path = saving_path.replace('.jpg', '_{:.1f}.jpg'.format(cont_pred_str))
 
         #print('Memory before save figres: ', psutil.virtual_memory().percent)
         if save_figures is not None:
