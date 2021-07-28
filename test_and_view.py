@@ -254,13 +254,13 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : output_dir+'2021-07-15_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        'test_set' : output_dir+'2021-07-25_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-07-15_binary',
+        'experiment': '2021-07-25_binary',
         'experiment_type': 'boxes',
-        'tested_epoch': 3,
+        'tested_epoch': 1,
 
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
@@ -270,14 +270,13 @@ def main(args=None):
 
         'calculate_coco': False,
         'calculate_classification': True,
-        'binary_classifier': None,#output_dir+'2021-07-05_binary/classification_data-0RF', #Specificy only if it is different from the original one
-        'adjust_new_binary_classifier': False,
-        'save_figures': None,  #puede ser 'heatmap','boxes', o None
+        'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': False,
+        'save_csv': True,
         'view_in_window': False,
         'loop': False,
-        'force_cpu': False,
+
+        'force_cpu': True,
     }
     print('starting test script')
     clf_from_old_model = False
@@ -295,7 +294,7 @@ def main(args=None):
     else:
         output_csv_path = None
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
-    classification_data = f'{output_dir}/{chosen_experiment}/classification_data-{chosen_epoch}'
+    classification_data = f'{output_dir}/{chosen_experiment}/test_classification_data-{chosen_epoch}'
     binary_opacity=config['opacityies_as_binary']
 
     os.makedirs(save_fig_dir,exist_ok=True)
