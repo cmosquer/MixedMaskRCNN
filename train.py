@@ -20,7 +20,7 @@ def main(args=None):
     config = {
         "batch_size": 4,
         "batch_size_valid":1,
-        "initial_lr": 0.001,
+        "initial_lr": 0.01,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
         'dataset': "TX-RX-ds-20210625-00_ubuntu",
@@ -30,14 +30,14 @@ def main(args=None):
         'existing_valid_set': '{}/2021-07-15_binary/testCSV.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': False,
-        'no_findings_examples_in_train': 0.6,#None,
+        'no_findings_examples_in_train': 0.4,#None,
         'max_valid_set_size': 1000,
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 8,
         'random_seed': 40,
-        'pretrained_checkpoint': experiment_dir + '/2021-07-15_binary/mixedMaskRCNN-3.pth',
+        'pretrained_checkpoint': experiment_dir + '/2021-07-25_binary/mixedMaskRCNN-2.pth',
         'pretrained_backbone_path': None, #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
         'costs_ratio': 1 / 1,  # Costo FP/CostoFN
         'expected_prevalence': 0.1,
@@ -87,9 +87,15 @@ def main(args=None):
             # sampler=train_sampler
         )
 
+        data_loader_calibration = torch.utils.data.DataLoader(
+            dataset, batch_size=4, shuffle=False, num_workers=0,
+            collate_fn=collate_fn)
+
         data_loader_valid = torch.utils.data.DataLoader(
             dataset_valid, batch_size=config.batch_size_valid, shuffle=False, num_workers=0,
             collate_fn=collate_fn)
+
+
         print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))
 
         if config['experiment_type'] == 'boxes':
@@ -137,7 +143,7 @@ def main(args=None):
         interval_steps = int(len(data_loader)/20)
         print('Wandb logging after {} steps'.format(interval_steps))
         wandb.watch(model, optimizer, log_freq=interval_steps)
-        steps_per_epoch=1000
+        steps_per_epoch = 2000
 
         absolute_epochs = int(config.epochs*(len(data_loader)/steps_per_epoch))
         print('{} epochs of {} steps'.format(absolute_epochs,steps_per_epoch))
@@ -170,13 +176,10 @@ def main(args=None):
             results_coco = evaluate_coco(model, data_loader_valid, device=device,
                                          results_file=results_coco_file,use_cpu=True, iou_types=iou_types)
             wandb_valid.update(results_coco)
-
-            # Ajustar clasificador binario y calibrarlo
-            data_loader_calibration = torch.utils.data.DataLoader(
-                dataset, batch_size=4, shuffle=False, num_workers=0,
-                collate_fn=collate_fn)
-            clf.get_data_from_model(model, data_loader, device)
-            clf.train()
+            if epoch % 2 == 0:
+                # Ajustar clasificador binario y calibrarlo
+                clf.get_data_from_model(model, data_loader_calibration, device)
+                clf.train()
 
 
             results_classif = evaluate_classification(model, data_loader_valid, device=device,
