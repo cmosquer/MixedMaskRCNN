@@ -98,7 +98,7 @@ def saveAsFiles(tqdm_loader,model,device,
         saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                            image_source, os.path.basename(image_path.replace('\\', '/')))
         if cont_pred is not None:
-            cont_pred_str = str(100*cont_pred)
+            cont_pred_str = 100*cont_pred
             saving_path = saving_path.replace('.jpg', '_{:.1f}.jpg'.format(cont_pred_str))
 
         #print('Memory before save figres: ', psutil.virtual_memory().percent)
