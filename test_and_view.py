@@ -278,7 +278,7 @@ def main(args=None):
         'view_in_window': False,
         'loop': False,
 
-        'force_cpu': True,
+        'force_cpu': False,
     }
     print('starting test script')
     clf_from_old_model = True
