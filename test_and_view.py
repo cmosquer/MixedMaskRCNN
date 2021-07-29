@@ -256,13 +256,13 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : output_dir+'2021-07-25_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        'test_set' : output_dir+'2021-07-28_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-07-25_binary',
+        'experiment': '2021-07-28_binary',
         'experiment_type': 'boxes',
-        'tested_epoch': 1,
+        'tested_epoch': 0,
 
         'opacityies_as_binary':True,
         'masks_as_boxes': True,
@@ -271,8 +271,8 @@ def main(args=None):
         'expected_prevalence': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': False,
-        'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
+        'calculate_classification': True,
+        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': True,
         'view_in_window': False,
