@@ -281,7 +281,7 @@ def main(args=None):
         'force_cpu': True,
     }
     print('starting test script')
-    clf_from_old_model = False
+    clf_from_old_model = True
     force_cpu = config['force_cpu'] #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
