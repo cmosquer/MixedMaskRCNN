@@ -30,7 +30,7 @@ def main(args=None):
         'existing_valid_set': '{}/2021-07-15_binary/testCSV.csv'.format(experiment_dir),
         'opacityies_as_binary':True,
         'no_findings_examples_in_valid': False,
-        'no_findings_examples_in_train': 0.7,#None,
+        'no_findings_examples_in_train': 0.7,#Noneget,
         'max_valid_set_size': 1000,
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
