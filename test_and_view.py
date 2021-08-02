@@ -272,7 +272,7 @@ def main(args=None):
 
         'calculate_coco': False,
         'calculate_classification': False,
-        'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
+        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': True,
         'view_in_window': False,
