@@ -281,7 +281,7 @@ def main(args=None):
         'force_cpu': False,
     }
     print('starting test script')
-    clf_from_old_model = True
+    clf_from_old_model = False
     force_cpu = config['force_cpu'] #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
@@ -432,8 +432,8 @@ def main(args=None):
            4: 0.25, #'Atelectasia',
            5: 0.25 #'LesionesDeLaPared'
            }"""
-        min_score_thresholds = 0.2
-        min_box_proportionArea = float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+        min_score_thresholds = None #0.2
+        min_box_proportionArea = None #float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
 
         if config['save_figures'] or config['save_csv']:
 
