@@ -27,8 +27,8 @@ def main(args=None):
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': False,
         'data_augmentation': True,
-        'existing_valid_set': '{}/2021-07-15_binary/testCSV.csv'.format(experiment_dir),
-        'opacityies_as_binary':True,
+        'existing_valid_set': '{}/2021-07-30_binary/testCSV.csv'.format(experiment_dir),
+        'opacityies_as_binary':False,
         'no_findings_examples_in_valid': False,
         'no_findings_examples_in_train': 0.7,#Noneget,
         'max_valid_set_size': 1000,
@@ -37,7 +37,7 @@ def main(args=None):
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 8,
         'random_seed': 40,
-        'pretrained_checkpoint': experiment_dir + '/2021-07-25_binary/mixedMaskRCNN-1.pth',
+        'pretrained_checkpoint': None, #experiment_dir + '/2021-07-25_binary/mixedMaskRCNN-1.pth',
         'pretrained_backbone_path': None, #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
         'costs_ratio': 1 / 1,  # Costo FP/CostoFN
         'expected_prevalence': 0.1,
@@ -101,7 +101,7 @@ def main(args=None):
         if config['experiment_type'] == 'boxes':
             # get the model using our helper function
             model = get_object_detection_model(num_classes,
-                                                pretrained_on_coco=False,
+                                                pretrained_on_coco=True,
                                                 # rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
                                                 pretrained_backbone=pretrained_backbone_path,
                                                 # trainable_layers=0
@@ -161,7 +161,7 @@ def main(args=None):
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
-            saving_path = '{}/mixedMaskRCNN-{}.pth'.format(output_dir,epoch) #None#
+            saving_path = '{}/fasterRCNN-{}.pth'.format(output_dir,epoch) #None#
 
             if saving_path:
                 torch.save(model.state_dict(), saving_path)
