@@ -33,7 +33,7 @@ def label_to_name(label):
     return labels[label]
 
 
-def infere(model,image,binary_classifier,multitest,plot_parameters):
+def infere(model,image,binary_classifier,plot_parameters,multitest=False):
     pred = None
     cont_pred = None
     #Inferencia en imagen original
@@ -113,7 +113,7 @@ def saveAsFiles(tqdm_loader,model,device,
                                             '')
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
-        outputs, pred, cont_pred = infere(model,image,binary_classifier,multitest=multitest)
+        outputs, pred, cont_pred = infere(model,image,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
         # print('TARGET for {} is {}'.format(image_path, targets['labels']))
         folder = ''
