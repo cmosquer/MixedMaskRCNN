@@ -439,6 +439,7 @@ def main(args=None):
                                               masks_as_boxes=config['masks_as_boxes'],
                                               binary_opacity=binary_opacity,
                                               return_image_source=True)
+            dataset_test.quantifyClasses()
             data_loader_test = torch.utils.data.DataLoader(
                 dataset_test, batch_size=1, shuffle=False, num_workers=0,
                 collate_fn=ut.collate_fn)
