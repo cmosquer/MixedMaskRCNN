@@ -297,7 +297,7 @@ def main(args=None):
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-07-30_binary',
+        'experiment': '2021-08_03',
         'experiment_type': 'boxes',
         'tested_epoch': 0,
 
