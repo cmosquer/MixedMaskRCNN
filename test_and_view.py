@@ -297,21 +297,21 @@ def main(args=None):
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-08-03',
+        'experiment': '2021-07-30_binary',
         'experiment_type': 'boxes',
         'tested_epoch': 0,
 
-        'opacityies_as_binary':False,
+        'opacityies_as_binary': True,
         'masks_as_boxes': True,
 
         'costs_ratio': 1/1, #Costo FP/CostoFN
         'expected_prevalence': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': False,
+        'calculate_classification': True,
         'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': False,
+        'save_csv': True,
         'view_in_window': False,
         'loop': False,
 
