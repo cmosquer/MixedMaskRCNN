@@ -81,7 +81,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                     assert os.path.exists(path.replace('\\','/'))
                 except AssertionError:
                     f"{path} does not exist, excluding from dataset"
-                    self.csv = self.csv[~self.csv.file_name==path].reset_index(drop=True)
+                    index = self.csv[self.csv.file_name==path].index
+                    self.csv = self.csv.drop(index,axis=0).reset_index(drop=True)
         self.ids = list(set(self.csv.file_name))
 
     def quantifyClasses(self):
