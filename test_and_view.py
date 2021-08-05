@@ -311,7 +311,7 @@ def main(args=None):
         'calculate_classification': False,
         'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': True,
+        'save_csv': False,
         'view_in_window': False,
         'loop': False,
 
