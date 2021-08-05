@@ -14,7 +14,7 @@ class BinaryClassifier():
         self.x = None
         self.y = None
         self.clf = RandomForestClassifier(random_state=32)
-        self.used_features = 6  #Between 1 and 7
+        self.used_features = 7  #Between 1 and 7
         self.x_binary_cont = None
         self.x_positive_posteriors = None
         self.calibration_parameters = {}
@@ -88,7 +88,7 @@ class BinaryClassifier():
                     width = images[img_id].shape[2]
                     total_area = height * width
                     output = process_output(output, total_area,
-                                             max_detections=10,
+                                             max_detections=None,
                                              min_box_proportionArea=None,
                                              min_score_threshold=None
                                              )
@@ -101,7 +101,7 @@ class BinaryClassifier():
                     # print('before scores',psutil.virtual_memory().percent)
                     image_scores = output['scores']  # .detach().numpy()
                     image_areas = output['areas']  # .detach().numpy()
-                    x_regresion[j, :] = update_regression_features(image_scores, image_areas)
+                    x_regresion[j, :] = update_regression_features(image_scores, image_areas,n_features=self.used_features)
                     j += 1
                     del gt, image_scores, image_areas, target
                 del images, targets, outputs

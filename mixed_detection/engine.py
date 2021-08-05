@@ -159,7 +159,7 @@ def evaluate_classification(model, data_loader, device,
     header = 'Test:'
     n_features = 7
 
-    x_regresion = np.zeros((len(data_loader.dataset), 7))
+    x_regresion = np.zeros((len(data_loader.dataset), n_features))
     y_regresion = np.zeros(len(data_loader.dataset))
     image_paths = []
     j = 0
@@ -211,7 +211,7 @@ def evaluate_classification(model, data_loader, device,
                 #print('before scores',psutil.virtual_memory().percent)
                 image_scores = output['scores']#.detach().numpy()
                 image_areas = output['areas']#.detach().numpy()
-                x_regresion[j,:] = update_regression_features(image_scores, image_areas)
+                x_regresion[j,:] = update_regression_features(image_scores, image_areas,n_features=n_features)
                 j += 1
                 #print('before del',psutil.virtual_memory().percent)
                 del gt,image_scores,image_areas,target

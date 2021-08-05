@@ -43,7 +43,7 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
     total_area = height * width
     outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
 
-    outputs = ut.process_output(outputs, total_area, max_detections=10, min_box_proportionArea=None,
+    outputs = ut.process_output(outputs, total_area, max_detections=None, min_box_proportionArea=None,
                                 min_score_threshold=None)
     outputs_plot = ut.process_output(outputs, total_area,
                                 max_detections=plot_parameters["max_detections"],
@@ -51,8 +51,10 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
                                 min_score_threshold=plot_parameters["min_score_threshold"])
     outputs_plot = {k: v.numpy() for k, v in outputs_plot.items()}
 
-    x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'])
+
     if binary_classifier is not None:
+        x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'],
+                                              n_features=binary_classifier.used_features)
         pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
         cont_pred = cont_pred[0]
         pred = pred[0]
@@ -70,8 +72,8 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
 
             outp = ut.process_output(outp, total_area, max_detections=None, min_box_proportionArea=None,
                                 min_score_threshold=None)
-            x_reg_i = ut.update_regression_features(outp['scores'], outp['areas'])
-            pred_i, cont_pred_i = binary_classifier.infere(x_reg.reshape(1, -1))
+            x_reg_i = ut.update_regression_features(outp['scores'], outp['areas'],n_features=binary_classifier.used_features)
+            pred_i, cont_pred_i = binary_classifier.infere(x_reg_i.reshape(1, -1))
             cont_preds[i] = cont_pred_i[0]
             preds[i] = pred_i[0]
         #Agrego las de la imagen original
@@ -369,7 +371,7 @@ def main(args=None):
     print('NUM CLASSES: ',num_classes)
     if config['experiment_type']=='boxes':
         # get the model using our helper function
-        model = ut.get_object_detection_model(num_classes)
+        model = ut.get_object_detection_model(num_classes, box_score_thresh=0.01, box_nms_thresh=0.3, box_detections_per_img=10)
     if config['experiment_type']=='masks':
         # get the model using our helper function
         model = ut.get_instance_segmentation_model(num_classes)
