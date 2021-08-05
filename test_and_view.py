@@ -130,7 +130,7 @@ def saveAsFiles(tqdm_loader,model,device,
                     folder = 'FalsePositive'
                 else:
                     folder = 'FalseNegative'
-        print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
+            print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
 
         saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                            image_source, os.path.basename(image_path.replace('\\', '/')))
