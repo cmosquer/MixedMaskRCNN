@@ -308,7 +308,7 @@ def main(args=None):
         'expected_prevalence': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': True,
+        'calculate_classification': False,
         'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': True,
