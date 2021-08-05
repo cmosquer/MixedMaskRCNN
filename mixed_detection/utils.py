@@ -205,7 +205,7 @@ def process_output(outputs,total_area,min_score_threshold=0.1,min_box_proportion
 
 
 def update_regression_features(image_scores,image_areas):
-    n_features = 7
+    n_features = 6
     x_regresion_j = np.zeros(n_features)
 
     if image_scores is not None:
@@ -217,7 +217,7 @@ def update_regression_features(image_scores,image_areas):
             x_regresion_j[3] = torch.mean(image_areas)
             x_regresion_j[4] = torch.max(image_areas)
             x_regresion_j[5] = torch.min(image_areas)
-            x_regresion_j[6] = N_detections
+            #x_regresion_j[6] = N_detections
     return x_regresion_j
 
 

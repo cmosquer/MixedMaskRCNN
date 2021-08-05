@@ -43,7 +43,7 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
     total_area = height * width
     outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
 
-    outputs = ut.process_output(outputs, total_area, max_detections=None, min_box_proportionArea=None,
+    outputs = ut.process_output(outputs, total_area, max_detections=10, min_box_proportionArea=None,
                                 min_score_threshold=None)
     outputs_plot = ut.process_output(outputs, total_area,
                                 max_detections=plot_parameters["max_detections"],
@@ -318,7 +318,7 @@ def main(args=None):
         'force_cpu': False,
     }
     print('starting test script')
-    clf_from_old_model = False
+    clf_from_old_model = True
     force_cpu = config['force_cpu'] #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
@@ -380,6 +380,7 @@ def main(args=None):
     model.eval()
     experiment_id = f"test_{date}_{chosen_experiment}"
     if binary_opacity:
+        print('WILL CREATE CLASSIFIER')
         if clf_from_old_model:
             dataset_train = MixedLabelsDataset(csv_train, class_numbers,
                                               ut.get_transform(train=False),
@@ -475,7 +476,7 @@ def main(args=None):
            4: 0.25, #'Atelectasia',
            5: 0.25 #'LesionesDeLaPared'
            }"""
-        plot_parameters = {"max_detections": None,
+        plot_parameters = {"max_detections": 7,
                            "min_score_threshold": None,#0.2 #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
                            "min_box_proportionArea": None #float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
                            }

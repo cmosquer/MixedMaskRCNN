@@ -14,7 +14,7 @@ class BinaryClassifier():
         self.x = None
         self.y = None
         self.clf = RandomForestClassifier(random_state=32)
-        self.used_features = 7  #Between 1 and 7
+        self.used_features = 6  #Between 1 and 7
         self.x_binary_cont = None
         self.x_positive_posteriors = None
         self.calibration_parameters = {}
@@ -64,7 +64,7 @@ class BinaryClassifier():
         cpu_device = torch.device("cpu")
         model.eval()
         j = 0
-
+        image_paths =[]
         with torch.no_grad():
             for batch in tqdm(data_loader):
                 if data_loader.dataset.return_image_source:
@@ -88,7 +88,7 @@ class BinaryClassifier():
                     width = images[img_id].shape[2]
                     total_area = height * width
                     output = process_output(output, total_area,
-                                             max_detections=None,
+                                             max_detections=10,
                                              min_box_proportionArea=None,
                                              min_score_threshold=None
                                              )
