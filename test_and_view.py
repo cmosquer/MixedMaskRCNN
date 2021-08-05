@@ -349,7 +349,11 @@ def main(args=None):
      'Consolidacion': 2,
      'PatronIntersticial': 3,
      'Atelectasia': 4,
-     'LesionesDeLaPared': 5}
+     'LesionesDeLaPared': 5,
+    'Covid_Typical_Appearance':6,
+    'Covid_Indeterminate_Appearance': 7,
+    'Covid_Atypical_Appearance': 8,
+    }
 
     if force_cpu:
         device = torch.device('cpu')
