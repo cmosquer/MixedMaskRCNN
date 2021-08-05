@@ -485,7 +485,6 @@ def main(args=None):
                               binary=binary_opacity,
                               plot_parameters=plot_parameters,
                               binary_classifier=test_clf,
-                              results_file=results_coco_file,
                               save_csv=output_csv_path,save_figures=config['save_figures']):
                 pass
         if config['view_in_window']:
