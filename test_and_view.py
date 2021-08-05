@@ -14,7 +14,8 @@ from mixed_detection.MixedLabelsDataset import MixedLabelsDataset
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 from datetime import datetime
 from mixed_detection.BinaryClassifier import BinaryClassifier
-
+from mixed_detection import vision_transforms as T
+from torchvision import transforms as torchT
 import wandb
 
 
@@ -24,24 +25,86 @@ def label_to_name(label):
      2:'Consolidacion',
      3:'PatronIntersticial',
      4:'Atelectasia',
-     5:'LesionesDeLaPared'
+     5:'LesionesDeLaPared',
+     6: 'Covid_Typical_Appearance',
+     7: 'Covid_Indeterminate_Appearance',
+     8: 'Covid_Atypical_Appearance'
      }
     return labels[label]
+
+
+def infere(model,image,binary_classifier,multitest,plot_parameters):
+    pred = None
+    cont_pred = None
+    #Inferencia en imagen original
+    outputs = model(image)
+    height = image[0].shape[1]
+    width = image[0].shape[2]
+    total_area = height * width
+    outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
+
+    outputs = ut.process_output(outputs, total_area, max_detections=None, min_box_proportionArea=None,
+                                min_score_threshold=None)
+    outputs_plot = ut.process_output(outputs, total_area,
+                                max_detections=plot_parameters["max_detections"],
+                                min_box_proportionArea=plot_parameters["min_box_proportionArea"],
+                                min_score_threshold=plot_parameters["min_score_threshold"])
+    outputs_plot = {k: v.numpy() for k, v in outputs_plot.items()}
+
+    x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'])
+    if binary_classifier is not None:
+        pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
+        cont_pred = cont_pred[0]
+        pred = pred[0]
+
+    if multitest:
+        colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
+        transforms = T.Compose([T.RandomHorizontalFlip(0.5), T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
+        preds = np.empty(5)
+        cont_preds = np.empty(5)
+        for i in range(len(preds)-1):
+            img, target = transforms(img, target)
+            img = colorjitter(img)
+            outp = model(img)
+            outp = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outp][0]
+
+            outp = ut.process_output(outp, total_area, max_detections=None, min_box_proportionArea=None,
+                                min_score_threshold=None)
+            x_reg_i = ut.update_regression_features(outp['scores'], outp['areas'])
+            pred_i, cont_pred_i = binary_classifier.infere(x_reg.reshape(1, -1))
+            cont_preds[i] = cont_pred_i[0]
+            preds[i] = pred_i[0]
+        #Agrego las de la imagen original
+        preds[-1] = pred
+        cont_preds[-1] = cont_pred
+        print('Preds (la ultima es con imagen orignial)', preds)
+        print('Cont preds (la ultima es con imagen orignial)',cont_preds)
+        pred = 1 if np.sum(preds) >= 3 else 0
+        cont_pred = np.mean(cont_preds)
+
+    return outputs_plot, pred, cont_pred
 
 def saveAsFiles(tqdm_loader,model,device,
                 save_fig_dir,
                 save_figures=None,   #puede ser 'heatmap','boxes',o None
-                max_detections=None,binary_classifier=None,posterior_th=None,
-                min_score_threshold=None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
-                min_box_proportionArea=None, draw='boxes',binary=False,results_file='',
+                binary_classifier=None,posterior_th=None,
+                plot_parameters = None, #dict
+                draw='boxes',binary=False,
                 save_csv=None, #If not None, should be a str with filepath where to save dataframe with targets and predictions
-
+                multitest=False
                 ):
     j = 0
-
+    if plot_parameters is None:
+        plot_parameters = {"max_detections": None,
+                           "min_score_threshold": None, #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
+                           "min_box_proportionArea": None
+                           }
     if save_csv is not None:
         df = pd.DataFrame(columns=['image_name','box_type','label','score','x1','x2','y1','y2','original_file_name','image_source'])
-
+    os.makedirs(save_fig_dir + 'TruePositive', exist_ok=True)
+    os.makedirs(save_fig_dir + 'FalsePositive', exist_ok=True)
+    os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
+    os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
         image = list(img.to(device) for img in image)
         j += 1
@@ -50,40 +113,13 @@ def saveAsFiles(tqdm_loader,model,device,
                                             '')
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
-        outputs = model(image)
-
-        height = image[0].shape[1]
-        width = image[0].shape[2]
-        total_area = height*width
-        outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
-
-        outputs = ut.process_output(outputs,total_area,max_detections=None,min_box_proportionArea=None,min_score_threshold=None)
-        x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'])
-        outputs = ut.process_output(outputs,total_area,
-                                 max_detections=max_detections,
-                                 min_box_proportionArea=min_box_proportionArea,
-                                 min_score_threshold=min_score_threshold)
-
-        #print(type(outputs))
-        outputs = {k: v.numpy() for k, v in outputs.items()}
-        image = image[0].to(torch.device("cpu")).detach().numpy()[0,:,:]
+        outputs, pred, cont_pred = infere(model,image,binary_classifier,multitest=multitest)
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
-        #print('TARGET for {} is {}'.format(image_path, targets['labels']))
-        os.makedirs(save_fig_dir + 'TruePositive', exist_ok=True)
-        os.makedirs(save_fig_dir + 'FalsePositive', exist_ok=True)
-        os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
-        os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
+        # print('TARGET for {} is {}'.format(image_path, targets['labels']))
         folder = ''
-        # try:
-        # predspath = results_file.replace('cocoStats', 'test_classification_data').replace('.txt', '')
-        pred = None
-        cont_pred = None
-        if binary_classifier is not None:
-            pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
-            cont_pred = cont_pred[0]
-            pred = pred[0]
+
+        if pred is not None:
             gt = 1 if len(targets['labels']) > 0 else 0
-            print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
             if np.all(pred == gt):
                 if np.all(gt == 0):
                     folder = 'TrueNegative'
@@ -94,13 +130,14 @@ def saveAsFiles(tqdm_loader,model,device,
                     folder = 'FalsePositive'
                 else:
                     folder = 'FalseNegative'
+        print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
 
         saving_path = "{}/{}/{}_{}".format(save_fig_dir, folder,
                                            image_source, os.path.basename(image_path.replace('\\', '/')))
         if cont_pred is not None:
             cont_pred_str = 100*cont_pred
             saving_path = saving_path.replace('.jpg', '_{:.1f}.jpg'.format(cont_pred_str))
-
+        image = image[0].to(torch.device("cpu")).detach().numpy()[0, :, :]
         #print('Memory before save figres: ', psutil.virtual_memory().percent)
         if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
@@ -272,9 +309,9 @@ def main(args=None):
 
         'calculate_coco': False,
         'calculate_classification': False,
-        'save_figures': 'heatmap',  #puede ser 'heatmap','boxes', o None
+        'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': True,
+        'save_csv': False,
         'view_in_window': False,
         'loop': False,
 
@@ -338,24 +375,25 @@ def main(args=None):
 
     model.eval()
     experiment_id = f"test_{date}_{chosen_experiment}"
-    if clf_from_old_model:
-        dataset_train = MixedLabelsDataset(csv_train, class_numbers,
-                                          ut.get_transform(train=False),
-                                          binary_opacity=binary_opacity,check_files=False,
-                                          return_image_source=False)
-        data_loader_train = torch.utils.data.DataLoader(
-            dataset_train, batch_size=4, shuffle=False, num_workers=0,
-            collate_fn=ut.collate_fn)
-        clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'], costs_ratio=config['costs_ratio'])
-        print('Getting data...')
-        clf.get_data_from_model(model,data_loader_train,device)
-        print('Training classifier...')
-        clf.train()
-        print(clf.calibration_parameters)
-        classification_data_dict = {}
-        classification_data_dict['clf'] = clf
-        with open(classification_data, 'wb') as f:
-            pickle.dump(classification_data_dict, f)
+    if binary_opacity:
+        if clf_from_old_model:
+            dataset_train = MixedLabelsDataset(csv_train, class_numbers,
+                                              ut.get_transform(train=False),
+                                              binary_opacity=binary_opacity,check_files=False,
+                                              return_image_source=False)
+            data_loader_train = torch.utils.data.DataLoader(
+                dataset_train, batch_size=4, shuffle=False, num_workers=0,
+                collate_fn=ut.collate_fn)
+            clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'], costs_ratio=config['costs_ratio'])
+            print('Getting data...')
+            clf.get_data_from_model(model,data_loader_train,device)
+            print('Training classifier...')
+            clf.train()
+            print(clf.calibration_parameters)
+            classification_data_dict = {}
+            classification_data_dict['clf'] = clf
+            with open(classification_data, 'wb') as f:
+                pickle.dump(classification_data_dict, f)
 
     with wandb.init(config=config, project=project, name=experiment_id):
         config = wandb.config
@@ -372,22 +410,22 @@ def main(args=None):
             results_coco = evaluate_coco(model, data_loader_test, device=device,use_cpu=True,
                      results_file=results_coco_file)
             wandb_valid.update(results_coco)
+        test_clf = None
+        if binary_opacity:
+            if os.path.exists(classification_data):
+                with open(classification_data,'rb') as f:
+                    classification_data_dict = pickle.load(f)
+                print('Loaded binary model for classification')
+                test_clf = classification_data_dict['clf']
+                print('CLASSIFIER ', test_clf)
+                if test_clf.costs_ratio!=config['costs_ratio'] or test_clf.expected_prevalence!=config['expected_prevalence']:
+                    print('Reseting params')
+                    test_clf.reset_params(config['expected_prevalence'],config['costs_ratio'])
 
 
-        if os.path.exists(classification_data):
-            with open(classification_data,'rb') as f:
-                classification_data_dict = pickle.load(f)
-            print('Loaded binary model for classification')
-            test_clf = classification_data_dict['clf']
-            print('CLASSIFIER ', test_clf)
-            if test_clf.costs_ratio!=config['costs_ratio'] or test_clf.expected_prevalence!=config['expected_prevalence']:
-                print('Reseting params')
-                test_clf.reset_params(config['expected_prevalence'],config['costs_ratio'])
-
-
-        else:
-            print('No se encontro clasificador binario',classification_data)
-            return
+            else:
+                print('No se encontro clasificador binario',classification_data)
+                return
 
 
 
@@ -432,15 +470,17 @@ def main(args=None):
            4: 0.25, #'Atelectasia',
            5: 0.25 #'LesionesDeLaPared'
            }"""
-        min_score_thresholds = None #0.2
-        min_box_proportionArea = None #float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+        plot_parameters = {"max_detections": None,
+                           "min_score_threshold": None,#0.2 #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
+                           "min_box_proportionArea": None #float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+                           }
 
         if config['save_figures'] or config['save_csv']:
 
-            while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,binary=binary_opacity,
-                              max_detections=8, min_score_threshold=min_score_thresholds,
+            while saveAsFiles(tqdm_loader_files, model, device=device,save_fig_dir=save_fig_dir,
+                              binary=binary_opacity,
+                              plot_parameters=plot_parameters,
                               binary_classifier=test_clf,
-                              min_box_proportionArea=min_box_proportionArea,
                               results_file=results_coco_file,
                               save_csv=output_csv_path,save_figures=config['save_figures']):
                 pass
