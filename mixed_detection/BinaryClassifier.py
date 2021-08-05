@@ -59,7 +59,7 @@ class BinaryClassifier():
                                                                                                                               len(np.argwhere(self.y==0)))
 
     def get_data_from_model(self,model,data_loader,device):
-        x_regresion = np.zeros((len(data_loader.dataset), 7))
+        x_regresion = np.zeros((len(data_loader.dataset), self.used_features))
         y_regresion = np.zeros(len(data_loader.dataset))
         cpu_device = torch.device("cpu")
         model.eval()
