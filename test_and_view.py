@@ -362,7 +362,7 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1
-
+    print('NUM CLASSES: ',num_classes)
     if config['experiment_type']=='boxes':
         # get the model using our helper function
         model = ut.get_object_detection_model(num_classes)
