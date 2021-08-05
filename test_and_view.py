@@ -297,11 +297,11 @@ def main(args=None):
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-08_03',
+        'experiment': '2021-08-03',
         'experiment_type': 'boxes',
         'tested_epoch': 0,
 
-        'opacityies_as_binary':True,
+        'opacityies_as_binary':False,
         'masks_as_boxes': True,
 
         'costs_ratio': 1/1, #Costo FP/CostoFN
