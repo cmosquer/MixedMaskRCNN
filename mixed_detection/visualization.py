@@ -212,10 +212,13 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
         if 'scores' in annotations.keys():
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
+            alpha = float(score)
+        else:
+            alpha=1
         #if 'areas' in annotations.keys():
         #    caption = 'AREA{}'.format(annotations['areas'][i])
-        draw_caption(image, annotations['boxes'][i], caption, fontColor=c)
-        draw_box(image, annotations['boxes'][i], color=c)
+        draw_caption(image, annotations['boxes'][i], caption, fontColor=c, alpha=alpha)
+        draw_box(image, annotations['boxes'][i], color=c, alpha=alpha)
 
 
 def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None,binary=False):

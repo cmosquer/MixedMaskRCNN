@@ -45,10 +45,14 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
 
     outputs = ut.process_output(outputs, total_area, max_detections=None, min_box_proportionArea=None,
                                 min_score_threshold=None)
-    outputs_plot = ut.process_output(outputs, total_area,
+    if "model" not in plot_parameters:
+
+        outputs_plot = ut.process_output(outputs, total_area,
                                 max_detections=plot_parameters["max_detections"],
                                 min_box_proportionArea=plot_parameters["min_box_proportionArea"],
                                 min_score_threshold=plot_parameters["min_score_threshold"])
+    else:
+        outputs_plot = plot_parameters['model'](image)
     outputs_plot = {k: v.numpy() for k, v in outputs_plot.items()}
 
 
@@ -337,7 +341,7 @@ def main(args=None):
     else:
         output_csv_path = None
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
-    classification_data = f'{output_dir}/{chosen_experiment}/test_classification_data-{chosen_epoch}'
+    classification_data = f'{output_dir}/{chosen_experiment}/test_classification_data-{chosen_epoch}_orig'
     binary_opacity=config['opacityies_as_binary']
 
     os.makedirs(save_fig_dir,exist_ok=True)
@@ -373,11 +377,15 @@ def main(args=None):
     print('NUM CLASSES: ',num_classes)
     if config['experiment_type']=='boxes':
         # get the model using our helper function
-        model = ut.get_object_detection_model(num_classes, box_score_thresh=0.01, box_nms_thresh=0.3, box_detections_per_img=10)
+        model = ut.get_object_detection_model(num_classes)
+        model_plot = ut.get_object_detection_model(num_classes, box_score_thresh=0.19, box_nms_thresh=0.3,
+                                                   box_detections_per_img=8)
     if config['experiment_type']=='masks':
         # get the model using our helper function
         model = ut.get_instance_segmentation_model(num_classes)
     model.to(device)
+    model_plot.to(device)
+    model_plot.load_state_dict(torch.load(trainedModelPath))
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
 
@@ -482,7 +490,8 @@ def main(args=None):
            }"""
         plot_parameters = {"max_detections": 7,
                            "min_score_threshold": None,#0.2 #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
-                           "min_box_proportionArea": None #float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+                           "min_box_proportionArea": None,
+                           "model": model_plot,#float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
                            }
 
         if config['save_figures'] or config['save_csv']:
