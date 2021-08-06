@@ -295,7 +295,7 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : trx_dir+'Tests/poc_cases.csv',#output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        'test_set' : output_dir+'2021-07-30_binary/testCSV.csv',#trx_dir+'Tests/poc_cases.csv','{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
@@ -310,7 +310,7 @@ def main(args=None):
         'expected_prevalence': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': False,
+        'calculate_classification': True,
         'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': False,
@@ -320,7 +320,9 @@ def main(args=None):
         'force_cpu': False,
     }
     print('starting test script')
-    clf_from_old_model = True
+    clf_from_old_model = False
+
+
     force_cpu = config['force_cpu'] #Lo que observe: al setearlo en true igual algo ahce con la gpu por ocupa ~1500MB,
     # pero si lo dejas en false ocupa como 4000MB. En cuanto a velocidad, el de gpu es mas rapido sin dudas, pero el cpu super tolerable (5segs por imagen aprox)
 
