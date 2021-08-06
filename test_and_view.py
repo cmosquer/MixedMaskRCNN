@@ -310,6 +310,8 @@ def main(args=None):
         'opacityies_as_binary': True,
         'masks_as_boxes': True,
 
+
+        'test_augmentation': True,
         'costs_ratio': 1/1, #Costo FP/CostoFN
         'expected_prevalence': 0.1,
 
@@ -388,7 +390,7 @@ def main(args=None):
     model_plot.load_state_dict(torch.load(trainedModelPath))
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
-
+    model_plot.eval()
     model.eval()
     experiment_id = f"test_{date}_{chosen_experiment}"
     if binary_opacity:
@@ -500,7 +502,8 @@ def main(args=None):
                               binary=binary_opacity,
                               plot_parameters=plot_parameters,
                               binary_classifier=test_clf,
-                              save_csv=output_csv_path,save_figures=config['save_figures']):
+                              save_csv=output_csv_path,save_figures=config['save_figures'],
+                              multitest=config['test_augmentation']):
                 pass
         if config['view_in_window']:
             if config['loop']:
