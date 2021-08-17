@@ -204,7 +204,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             img = [img_orig]
             target = [target_orig]
             for j in range(self.test_augmentations):
-                i = self.colorjitter(i)
+                i = self.colorjitter(Image.fromarray(i))
                 i, t = self.transforms(img_orig,target_orig)
                 img.append(i)
                 target.append(t)
