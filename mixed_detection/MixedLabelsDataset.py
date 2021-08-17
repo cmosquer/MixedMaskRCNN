@@ -87,7 +87,9 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         self.ids = list(set(self.csv.file_name))
 
         if self.test_augmentations>0:
-            self.transforms = T.Compose([T.RandomHorizontalFlip(0.5), T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
+            self.transforms = T.Compose([T.ToTensor(),
+                                         T.RandomHorizontalFlip(0.5),
+                                         T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
 
     def quantifyClasses(self):
 
