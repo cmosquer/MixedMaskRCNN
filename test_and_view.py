@@ -73,11 +73,8 @@ def infere(model,image,target,binary_classifier,plot_parameters,multitest=False)
         preds = np.empty(5)
         cont_preds = np.empty(5)
         for i in range(len(preds)-1):
-            try:
-                img, target = transforms(image, target)
-            except:
-                target = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in target][0]
-                img, target = transforms(image, target)
+            img, target = transforms(image, target)
+
             img = colorjitter(img)
             outp = model(img)
             outp = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outp][0]
@@ -122,6 +119,8 @@ def saveAsFiles(tqdm_loader,model,device,
     os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
+        outputs, pred, cont_pred = infere(model,image,targets,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
+
         image = list(img.to(device) for img in image)
         j += 1
         image_source = image_sources[0]
@@ -130,7 +129,6 @@ def saveAsFiles(tqdm_loader,model,device,
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         image = image[0].to(torch.device("cpu")).detach().numpy()
 
-        outputs, pred, cont_pred = infere(model,image,targets,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
 
         # print('TARGET for {} is {}'.format(image_path, targets['labels']))
