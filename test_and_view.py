@@ -73,9 +73,10 @@ def infere(model,image,target,binary_classifier,plot_parameters,multitest=False)
         preds = np.empty(5)
         cont_preds = np.empty(5)
         for i in range(len(preds)-1):
-            img, target = transforms(image, target)
-            for j,img_ in enumerate(img):
-                img[j] = colorjitter(img_)
+            print(type(image))
+            img, tgt = transforms(image[0], target[0]) #Assume one-sample batch
+            print(type(img))
+            img = colorjitter(img)
             outp = model(img)
             outp = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outp][0]
 
