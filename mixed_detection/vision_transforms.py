@@ -199,7 +199,7 @@ class Compose(object):
         self.transforms = transforms
 
     def __call__(self, image, target):
-
+        print('TYPE',type(image))
         for t in self.transforms:
             try:
                 image = torch.as_tensor(image)
