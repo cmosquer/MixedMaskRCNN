@@ -207,7 +207,6 @@ class Compose(object):
                     image = Image.fromarray(image)
                     image = t(image)
                 else:
-                    image = torch.as_tensor(image)
                     image, target = t(image, target)
             except Exception as e:
                 print(e)
