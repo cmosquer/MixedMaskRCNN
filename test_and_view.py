@@ -52,11 +52,14 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
                                 min_box_proportionArea=plot_parameters["min_box_proportionArea"],
                                 min_score_threshold=plot_parameters["min_score_threshold"])
     else:
-        outputs_plot = plot_parameters['model'](image)
-    outputs_plot = {k: v.numpy() for k, v in outputs_plot.items()}
-
+        model_plot = plot_parameters['model']
+        print('model plot')
+        print(model_plot)
+        outputs_plot = model_plot(image)
+        outputs_plot = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs_plot][0]
 
     if binary_classifier is not None:
+        print('Calibrating')
         x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'],
                                               n_features=binary_classifier.used_features)
         pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
@@ -64,6 +67,7 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
         pred = pred[0]
 
     if multitest:
+        print('starting augmentation')
         colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
         transforms = T.Compose([T.RandomHorizontalFlip(0.5), T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
         preds = np.empty(5)
@@ -78,6 +82,8 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
                                 min_score_threshold=None)
             x_reg_i = ut.update_regression_features(outp['scores'], outp['areas'],n_features=binary_classifier.used_features)
             pred_i, cont_pred_i = binary_classifier.infere(x_reg_i.reshape(1, -1))
+            print('pred_i',pred_i)
+            print('cont_pred_i',cont_pred_i)
             cont_preds[i] = cont_pred_i[0]
             preds[i] = pred_i[0]
         #Agrego las de la imagen original
