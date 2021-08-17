@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import os, cv2
 import psutil
+from mixed_detection import vision_transforms as T
 
 from torchvision import transforms as torchT
 
@@ -57,7 +58,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
     def __init__(self, csv, class_numbers, transforms=None, colorjitter=False,
                  return_image_source=False,binary_opacity=False,
-                 masks_as_boxes=False, check_files=True):
+                 masks_as_boxes=False, check_files=True, test_augmentations=0):
         self.csv = csv
         self.class_numbers = class_numbers
         self.transforms = transforms #Transforms that have to be applied both to image and boxes/masks
@@ -68,7 +69,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         self.return_image_source = return_image_source
         self.binary = binary_opacity
         self.masks_as_boxes = masks_as_boxes
-
+        self.test_augmentations = int(test_augmentations)
 
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
@@ -84,6 +85,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                     index = self.csv[self.csv.file_name==path].index
                     self.csv = self.csv.drop(index,axis=0).reset_index(drop=True)
         self.ids = list(set(self.csv.file_name))
+
+        if self.test_augmentations>0:
+            self.colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
+            self.transforms = T.Compose([T.RandomHorizontalFlip(0.5), T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
 
     def quantifyClasses(self):
 
@@ -189,14 +194,22 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["area"] = area
         target["iscrowd"] = iscrowd
         #print('Memory before transforms: %', psutil.virtual_memory().percent)
+        if self.test_augmentations > 0:
+            img_orig = img.copy()
+            target_orig = target.copy()
+            img = [img_orig]
+            target = [target_orig]
+            for j in range(self.test_augmentations):
+                i, t = self.transforms(img_orig,target_orig)
+                i = self.colorjitter(i)
+                img.append(i)
+                target.append(t)
+        else:
+            if self.transforms is not None:
+                img, target = self.transforms(img, target)
+            if self.colorjitter is not None:
+                img = self.colorjitter(img)
 
-        if self.transforms is not None:
-            img, target = self.transforms(img, target)
-            #print('Memory after transforms: %', psutil.virtual_memory().percent)
-
-        if self.colorjitter is not None:
-            img = self.colorjitter(img)
-            #print('Memory after jitter: %', psutil.virtual_memory().percent)
 
         if self.return_image_source:
             return img, target, image_source, img_path

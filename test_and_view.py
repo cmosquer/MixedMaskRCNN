@@ -33,21 +33,37 @@ def label_to_name(label):
     return labels[label]
 
 
-def infere(model,image,target,binary_classifier,plot_parameters,multitest=False):
+def infere(model,image,binary_classifier,plot_parameters,multitest=False):
     pred = None
     cont_pred = None
     #Inferencia en imagen original
     outputs = model(image)
-    height = image[0].shape[1]
-    width = image[0].shape[2]
-    total_area = height * width
-    outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs][0]
+    outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs]
 
-    outputs = ut.process_output(outputs, total_area, max_detections=None, min_box_proportionArea=None,
-                                min_score_threshold=None)
+    height_original = image[0].shape[1]
+    width_original = image[0].shape[2]
+    total_area = height_original * width_original
+    preds = np.empty(len(image))
+    cont_preds = np.empty(len(image))
+    for s,sample in enumerate(outputs):
+        output_s = ut.process_output(sample, total_area,
+                                        max_detections=None, min_box_proportionArea=None,
+                                        min_score_threshold=None)
+        if binary_classifier is not None:
+            x_reg_i = ut.update_regression_features(output_s['scores'], output_s['areas'],
+                                                    n_features=binary_classifier.used_features)
+            pred_i, cont_pred_i = binary_classifier.infere(x_reg_i.reshape(1, -1))
+            print('pred_i', pred_i)
+            print('cont_pred_i', cont_pred_i)
+            cont_preds[s] = cont_pred_i[0]
+            preds[s] = pred_i[0]
+
+    cont_pred = np.mean(cont_preds)
+    pred = 1 if np.mean(preds)>0.5 else 0
+
     if "model" not in plot_parameters:
 
-        outputs_plot = ut.process_output(outputs, total_area,
+        outputs_plot = ut.process_output(outputs[0], total_area,
                                 max_detections=plot_parameters["max_detections"],
                                 min_box_proportionArea=plot_parameters["min_box_proportionArea"],
                                 min_score_threshold=plot_parameters["min_score_threshold"])
@@ -55,46 +71,9 @@ def infere(model,image,target,binary_classifier,plot_parameters,multitest=False)
         model_plot = plot_parameters['model']
         print('model plot')
         print(model_plot)
-        outputs_plot = model_plot(image)
+        outputs_plot = model_plot(image[0])
         outputs_plot = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in outputs_plot][0]
 
-    if binary_classifier is not None:
-        print('Calibrating')
-        x_reg = ut.update_regression_features(outputs['scores'], outputs['areas'],
-                                              n_features=binary_classifier.used_features)
-        pred, cont_pred = binary_classifier.infere(x_reg.reshape(1, -1))
-        cont_pred = cont_pred[0]
-        pred = pred[0]
-
-    if multitest:
-        print('starting augmentation')
-        colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
-        transforms = T.Compose([T.RandomHorizontalFlip(0.5), T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
-        preds = np.empty(5)
-        cont_preds = np.empty(5)
-        for i in range(len(preds)-1):
-            print(type(image))
-            img, tgt = transforms(image[0], target[0]) #Assume one-sample batch
-            print(type(img))
-            img = colorjitter(img)
-            outp = model(img)
-            outp = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outp][0]
-
-            outp = ut.process_output(outp, total_area, max_detections=None, min_box_proportionArea=None,
-                                min_score_threshold=None)
-            x_reg_i = ut.update_regression_features(outp['scores'], outp['areas'],n_features=binary_classifier.used_features)
-            pred_i, cont_pred_i = binary_classifier.infere(x_reg_i.reshape(1, -1))
-            print('pred_i',pred_i)
-            print('cont_pred_i',cont_pred_i)
-            cont_preds[i] = cont_pred_i[0]
-            preds[i] = pred_i[0]
-        #Agrego las de la imagen original
-        preds[-1] = pred
-        cont_preds[-1] = cont_pred
-        print('Preds (la ultima es con imagen orignial)', preds)
-        print('Cont preds (la ultima es con imagen orignial)',cont_preds)
-        pred = 1 if np.sum(preds) >= 3 else 0
-        cont_pred = np.mean(cont_preds)
 
     return outputs_plot, pred, cont_pred
 
@@ -105,7 +84,6 @@ def saveAsFiles(tqdm_loader,model,device,
                 plot_parameters = None, #dict
                 draw='boxes',binary=False,
                 save_csv=None, #If not None, should be a str with filepath where to save dataframe with targets and predictions
-                multitest=False
                 ):
     j = 0
     if plot_parameters is None:
@@ -122,7 +100,7 @@ def saveAsFiles(tqdm_loader,model,device,
     for image, targets,image_sources,image_paths in tqdm_loader:
 
         image = list(img.to(device) for img in image)
-        outputs, pred, cont_pred = infere(model,image,targets,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
+        outputs, pred, cont_pred = infere(model,image,binary_classifier,plot_parameters=plot_parameters)
 
         j += 1
         image_source = image_sources[0]
@@ -323,7 +301,7 @@ def main(args=None):
         'masks_as_boxes': True,
 
 
-        'test_augmentation': True,
+        'test_augmentation': 4,
         'costs_ratio': 1/1, #Costo FP/CostoFN
         'expected_prevalence': 0.1,
 
@@ -489,6 +467,7 @@ def main(args=None):
             csv_test_files = csv_test.copy()
         dataset_test_files = MixedLabelsDataset(csv_test_files, class_numbers,
                                                 ut.get_transform(train=False), binary_opacity=binary_opacity,
+                                                test_augmentations=config['test_augmentation'],
                                                 return_image_source=True)
         data_loader_test_files = torch.utils.data.DataLoader(
             dataset_test_files, batch_size=1, shuffle=False, num_workers=0,
@@ -516,7 +495,7 @@ def main(args=None):
                               plot_parameters=plot_parameters,
                               binary_classifier=test_clf,
                               save_csv=output_csv_path,save_figures=config['save_figures'],
-                              multitest=config['test_augmentation']):
+                             ):
                 pass
         if config['view_in_window']:
             if config['loop']:
