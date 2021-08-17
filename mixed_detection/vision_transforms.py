@@ -203,7 +203,6 @@ class Compose(object):
 
         for t in self.transforms:
             try:
-                image = np.asarray(image)
                 if hasattr(t,'hue'):
                     image = t(image)
                 else:
