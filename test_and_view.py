@@ -119,9 +119,10 @@ def saveAsFiles(tqdm_loader,model,device,
     os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
-        outputs, pred, cont_pred = infere(model,image,targets,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
 
         image = list(img.to(device) for img in image)
+        outputs, pred, cont_pred = infere(model,image,targets,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
+
         j += 1
         image_source = image_sources[0]
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
