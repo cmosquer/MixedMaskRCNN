@@ -128,6 +128,7 @@ def saveAsFiles(tqdm_loader,model,device,
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
+        image = image[0].to(torch.device("cpu")).detach().numpy()
 
         outputs, pred, cont_pred = infere(model,image,targets,binary_classifier,plot_parameters=plot_parameters,multitest=multitest)
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
@@ -154,8 +155,8 @@ def saveAsFiles(tqdm_loader,model,device,
         if cont_pred is not None:
             cont_pred_str = 100*cont_pred
             saving_path = saving_path.replace('.jpg', '_{:.1f}.jpg'.format(cont_pred_str))
-        image = image[0].to(torch.device("cpu")).detach().numpy()[0, :, :]
         #print('Memory before save figres: ', psutil.virtual_memory().percent)
+        image = image[0, :, :]
         if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
             colorimage[:, :, 0] = image
