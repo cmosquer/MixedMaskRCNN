@@ -2,6 +2,7 @@ from __future__ import division
 
 import sys
 import random
+import numpy as np
 from PIL import Image
 import torch
 try:
@@ -199,12 +200,21 @@ class Compose(object):
         self.transforms = transforms
 
     def __call__(self, image, target):
-        image = Image.fromarray(image)
+
         for t in self.transforms:
-            if hasattr(t,'hue'):
-                image = t(image)
-            else:
-                image, target = t(image, target)
+            try:
+                image = np.asarray(image)
+                if hasattr(t,'hue'):
+                    image = t(image)
+                else:
+                    image, target = t(image, target)
+            except Exception as e:
+                print(e)
+                image = Image.fromarray(image)
+                if hasattr(t,'hue'):
+                    image = t(image)
+                else:
+                    image, target = t(image, target)
         return image, target
 
 
