@@ -88,9 +88,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         if self.test_augmentations>0:
             self.colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
-            self.transforms = T.Compose([T.ToTensor(),
+            self.transforms = T.Compose([
                                          T.RandomHorizontalFlip(0.5),
-                                         #T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
+                                         #T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2),
+                                            T.ToTensor()
                                         ])
 
     def quantifyClasses(self):
@@ -203,12 +204,11 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
             img = [img_orig]
             target = [target_orig]
             for j in range(self.test_augmentations):
-                i, t = self.transforms(img_orig,target_orig)
                 i = self.colorjitter(i)
+                i, t = self.transforms(img_orig,target_orig)
                 img.append(i)
-                print(type(i))
                 target.append(t)
-                cv2.imwrite('C:/Users/UsuarioHI/Documents/{}.jpg'.format(j),i.numpy())
+                cv2.imwrite('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/{}.jpg'.format(j),i.numpy())
         else:
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
