@@ -73,7 +73,7 @@ def infere(model,image,binary_classifier,plot_parameters,multitest=False):
         preds = np.empty(5)
         cont_preds = np.empty(5)
         for i in range(len(preds)-1):
-            img, target = transforms(img, target)
+            img, target = transforms(image, target)
             img = colorjitter(img)
             outp = model(img)
             outp = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outp][0]
@@ -322,7 +322,7 @@ def main(args=None):
         'expected_prevalence': 0.1,
 
         'calculate_coco': False,
-        'calculate_classification': True,
+        'calculate_classification': False,
         'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
         'save_csv': False,
@@ -400,8 +400,9 @@ def main(args=None):
     model.eval()
     experiment_id = f"test_{date}_{chosen_experiment}"
     if binary_opacity:
-        print('WILL CREATE CLASSIFIER')
+
         if clf_from_old_model:
+            print('WILL CREATE CLASSIFIER')
             dataset_train = MixedLabelsDataset(csv_train, class_numbers,
                                               ut.get_transform(train=False),
                                               binary_opacity=binary_opacity,check_files=False,
