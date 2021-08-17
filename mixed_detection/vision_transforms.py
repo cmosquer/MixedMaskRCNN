@@ -199,7 +199,7 @@ class Compose(object):
         self.transforms = transforms
 
     def __call__(self, image, target):
-
+        image = Image.fromarray(image)
         for t in self.transforms:
             if hasattr(t,'hue'):
                 image = t(image)
