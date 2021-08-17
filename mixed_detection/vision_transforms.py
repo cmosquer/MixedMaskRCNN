@@ -201,19 +201,17 @@ class Compose(object):
     def __call__(self, image, target):
         print('TYPE',type(image))
         for t in self.transforms:
+            print(t)
             try:
-                image = torch.as_tensor(image)
                 if hasattr(t,'hue'):
+                    image = Image.fromarray(image)
                     image = t(image)
                 else:
+                    image = torch.as_tensor(image)
                     image, target = t(image, target)
             except Exception as e:
                 print(e)
-                image = Image.fromarray(image)
-                if hasattr(t,'hue'):
-                    image = t(image)
-                else:
-                    image, target = t(image, target)
+
         return image, target
 
 
