@@ -2,7 +2,6 @@ from __future__ import division
 
 import sys
 import random
-import numpy as np
 from PIL import Image
 import torch
 try:
@@ -203,6 +202,7 @@ class Compose(object):
 
         for t in self.transforms:
             try:
+                image = torch.as_tensor(image)
                 if hasattr(t,'hue'):
                     image = t(image)
                 else:
