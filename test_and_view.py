@@ -98,8 +98,11 @@ def saveAsFiles(tqdm_loader,model,device,
     os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
-
-        image = list(img.to(device) for img in image)
+        print(type(image))
+        print(len(image))
+        if hasattr(image,'shape'):
+            print(image.shape)
+        image = list(img.to(device) for img in image[0])
         outputs, pred, cont_pred = infere(model,image,binary_classifier,plot_parameters=plot_parameters)
 
         j += 1
@@ -107,7 +110,7 @@ def saveAsFiles(tqdm_loader,model,device,
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        image = image[0].to(torch.device("cpu")).detach().numpy()
+        image = image[0][0].to(torch.device("cpu")).detach().numpy()
 
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
 
