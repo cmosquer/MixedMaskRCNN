@@ -98,10 +98,10 @@ def saveAsFiles(tqdm_loader,model,device,
     os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
-        print(type(image))
-        print(len(image))
-        if hasattr(image,'shape'):
-            print(image.shape)
+        print(type(image[0]))
+        print(len(image[0]))
+        if hasattr(image[0],'shape'):
+            print(image[0].shape)
         image = list(img.to(device) for img in image[0])
         outputs, pred, cont_pred = infere(model,image,binary_classifier,plot_parameters=plot_parameters)
 

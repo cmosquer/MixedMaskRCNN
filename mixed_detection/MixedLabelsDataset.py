@@ -207,6 +207,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 i = self.colorjitter(i)
                 img.append(i)
                 target.append(t)
+                cv2.imwrite('C:/Users/UsuarioHI/Documents/{}.jpg'.format(j),i)
         else:
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
