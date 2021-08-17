@@ -88,8 +88,10 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
 
         if self.test_augmentations>0:
             self.transforms = T.Compose([T.ToTensor(),
-                                         T.RandomHorizontalFlip(0.5),
-                                         T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)])
+                                         #T.RandomHorizontalFlip(0.5),
+                                         #T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
+                                        ]
+                                        )
 
     def quantifyClasses(self):
 
@@ -204,6 +206,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 i, t = self.transforms(img_orig,target_orig)
                 img.append(i)
                 target.append(t)
+            print('LEN OF BATCH', len(img))
         else:
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
