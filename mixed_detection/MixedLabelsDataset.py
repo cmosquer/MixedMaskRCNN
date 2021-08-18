@@ -208,7 +208,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                 im, t = self.transforms(im,target_orig)
                 img.append(im)
                 target.append(t)
-                cv2.imwrite('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/{}.jpg'.format(j),i.numpy())
+                cv2.imwrite('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/{}.jpg'.format(j),
+                            im.numpy())
         else:
             if self.transforms is not None:
                 img, target = self.transforms(img, target)
