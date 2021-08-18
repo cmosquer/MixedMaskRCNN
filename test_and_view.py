@@ -203,9 +203,9 @@ def main(args=None):
                                               masks_as_boxes=config['masks_as_boxes'],
                                               binary_opacity=binary_opacity,
                                               return_image_source=True)
-        data_loader_test_files = tqdm(torch.utils.data.DataLoader(
+        data_loader_test_files = torch.utils.data.DataLoader(
             dataset_test_originals, batch_size=1, shuffle=False, num_workers=0,
-            collate_fn=ut.collate_fn))
+            collate_fn=ut.collate_fn)
 
         print('DATASET FOR FIGURES:')
         print(dataset_test_originals.quantifyClasses())
@@ -223,9 +223,9 @@ def main(args=None):
         if config['test_augmentation']>0:
             dataset_test_aug = TestAugmentationDataset(csv_test_files,
                                                   return_image_source=True)
-            augm_data_loader_test_files = tqdm(torch.utils.data.DataLoader(
+            augm_data_loader_test_files = torch.utils.data.DataLoader(
                 dataset_test_aug, batch_size=1, shuffle=False, num_workers=0,
-                collate_fn=ut.collate_fn))
+                collate_fn=ut.collate_fn)
 
             dfPreds = testAugmented(augm_data_loader_test_files,config['test_augmentation'],
                                     model,device,binary_classifier=test_clf,dfPreds=dfPreds)
