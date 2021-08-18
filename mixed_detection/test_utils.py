@@ -188,6 +188,7 @@ def testOriginals(loader_originals, model, device,
         dfPreds = pd.DataFrame()
 
     for image, target,image_source,image_path in loader_originals:
+        print(len(image))
         assert len(image)==0, "Must use one-sample batchs for testing"
         image = image[0].to(device)
         pred, cont_pred, x_reg, outputs = infereImage(model,image,binary_classifier)
