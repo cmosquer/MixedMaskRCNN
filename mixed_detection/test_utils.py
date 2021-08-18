@@ -75,7 +75,7 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
 
         for image,target,image_source,image_path in loader_augmented:
             assert len(image) == 1, "Must use one-sample batchs for testing"
-            image = image[0].to(device)
+            image = image.to(device)
             pred, cont_pred, x_reg = infereImage(model, image, binary_classifier)
             assert len(dfPreds[dfPreds.image_name==os.path.basename(image_path[0])])==1, "Couldnt find image in dfPreds"
             dfPreds.at[dfPreds.image_name==os.path.basename(image_path[0]),'binary_pred_augm'+str(j)] = pred
@@ -106,7 +106,7 @@ def plotOriginals(loader_originals, device, dfPreds,
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, target,image_source,image_path in loader_originals:
         assert len(image)== 1, "Must use one-sample batchs for testing"
-        image = image[0].to(device)
+        image = image.to(device)
         outputs = getOutputForPlot(plot_parameters,image)
         folder = ''
         pred = dfPreds[dfPreds.image_name == os.path.basename(image_path[0])]['averaged_binary_pred']
@@ -189,7 +189,7 @@ def testOriginals(loader_originals, model, device,
 
     for image, target,image_source,image_path in loader_originals:
         assert len(image) == 1, "Must use one-sample batchs for testing"
-        image = image[0].to(device)
+        image = image.to(device)
         pred, cont_pred, x_reg, outputs = infereImage(model,image,binary_classifier)
         if save_boxes_csv is not None:
             results_list = []
