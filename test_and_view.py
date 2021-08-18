@@ -99,7 +99,7 @@ def saveAsFiles(tqdm_loader,model,device,
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
 
-        image = list(torch.float32(img).to(device) for img in image[0])
+        image = list(torch.as_tensor(img,dtype=torch.float32).to(device) for img in image[0])
         outputs, pred, cont_pred = infere(model,image,binary_classifier,plot_parameters=plot_parameters)
 
         j += 1
