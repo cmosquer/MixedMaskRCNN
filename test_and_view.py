@@ -98,11 +98,8 @@ def saveAsFiles(tqdm_loader,model,device,
     os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
     for image, targets,image_sources,image_paths in tqdm_loader:
-        print(type(image[0]))
-        print(len(image[0]))
-        if hasattr(image[0],'shape'):
-            print(image[0].shape)
-        image = list(img.to(device) for img in image[0])
+
+        image = list(torch.as_tensor(img).to(device) for img in image[0])
         outputs, pred, cont_pred = infere(model,image,binary_classifier,plot_parameters=plot_parameters)
 
         j += 1
@@ -110,7 +107,7 @@ def saveAsFiles(tqdm_loader,model,device,
         image_path = image_paths[0].replace('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/',
                                             '')
         #targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        image = image[0][0].to(torch.device("cpu")).detach().numpy()
+        image = image[0].to(torch.device("cpu")).detach().numpy()
 
         targets = [{k: v.to(torch.device("cpu")).detach().numpy() for k, v in t.items()} for t in targets][0]
 
@@ -137,6 +134,7 @@ def saveAsFiles(tqdm_loader,model,device,
             cont_pred_str = 100*cont_pred
             saving_path = saving_path.replace('.jpg', '_{:.1f}.jpg'.format(cont_pred_str))
         #print('Memory before save figres: ', psutil.virtual_memory().percent)
+        print(image.shape)
         image = image[0, :, :]
         if save_figures is not None:
             colorimage = np.zeros((image.shape[0], image.shape[1], 3), dtype=image.dtype)
