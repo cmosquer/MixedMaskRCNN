@@ -8,68 +8,73 @@ from mixed_detection import vision_transforms as T
 
 from torchvision import transforms as torchT
 
-class ImageLabelsDataset(torch.utils.data.Dataset):
-    def __init__(self, csv, class_numbers, transforms=None, return_image_source=False):
+import albumentations
+import numpy as np
+class TestAugmentationDataset(torch.utils.data.Dataset):
+    def __init__(self, csv, return_image_source):
         self.csv = csv
-        self.class_numbers = class_numbers
-        self.transforms = transforms
         self.return_image_source = return_image_source
-        assert pd.Series(['class_name','image_source',
+
+        assert pd.Series(['image_source',
                           'file_name']).isin(self.csv.columns).all()
-    def quantifyClasses(self):
-        all_labels_strings = '-'.join([c if isinstance(c,str) else 'no_finding' for c in self.csv.class_name])
-        all_labels = all_labels_strings.split('-')
-        for name,c in self.class_numbers.items():
-            print('N de {}: {} ({:.2f}%)'.format(name,all_labels.count(name),100*all_labels.count(name)/len(all_labels)))
 
-        print('N de {}: {} ({:.2f}%)'.format('no_finding', all_labels.count('no_finding'),
-                                             100 * all_labels.count('no_finding') / len(all_labels)))
-    def __getitem__(self, idx):
-        img_path = self.csv.file_name.values[idx]
+        self.ids = list(set(self.csv.file_name))
 
-        image_source = self.csv.image_source.values[idx]
-
-        img = Image.open(img_path.replace('\\','/')).convert("RGB")
-        img_rows = self.csv[self.csv.file_name == img_path]
-        labels = []
-        for i, row in img_rows.iterrows():
-            if isinstance(row['class_name'], str):
-                if len(row['class_name']) > 0:
-                    raw_labels = row['class_name'].split('-')
-                    labels += [self.class_numbers[c] for c in raw_labels if c in self.class_numbers.keys()]
-
-        if self.transforms is not None:
-            img = self.transforms(img)
-
-        labels_tensor = torch.zeros(len(self.class_numbers), dtype=torch.float32)
-        labels_tensor[labels] = 1
-
-        if self.return_image_source:
-            return (img, labels_tensor, image_source, img_path)
-        else:
-            return (img, labels_tensor)
-
+        self.aug = albumentations.Compose([
+            albumentations.RandomResizedCrop(256, 256),
+            albumentations.Transpose(p=0.5),
+            albumentations.HorizontalFlip(p=0.5),
+            albumentations.VerticalFlip(p=0.5),
+            albumentations.HueSaturationValue(
+                hue_shift_limit=0.2,
+                sat_shift_limit=0.2,
+                val_shift_limit=0.2,
+                p=0.5
+            ),
+            albumentations.RandomBrightnessContrast(
+                brightness_limit=(-0.1, 0.1),
+                contrast_limit=(-0.1, 0.1),
+                p=0.5
+            ),
+            albumentations.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+                max_pixel_value=255.0,
+                p=1.0
+            )
+        ], p=1.)
 
     def __len__(self):
-        return len(self.csv)
+        return len(self.ids)
 
+    def __getitem__(self, index):
+        # converting jpg format of images to numpy array
+        img_path = self.ids[index]
+        img_row = self.csv[self.csv.file_name == img_path][0]
+        image_source = img_row.image_source.values
+
+        img = np.array(Image.open(img_path))
+        # Applying augmentations to numpy array
+        img = self.aug(image=img)['image']
+        # converting to pytorch image format & 2,0,1 because pytorch excepts image channel first then dimension of image
+        img = np.transpose(img, (2, 0, 1)).astype(np.float32)
+
+        if self.return_image_source:
+            return torch.tensor(img, dtype = torch.float) , img_row['class_name'], image_source, img_path
+        else:
+            return torch.tensor(img, dtype = torch.float) , img_row['class_name']
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
 
-    def __init__(self, csv, class_numbers, transforms=None, colorjitter=False,
+    def __init__(self, csv, class_numbers, transforms=None,
                  return_image_source=False,binary_opacity=False,
-                 masks_as_boxes=False, check_files=True, test_augmentations=0):
+                 masks_as_boxes=False, check_files=True):
         self.csv = csv
         self.class_numbers = class_numbers
         self.transforms = transforms #Transforms that have to be applied both to image and boxes/masks
-        if colorjitter: #Transform the image brightness,contrast,etc
-            self.colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
-        else:
-            self.colorjitter = None
         self.return_image_source = return_image_source
         self.binary = binary_opacity
         self.masks_as_boxes = masks_as_boxes
-        self.test_augmentations = int(test_augmentations)
 
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
@@ -86,13 +91,6 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                     self.csv = self.csv.drop(index,axis=0).reset_index(drop=True)
         self.ids = list(set(self.csv.file_name))
 
-        if self.test_augmentations>0:
-            self.colorjitter = torchT.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2)
-            self.transforms = T.Compose([
-                                         T.RandomHorizontalFlip(0.5),
-                                         #T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2),
-                                            T.ToTensor()
-                                        ])
 
     def quantifyClasses(self):
 
@@ -198,25 +196,9 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["area"] = area
         target["iscrowd"] = iscrowd
         #print('Memory before transforms: %', psutil.virtual_memory().percent)
-        if self.test_augmentations > 0:
-            img_orig = img.copy()
-            target_orig = target.copy()
-            img = [img_orig]
-            target = [target_orig]
-            for j in range(self.test_augmentations):
-                im = self.colorjitter(Image.fromarray(img_orig))
-                im = np.asarray(im)
-                im, t = self.transforms(im,target_orig)
-                img.append(im)
-                target.append(t)
-                cv2.imwrite('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/{}.jpg'.format(j),
-                            im.numpy())
-        else:
-            if self.transforms is not None:
-                img, target = self.transforms(img, target)
-            if self.colorjitter is not None:
-                img = self.colorjitter(img)
 
+        if self.transforms is not None:
+            img, target = self.transforms(img, target)
 
         if self.return_image_source:
             return img, target, image_source, img_path
