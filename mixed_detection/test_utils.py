@@ -189,7 +189,7 @@ def testOriginals(loader_originals, model, device,
 
     for image, target,image_source,image_path in loader_originals:
         assert len(image) == 1, "Must use one-sample batchs for testing"
-        image = image[0].to(device)
+        #image = image[0].to(device)
         pred, cont_pred, x_reg, outputs = infereImage(model,image,binary_classifier)
         if save_boxes_csv is not None:
             results_list = []
