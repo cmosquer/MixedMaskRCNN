@@ -1,0 +1,31 @@
+2021-08-20 18:18:46,991 INFO    MainThread:28791 [internal.py:wandb_internal():91] W&B internal server running at pid: 28791, started at: 2021-08-20 18:18:46.991653
+2021-08-20 18:18:46,994 INFO    WriterThread:28791 [datastore.py:open_for_write():77] open: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/run-sw53f45u.wandb
+2021-08-20 18:18:46,996 DEBUG   HandlerThread:28791 [handler.py:handle_request():121] handle_request: check_version
+2021-08-20 18:18:46,998 DEBUG   SenderThread:28791 [sender.py:send():176] send: header
+2021-08-20 18:18:46,998 DEBUG   SenderThread:28791 [sender.py:send_request():186] send_request: check_version
+2021-08-20 18:18:47,180 DEBUG   SenderThread:28791 [sender.py:send():176] send: run
+2021-08-20 18:18:47,429 INFO    SenderThread:28791 [dir_watcher.py:__init__():168] watching files in: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/files
+2021-08-20 18:18:47,429 INFO    SenderThread:28791 [sender.py:_start_run_threads():699] run started: sw53f45u with start time 1629494326
+2021-08-20 18:18:47,430 DEBUG   SenderThread:28791 [sender.py:send():176] send: summary
+2021-08-20 18:18:47,430 DEBUG   HandlerThread:28791 [handler.py:handle_request():121] handle_request: run_start
+2021-08-20 18:18:47,432 INFO    SenderThread:28791 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-08-20 18:18:47,438 DEBUG   HandlerThread:28791 [meta.py:__init__():39] meta init
+2021-08-20 18:18:47,438 DEBUG   HandlerThread:28791 [meta.py:__init__():53] meta init done
+2021-08-20 18:18:47,438 DEBUG   HandlerThread:28791 [meta.py:probe():210] probe
+2021-08-20 18:18:47,446 DEBUG   HandlerThread:28791 [meta.py:_setup_git():200] setup git
+2021-08-20 18:18:47,467 DEBUG   HandlerThread:28791 [meta.py:_setup_git():207] setup git done
+2021-08-20 18:18:47,467 DEBUG   HandlerThread:28791 [meta.py:_save_pip():57] save pip
+2021-08-20 18:18:47,467 DEBUG   HandlerThread:28791 [meta.py:_save_pip():71] save pip done
+2021-08-20 18:18:47,468 DEBUG   HandlerThread:28791 [meta.py:_save_conda():78] save conda
+2021-08-20 18:18:48,432 INFO    Thread-8  :28791 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/files/conda-environment.yaml
+2021-08-20 18:18:48,433 INFO    Thread-8  :28791 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/files/requirements.txt
+2021-08-20 18:18:48,433 INFO    Thread-8  :28791 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/files/wandb-summary.json
+2021-08-20 18:18:49,582 DEBUG   HandlerThread:28791 [meta.py:_save_conda():86] save conda done
+2021-08-20 18:18:49,582 DEBUG   HandlerThread:28791 [meta.py:probe():252] probe done
+2021-08-20 18:18:49,587 DEBUG   SenderThread:28791 [sender.py:send():176] send: files
+2021-08-20 18:18:49,587 INFO    SenderThread:28791 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-08-20 18:18:49,594 DEBUG   HandlerThread:28791 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-20 18:18:49,595 DEBUG   SenderThread:28791 [sender.py:send_request():186] send_request: stop_status
+2021-08-20 18:18:50,257 INFO    Thread-11 :28791 [upload_job.py:push():133] Uploaded file /tmp/tmpobz0zh5qwandb/glpq323j-wandb-metadata.json
+2021-08-20 18:18:50,430 INFO    Thread-8  :28791 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/files/output.log
+2021-08-20 18:18:50,430 INFO    Thread-8  :28791 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210820_181846-sw53f45u/files/wandb-metadata.json
