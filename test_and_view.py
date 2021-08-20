@@ -167,9 +167,6 @@ def main(args=None):
             else:
                 print('No se encontro clasificador binario',classification_data)
                 return
-
-
-
         if config['calculate_classification']:
             dataset_test = MixedLabelsDataset(csv_test, class_numbers,
                                               ut.get_transform(train=False),
@@ -205,7 +202,8 @@ def main(args=None):
                                               return_image_source=True)
         data_loader_test_files = torch.utils.data.DataLoader(
             dataset_test_originals, batch_size=1, shuffle=False, num_workers=0,
-            collate_fn=ut.collate_fn)
+            #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
+            )
 
         print('DATASET FOR FIGURES:')
         print(dataset_test_originals.quantifyClasses())
