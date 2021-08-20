@@ -197,7 +197,7 @@ def testOriginals(loader_originals, model, device,
 
     for image, target,image_source,image_path in loader_originals:
         assert len(image) == 1, "Must use one-sample batchs for testing"
-        print(type(image))
+        print(image_source,image_path,type(image),image[0].shape)
         if hasattr(image,"to"):
             image = image.to(device)
         else:
