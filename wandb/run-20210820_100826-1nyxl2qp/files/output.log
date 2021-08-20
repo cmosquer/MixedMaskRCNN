@@ -1,0 +1,1 @@
+{'masks': tensor([], size=(0, 2735, 2802), dtype=torch.uint8), 'boxes': tensor([]), 'labels': tensor([], dtype=torch.int64), 'image_id': tensor([33]), 'area': tensor([]), 'iscrowd': tensor([], dtype=torch.int64)}

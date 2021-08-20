@@ -7,6 +7,7 @@ from datetime import datetime
 from mixed_detection.BinaryClassifier import BinaryClassifier
 
 import wandb
+import pandas as pd
 
 from mixed_detection.test_utils import *
 
@@ -14,8 +15,6 @@ from mixed_detection.test_utils import *
 
 def main(args=None):
     project = "mixed_mask_rcnn"
-
-    print('starting training script')
     trx_dir = '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/'
     output_dir = trx_dir+'Experiments/'
 
@@ -40,7 +39,6 @@ def main(args=None):
         'calculate_classification': False,
         'save_figures': 'boxes',  #puede ser 'heatmap','boxes', o None
         'only_best_datasets': False,
-        'save_csv': False,
         'view_in_window': False,
         'loop': False,
 
@@ -59,10 +57,8 @@ def main(args=None):
     save_figures = config['save_figures']
     date = datetime.today().strftime('%Y-%m-%d')
     save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}_{save_figures}/'
-    if config['save_csv']:
-        output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/test_output-epoch{chosen_epoch}.csv'
-    else:
-        output_csv_path = None
+    output_csv_path = f'{output_dir}/{chosen_experiment}/test-{date}/epoch{chosen_epoch}'
+
     results_coco_file = f'{output_dir}/{chosen_experiment}/test-{date}/cocoStats-test-epoch_{chosen_epoch}.txt'
     classification_data = f'{output_dir}/{chosen_experiment}/test_classification_data-{chosen_epoch}_orig'
     binary_opacity=config['opacityies_as_binary']
@@ -107,11 +103,8 @@ def main(args=None):
         # get the model using our helper function
         model = ut.get_instance_segmentation_model(num_classes)
     model.to(device)
-    model_plot.to(device)
-    model_plot.load_state_dict(torch.load(trainedModelPath))
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
-    model_plot.eval()
     model.eval()
     experiment_id = f"test_{date}_{chosen_experiment}"
     if binary_opacity:
@@ -205,34 +198,41 @@ def main(args=None):
             #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
             )
 
-        print('DATASET FOR FIGURES:')
-        print(dataset_test_originals.quantifyClasses())
-
-        plot_parameters = {"max_detections": 7,
-                           "min_score_threshold": None,#0.2 #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
-                           "min_box_proportionArea": None,
-                           "model": model_plot,#float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
-                           }
-
-
-        dfPreds = testOriginals(data_loader_test_files, model, device=device,
-                              save_boxes_csv=output_csv_path,
-                             )
-        if config['test_augmentation']>0:
+        #dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
+        #                      save_boxes_csv=output_csv_path, binary=binary_opacity,
+        #                     )
+        #dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
+        dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
+        if config['test_augmentation'] > 0:
             dataset_test_aug = TestAugmentationDataset(csv_test_files,
                                                   return_image_source=True)
             augm_data_loader_test_files = torch.utils.data.DataLoader(
                 dataset_test_aug, batch_size=1, shuffle=False, num_workers=0,
-                collate_fn=ut.collate_fn)
+                )
 
             dfPreds = testAugmented(augm_data_loader_test_files,config['test_augmentation'],
                                     model,device,binary_classifier=test_clf,dfPreds=dfPreds)
-        plotOriginals(augm_data_loader_test_files,device,dfPreds,
-                      save_fig_dir=save_fig_dir,
-                              plot_parameters=plot_parameters,
-                              binary_classifier=test_clf,save_figures=config['save_figures'])
+        
+        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
+        #"""
 
 
+        del model
+        if config['save_figures'] is not None:
+            model_plot.to(device)
+            model_plot.load_state_dict(torch.load(trainedModelPath))
+            model_plot.eval()
+            plot_parameters = {"max_detections": 7,
+                               "min_score_threshold": None,#0.2 #if int, the same threshold for all classes. If dict, should contain one element for each class (key: clas_idx, value: class threshold)
+                               "min_box_proportionArea": None,
+                               "model": model_plot,#float(1/25) #Minima area de un box valido como proporcion del area total ej: al menos un cincuentavo del area total
+                               }
+            dfPreds = plotOriginals(data_loader_test_files,device,dfPreds,
+                          save_fig_dir=save_fig_dir,
+                          plot_parameters=plot_parameters, binary=binary_opacity,
+                          save_figures=config['save_figures'])
+
+        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
         wandb.log(wandb_valid)
 if __name__ == '__main__':
     main()

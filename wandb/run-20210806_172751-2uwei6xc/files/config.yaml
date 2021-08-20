@@ -1,0 +1,71 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.10.30
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.6.9
+    t:
+      1:
+      - 1
+      - 5
+      2:
+      - 1
+      - 5
+      3:
+      - 2
+      4: 3.6.9
+      5: 0.10.30
+      8:
+      - 5
+calculate_classification:
+  desc: null
+  value: true
+calculate_coco:
+  desc: null
+  value: false
+costs_ratio:
+  desc: null
+  value: 1.0
+expected_prevalence:
+  desc: null
+  value: 0.1
+experiment:
+  desc: null
+  value: 2021-07-30_binary
+experiment_type:
+  desc: null
+  value: boxes
+force_cpu:
+  desc: null
+  value: false
+loop:
+  desc: null
+  value: false
+masks_as_boxes:
+  desc: null
+  value: true
+only_best_datasets:
+  desc: null
+  value: false
+opacityies_as_binary:
+  desc: null
+  value: true
+save_csv:
+  desc: null
+  value: false
+save_figures:
+  desc: null
+  value: boxes
+test_set:
+  desc: null
+  value: /run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Experiments/2021-07-30_binary/testCSV.csv
+tested_epoch:
+  desc: null
+  value: 0
+view_in_window:
+  desc: null
+  value: false

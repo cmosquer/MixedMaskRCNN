@@ -50,19 +50,20 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         # converting jpg format of images to numpy array
         img_path = self.ids[index]
-        img_row = self.csv[self.csv.file_name == img_path][0]
-        image_source = img_row.image_source.values
-
-        img = np.array(Image.open(img_path))
+        img_row = self.csv[self.csv.file_name == img_path]
+        if len(img_row)>1:
+            img_row = img_row[0]
+        image_source = img_row.image_source.values[0]
+        img = np.array(Image.open(img_path.replace('\\','/')).convert('RGB'))
         # Applying augmentations to numpy array
         img = self.aug(image=img)['image']
         # converting to pytorch image format & 2,0,1 because pytorch excepts image channel first then dimension of image
         img = np.transpose(img, (2, 0, 1)).astype(np.float32)
 
         if self.return_image_source:
-            return torch.tensor(img, dtype = torch.float) , img_row['class_name'], image_source, img_path
+            return torch.tensor(img, dtype = torch.float), image_source, img_path
         else:
-            return torch.tensor(img, dtype = torch.float) , img_row['class_name']
+            return torch.tensor(img, dtype = torch.float), np.array(img_row['class_name'])
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
 

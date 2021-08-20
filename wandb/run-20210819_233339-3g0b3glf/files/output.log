@@ -1,0 +1,1 @@
+('hiba',) ('/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Datasets/Normales/Part1/30-50/job4/ORIG-1_3_12_2_1107_5_4_4_1184_30000015110618315670300002943.jpg',) <class 'tuple'> torch.Size([3, 2735, 2802])

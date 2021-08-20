@@ -1,0 +1,1 @@
+Epoch: [0]  [1000/3891]  eta: 9:55:37  lr: 0.010000  loss: 0.1483 (0.2175)  loss_classifier: 0.0606 (0.0861)  loss_box_reg: 0.0627 (0.1009)  loss_objectness: 0.0129 (0.0159)  loss_rpn_box_reg: 0.0035 (0.0147)  time: 12.9960  data: 12.4363  max mem: 6624

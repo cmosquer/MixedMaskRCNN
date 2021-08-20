@@ -104,10 +104,8 @@ def resnet_fpn_backbone(
             a new list of feature maps and their corresponding names. By
             default a ``LastLevelMaxPool`` is used.
     """
-    print('Pretrained with imagenet: ', pretrained)
     if pretrained_state_dict is not None:
             pretrained = False
-    print('Pretrained with imagenet: ',pretrained)
     backbone = resnet.__dict__[backbone_name](
         pretrained=pretrained,
         norm_layer=norm_layer)
@@ -124,7 +122,6 @@ def resnet_fpn_backbone(
     layers_to_train = ['layer4', 'layer3', 'layer2', 'layer1', 'conv1'][:trainable_layers]
     if trainable_layers == 5:
         layers_to_train.append('bn1')
-    print('trainable layers ', trainable_layers)
 
     for name, parameter in backbone.named_parameters():
         if all([not name.startswith(layer) for layer in layers_to_train]):
