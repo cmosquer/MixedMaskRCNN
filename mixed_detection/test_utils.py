@@ -75,7 +75,7 @@ def infereImage(model,image,binary_classifier=None):
 
 
 def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPreds):
-    """
+
     for j in range(N_augms):
         print('AUGMENTATION ',j)
         dfPreds['binary_pred_augm' + str(j)] = [None]*len(loader_augmented)
@@ -86,13 +86,20 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
         for image,image_source,image_path in tqdm(loader_augmented):
             assert len(image) == 1, "Must use one-sample batchs for testing"
             image = image.to(device)
+
             pred, cont_pred, x_reg, outputs = infereImage(model, image, binary_classifier)
+
+            saving_path = "/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Tests/TTA/{}_{}.jpg".format(os.path.basename(image_path[0]),j)
+            image = image[0].cpu().numpy()  # Squeeze el batch
+            colorimage = np.float32(np.moveaxis(image, 0, -1).copy())
+            cv2.imwrite(saving_path, colorimage)
+
             assert len(dfPreds[dfPreds.image_name == os.path.basename(image_path[0])])==1, "Couldnt find image in dfPreds"
             dfPreds.at[dfPreds.image_name==os.path.basename(image_path[0]),'binary_pred_augm'+str(j)] = pred
             dfPreds.at[dfPreds.image_name==os.path.basename(image_path[0]),'cont_pred_augm'+str(j)] = cont_pred
             for x,val in enumerate(x_reg):
                 dfPreds.at[dfPreds.image_name==os.path.basename(image_path[0]),'x_reg_{}_augm{}'.format(x,j)] = val
-    """
+
     bin_cols = [bin_col for bin_col in dfPreds.columns if 'binary_pred' in bin_col]
     cont_cols = [cont_col for cont_col in dfPreds.columns if 'cont_pred' in cont_col]
     dfPreds['averaged_binary_pred'] = dfPreds[bin_cols].mean(axis=1)
