@@ -44,12 +44,12 @@ def getOutputForPlot(plot_parameters,image, model=None):
 def infereImage(model,image,binary_classifier=None):
 
     outputs = model(image)
-    outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs]
+    #outputs = [{k: v.to(torch.device("cpu")).detach() for k, v in t.items()} for t in outputs]
 
     height= image[0].shape[1]
     width = image[0].shape[2]
     total_area = height * width
-    outputs= ut.process_output(outputs, total_area,
+    outputs = ut.process_output(outputs, total_area,
                                  max_detections=None, min_box_proportionArea=None,
                                  min_score_threshold=None)
 
