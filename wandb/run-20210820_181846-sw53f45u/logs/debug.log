@@ -21,3 +21,4 @@ config: {'test_set': '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalit
 2021-08-20 18:18:49,594 INFO    MainThread:28628 [wandb_run.py:_redirect():1417] Redirecting console.
 2021-08-20 18:18:49,602 INFO    MainThread:28628 [wandb_run.py:_redirect():1479] Redirects installed.
 2021-08-20 18:18:49,602 INFO    MainThread:28628 [wandb_init.py:init():546] run started, returning control to user process
+2021-08-20 18:19:26,925 INFO    MainThread:28628 [wandb_run.py:finish():1208] finishing run cmosquera/mixed_mask_rcnn/sw53f45u

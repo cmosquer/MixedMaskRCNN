@@ -102,7 +102,7 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
 
     bin_cols = [bin_col for bin_col in dfPreds.columns if 'binary_pred' in bin_col]
     cont_cols = [cont_col for cont_col in dfPreds.columns if 'cont_pred' in cont_col]
-    dfPreds['averaged_binary_pred'] = dfPreds[bin_cols].mean(axis=1)
+    dfPreds['averaged_binary_pred'] = [1 if v > 0.5 else 0 for v in dfPreds[bin_cols].mean(axis=1)]
     dfPreds['averaged_cont_pred'] = dfPreds[cont_cols].mean(axis=1)
 
     return dfPreds
@@ -131,7 +131,7 @@ def plotOriginals(loader_originals, device, dfPreds,
         folder = ''
         imgpath = os.path.basename(image_path[0])
         img_row = dfPreds[dfPreds.image_name == imgpath]
-        pred = 1#img_row['averaged_binary_pred'].values[0]
+        pred = img_row['averaged_binary_pred'].values[0]
         cont_pred = img_row['averaged_cont_pred'].values[0]
 
         if pred is not None:

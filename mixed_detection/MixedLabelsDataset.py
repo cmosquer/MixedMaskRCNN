@@ -45,35 +45,16 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
             )
         ], p=1.)
         """
-        self.aug = iaa.Sequential(
-            [iaa.Fliplr(0.2),
-             iaa.CropAndPad(percent=(-0.05,0.1),pad_mode=ia.ALL,pad_cval=(0,255)),
+        self.aug = iaa.Sequence(2,
+            [
+             iaa.CropAndPad(percent=(-0.2,0),pad_mode="constant",pad_cval=0),
              iaa.Affine(
-                 translate_percent={"x": (-0.1, 0.1), "y": (-0.1, 0.1)},
-                 rotate=(-10, 10),  # rotate by -45 to +45 degrees
+                 rotate=(-5, 5),  # rotate by -45 to +45 degrees
                  order=[0, 1],  # use nearest neighbour or bilinear interpolation (fast)
-                 cval=(0, 10),  # if mode is constant, use a cval between 0 and 255
-                 mode=ia.ALL  # use any of scikit-image's warping modes (see 2nd image from the top for examples)
-             ),
-                   # execute 0 to 5 of the following (less important) augmenters per image
-                   # don't execute all of them, as that would often be way too strong
-             iaa.SomeOf(
-                  2,
-                  [
-                      iaa.OneOf([
-                          iaa.GaussianBlur((0, 0.5)),  # blur images with a sigma between 0 and 3.0
-                          iaa.AverageBlur(k=(1, 2)),
-
-                      ]),
-                      iaa.Sharpen(alpha=(0, 0.5), lightness=(0, 0.5)),  # sharpen images
-                      # search either for all edges or for directed edges,
-                      # blend the result with the original image using a blobby mask
-                      iaa.AddToHueAndSaturation((-5, 5)),  # change hue and saturation
-                      # either change the brightness of the whole image (sometimes
-                      # per channel) or change the brightness of subareas
-                      iaa.LinearContrast((0.5, 1.5), per_channel=0.5),  # improve or worsen the contrast
+                 cval=(0, 10)
+             )
                   ],random_order=True)
-        ], random_order = True)
+
     def __len__(self):
         return len(self.ids)
 

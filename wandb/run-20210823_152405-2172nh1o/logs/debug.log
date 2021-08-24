@@ -1,0 +1,24 @@
+2021-08-23 15:24:05,617 INFO    MainThread:3057 [wandb_setup.py:_flush():69] setting env: {}
+2021-08-23 15:24:05,617 INFO    MainThread:3057 [wandb_setup.py:_flush():69] setting login settings: {}
+2021-08-23 15:24:05,618 INFO    MainThread:3057 [wandb_init.py:_log_setup():336] Logging user logs to /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210823_152405-2172nh1o/logs/debug.log
+2021-08-23 15:24:05,618 INFO    MainThread:3057 [wandb_init.py:_log_setup():337] Logging internal logs to /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210823_152405-2172nh1o/logs/debug-internal.log
+2021-08-23 15:24:05,618 INFO    MainThread:3057 [wandb_init.py:init():369] calling init triggers
+2021-08-23 15:24:05,618 INFO    MainThread:3057 [wandb_init.py:init():376] wandb.init called with sweep_config: {}
+config: {'test_set': '/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Experiments/2021-07-30_binary/testCSV.csv', 'experiment': '2021-07-30_binary', 'experiment_type': 'boxes', 'tested_epoch': 0, 'opacityies_as_binary': True, 'masks_as_boxes': True, 'test_augmentation': 4, 'costs_ratio': 1.0, 'expected_prevalence': 0.1, 'calculate_coco': False, 'calculate_classification': False, 'save_figures': 'boxes', 'only_best_datasets': False, 'view_in_window': False, 'loop': False, 'force_cpu': False}
+2021-08-23 15:24:05,619 INFO    MainThread:3057 [wandb_init.py:init():418] starting backend
+2021-08-23 15:24:05,619 INFO    MainThread:3057 [backend.py:_multiprocessing_setup():72] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2021-08-23 15:24:05,665 INFO    MainThread:3057 [backend.py:ensure_launched():132] starting backend process...
+2021-08-23 15:24:05,701 INFO    MainThread:3057 [backend.py:ensure_launched():137] started backend process with pid: 3185
+2021-08-23 15:24:05,703 INFO    MainThread:3057 [wandb_init.py:init():423] backend started and connected
+2021-08-23 15:24:05,708 INFO    MainThread:3057 [wandb_init.py:init():465] updated telemetry
+2021-08-23 15:24:05,708 INFO    MainThread:3057 [wandb_init.py:init():484] communicating current version
+2021-08-23 15:24:06,691 INFO    MainThread:3057 [wandb_init.py:init():489] got version response upgrade_message: "wandb version 0.12.0 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2021-08-23 15:24:06,691 INFO    MainThread:3057 [wandb_init.py:init():497] communicating run to backend with 30 second timeout
+2021-08-23 15:24:06,973 INFO    MainThread:3057 [wandb_init.py:init():522] starting run threads in backend
+2021-08-23 15:24:09,111 INFO    MainThread:3057 [wandb_run.py:_console_start():1565] atexit reg
+2021-08-23 15:24:09,111 INFO    MainThread:3057 [wandb_run.py:_redirect():1412] redirect: SettingsConsole.REDIRECT
+2021-08-23 15:24:09,114 INFO    MainThread:3057 [wandb_run.py:_redirect():1417] Redirecting console.
+2021-08-23 15:24:09,121 INFO    MainThread:3057 [wandb_run.py:_redirect():1479] Redirects installed.
+2021-08-23 15:24:09,121 INFO    MainThread:3057 [wandb_init.py:init():546] run started, returning control to user process
+2021-08-23 16:11:30,764 INFO    MainThread:3057 [wandb_run.py:finish():1208] finishing run cmosquera/mixed_mask_rcnn/2172nh1o
