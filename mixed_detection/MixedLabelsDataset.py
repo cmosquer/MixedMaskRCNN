@@ -53,7 +53,7 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
                  order=[0, 1],  # use nearest neighbour or bilinear interpolation (fast)
                  cval=(0, 10)
              )
-                  ],random_order=True)
+                  ])
 
     def __len__(self):
         return len(self.ids)
