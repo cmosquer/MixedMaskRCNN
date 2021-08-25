@@ -45,7 +45,7 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
             )
         ], p=1.)
         """
-        self.aug = iaa.Sequence(2,
+        self.aug = iaa.Sequential(2,
             [
              iaa.CropAndPad(percent=(-0.2,0),pad_mode="constant",pad_cval=0),
              iaa.Affine(

@@ -198,11 +198,11 @@ def main(args=None):
             #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
             )
 
-        dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
-                              save_boxes_csv=output_csv_path, binary=binary_opacity,
-                             )
-        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-        #dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
+        #dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
+        #                      save_boxes_csv=output_csv_path, binary=binary_opacity,
+        #                     )
+        #dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
+        dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
         if config['test_augmentation'] > 0:
             print('starting tta')
             dataset_test_aug = TestAugmentationDataset(csv_test_files,
