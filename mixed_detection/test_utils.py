@@ -89,7 +89,8 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
 
             pred, cont_pred, x_reg, outputs = infereImage(model, image, binary_classifier)
 
-            saving_path = "/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Tests/TTA/{}_{}.jpg".format(os.path.basename(image_path[0]),j)
+            saving_path = "/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Tests/TTA/{}_{}.jpg".format(os.path.basename(image_path[0]),
+                                                                                                                                                   j)
             image = image[0].cpu().numpy()  # Squeeze el batch
             colorimage = np.float32(np.moveaxis(image, 0, -1).copy())
             cv2.imwrite(saving_path, colorimage)
