@@ -200,7 +200,7 @@ def main(args=None):
             #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
             )
 
-        """dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
+        dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
                               save_boxes_csv=output_csv_path, binary=binary_opacity,
                              )
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
@@ -237,9 +237,9 @@ def main(args=None):
                           plot_parameters=plot_parameters, binary=binary_opacity,
                           save_figures=config['save_figures'])
 
-        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)"""
+        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
 
-        dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
+        #dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
         if config['save_comparison_trx_v1']:
             assert 'trx_v1_heatmap' in csv_test.columns
             assert 'trx_v1_cont_pred' in csv_test.columns
@@ -259,8 +259,7 @@ def main(args=None):
                 trx1score = 100*float(row_csv_test.trx_v1_cont_pred.values[0])
                 trx2pred = 'CON OPACIDAD' if bool(row['averaged_binary_pred']) else 'SIN OPACIDAD'
                 trx2score = 100*float(row['averaged_cont_pred'])
-                print( row['output_file'])
-                assert os.path.exists(row['output_file'])
+
                 img2 = cv2.imread(row['output_file'])
                 print(img2.shape)
                 print( row_csv_test['trx_v1_heatmap'].values[0])
