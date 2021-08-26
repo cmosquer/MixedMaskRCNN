@@ -136,7 +136,7 @@ def plotOriginals(loader_originals, device, dfPreds,
         cont_pred = img_row['averaged_cont_pred'].values[0]
 
         if pred is not None:
-            gt = 1 if len(target['labels']) > 0 else 0
+            gt = 1 if len(target['labels'][0]) > 0 else 0
             if np.all(pred == gt):
                 if np.all(gt == 0):
                     folder = 'TrueNegative'
@@ -152,7 +152,6 @@ def plotOriginals(loader_originals, device, dfPreds,
             saving_path = "{}/{}/{}".format(save_fig_dir, folder,
                                             #image_source[0],
                                             os.path.basename(image_path[0].replace('\\', '/')))
-            dfPreds.at[dfPreds.image_name == os.path.basename(image_path[0]),'output_file'] = saving_path
             cont_pred_str = 100*cont_pred
             saving_path = saving_path.replace('.jpg', ' SCORE-{:.1f}.jpg'.format(cont_pred_str))
             #print('Memory before save figres: ', psutil.virtual_memory().percent)
@@ -187,6 +186,7 @@ def plotOriginals(loader_originals, device, dfPreds,
 
 
                 cv2.imwrite(saving_path, colorimage)
+                dfPreds.at[dfPreds.image_name == os.path.basename(image_path[0]),'output_file'] = saving_path
 
             print('Saved ', saving_path)
 
@@ -210,7 +210,7 @@ def testOriginals(loader_originals, model, device,
         assert len(image) == 1, "Must use one-sample batchs for testing"
         image = image.to(device)
         target = dict(zip(target.keys(),[val[0].to('cpu').detach() for val in target.values()]))
-        gt = 1 if len(target['labels']) > 0 else 0
+        gt = 1 if len(target['labels'][0]) > 0 else 0
         pred, cont_pred, x_reg, outputs = infereImage(model,image,binary_classifier)
         if save_boxes_csv is not None:
             results_list = []
