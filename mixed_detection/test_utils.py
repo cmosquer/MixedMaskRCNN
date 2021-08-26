@@ -136,7 +136,8 @@ def plotOriginals(loader_originals, device, dfPreds,
         cont_pred = img_row['averaged_cont_pred'].values[0]
 
         if pred is not None:
-            gt = 1 if len(target['labels'][0]) > 0 else 0
+            print(target['labels'])
+            gt = 1 if len(str(target['labels'].item())) > 0 else 0
             if np.all(pred == gt):
                 if np.all(gt == 0):
                     folder = 'TrueNegative'
@@ -210,7 +211,8 @@ def testOriginals(loader_originals, model, device,
         assert len(image) == 1, "Must use one-sample batchs for testing"
         image = image.to(device)
         target = dict(zip(target.keys(),[val[0].to('cpu').detach() for val in target.values()]))
-        gt = 1 if len(target['labels'][0]) > 0 else 0
+        print(target['labels'])
+        gt = 1 if len(str(target['labels'].item())) > 0 else 0
         pred, cont_pred, x_reg, outputs = infereImage(model,image,binary_classifier)
         if save_boxes_csv is not None:
             results_list = []
