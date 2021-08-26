@@ -259,10 +259,12 @@ def main(args=None):
                 trx1score = 100*float(row_csv_test.trx_v1_cont_pred.values[0])
                 trx2pred = 'CON OPACIDAD' if bool(row['averaged_binary_pred']) else 'SIN OPACIDAD'
                 trx2score = 100*float(row['averaged_cont_pred'])
+                print( row['output_file'])
                 assert os.path.exists(row['output_file'])
                 img2 = cv2.imread(row['output_file'])
                 print(img2.shape)
-                assert os.path.exists(row_csv_test['trx_v1_heatmap'].values[0]), row_csv_test['trx_v1_heatmap'].values[0]
+                print( row_csv_test['trx_v1_heatmap'].values[0])
+                assert os.path.exists(row_csv_test['trx_v1_heatmap'].values[0])
                 img1 = cv2.imread(row_csv_test['trx_v1_heatmap'].values[0])
                 print(img1.shape)
                 fig,axs = plt.subplots(1,2,figsize=(18,9))
