@@ -71,7 +71,6 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
         # Applying augmentations to numpy array
         img = self.aug(image=img)
         img,_ = self.toTensor(img,target=None)
-        print(img.shape)
         # converting to pytorch image format & 2,0,1 because pytorch excepts image channel first then dimension of image
         #img = np.transpose(img, (2, 0, 1)).astype(np.float32)
 
@@ -212,7 +211,6 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         target["area"] = area
         target["iscrowd"] = iscrowd
         #print('Memory before transforms: %', psutil.virtual_memory().percent)
-        print(img.shape)
         if self.transforms is not None:
             img, target = self.transforms(img, target)
 
