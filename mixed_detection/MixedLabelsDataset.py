@@ -55,6 +55,7 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
                         ]),
             iaa.LinearContrast((0.5, 1))
             ])
+        self.toTensor = T.ToTensor()
 
     def __len__(self):
         return len(self.ids)
@@ -69,14 +70,15 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
         img = np.array(Image.open(img_path.replace('\\','/')).convert('RGB'))
         # Applying augmentations to numpy array
         img = self.aug(image=img)
+        img = self.toTensor(img)
         print(img.shape)
         # converting to pytorch image format & 2,0,1 because pytorch excepts image channel first then dimension of image
         #img = np.transpose(img, (2, 0, 1)).astype(np.float32)
 
         if self.return_image_source:
-            return torch.tensor(img, dtype = torch.float), image_source, img_path
+            return img, image_source, img_path
         else:
-            return torch.tensor(img, dtype = torch.float), np.array(img_row['class_name'])
+            return img, np.array(img_row['class_name'])
 
 class MixedLabelsDataset(torch.utils.data.Dataset):
 
