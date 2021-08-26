@@ -252,7 +252,7 @@ def main(args=None):
                 imagename = row['image_name'].replace('\\','/')
                 row_csv_test = csv_test[csv_test.image_name==imagename]
                 print(len(row_csv_test))
-
+                dfPreds.loc[i,'gt'] = 0 if row_csv_test['class_name'].values[0]=='nofinding' else 1
 
                 an = row_csv_test.accessionNumber
                 trx1pred = 'CON OPACIDAD' if bool(row_csv_test.trx_v1_binary_pred.values[0]) else 'SIN OPACIDAD'
@@ -261,7 +261,7 @@ def main(args=None):
                 trx2score = 100*float(row['averaged_cont_pred'])
 
                 img2 = cv2.imread(row['output_file'])
-                img1 = cv2.imread(row_csv_test['trx_v1_heatmap'])
+                img1 = cv2.imread(row_csv_test['trx_v1_heatmap'].values[0])
 
                 fig,axs = plt.subplots(1,2,figsize=(18,9))
                 axs[0].imshow(img1)
@@ -271,7 +271,8 @@ def main(args=None):
                 axs[0].spines['top'].set_visible(False)
                 axs[0].spines['right'].set_visible(False)
                 axs[0].spines['left'].set_visible(False)
-                fig.set_suptitle(f"AN: {an}\nID:{row['sopInstanceUid']}\nGround truth: {row['class_name']}")
+                gt = 'Sin opacidad' if row_csv_test['class_name'].values[0]=='nofinding' else 'Con opacidad'
+                fig.set_suptitle(f"AN: {an}\nID:{row['sopInstanceUid']}\nGround truth: {gt}")
                 axs[1].imshow(img2)
                 axs[1].set_title('TRx v2')
                 axs[1].set_xlabel(f'{trx2pred}\n{trx2score}%')
