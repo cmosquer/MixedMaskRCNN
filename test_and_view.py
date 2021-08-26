@@ -200,7 +200,7 @@ def main(args=None):
             #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
             )
 
-        dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
+        """dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
                               save_boxes_csv=output_csv_path, binary=binary_opacity,
                              )
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
@@ -217,7 +217,7 @@ def main(args=None):
                                     model,device,binary_classifier=test_clf,dfPreds=dfPreds)
         
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-        #"""
+        
 
 
         del model
@@ -235,8 +235,9 @@ def main(args=None):
                           plot_parameters=plot_parameters, binary=binary_opacity,
                           save_figures=config['save_figures'])
 
-        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
+        dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)"""
 
+        dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
         if config['save_comparison_trx_v1']:
             assert 'trx_v1_heatmap' in csv_test.columns
             assert 'trx_v1_cont_pred' in csv_test.columns
@@ -248,10 +249,12 @@ def main(args=None):
             for i,row in dfPreds.iterrows():
                 imagename = row['image_name'].replace('\\','/')
                 row_csv_test = csv_test[csv_test.image_name==imagename]
+                print(len(row_csv_test))
+
 
                 an = row_csv_test.accessionNumber
-                trx1pred = 'CON OPACIDAD' if bool(row_csv_test.trx_v1_binary_pred) else 'SIN OPACIDAD'
-                trx1score = 100*float(row_csv_test.trx_v1_cont_pred.values)
+                trx1pred = 'CON OPACIDAD' if bool(row_csv_test.trx_v1_binary_pred.values[0]) else 'SIN OPACIDAD'
+                trx1score = 100*float(row_csv_test.trx_v1_cont_pred.values[0])
                 trx2pred = 'CON OPACIDAD' if bool(row['averaged_binary_pred']) else 'SIN OPACIDAD'
                 trx2score = 100*float(row['averaged_cont_pred'])
 
