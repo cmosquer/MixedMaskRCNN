@@ -185,7 +185,12 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                     if len(row['class_name'])>0:
                         raw_labels = row['class_name'].split('-')
                         if self.binary:
-                            labels += [1]*len(raw_labels)
+                            if row['class_name'] == 'nofinding':
+                                labels=[0]
+                            elif row['class_name'] == 'Opacidad' or row['class_name'] =='Consolidacion':
+                                labels=[1]
+                            else:
+                                labels += [1]*len(raw_labels)
                         else:
                             labels += [self.class_numbers[c] for c in raw_labels]
 
