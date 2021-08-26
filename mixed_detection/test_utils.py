@@ -236,11 +236,17 @@ def testOriginals(loader_originals, model, device,
                           'box_type': 'ground-truth',
                           'original_file_name': image_path[0],
                           'image_source': image_source[0],
-                          'label': label_to_name(label.item(),binary=binary),
-                          'x1': int(target['boxes'][i][0]),
+                          'label': label_to_name(label.item(),binary=binary)}
+
+                if i<len(target['boxes']):
+
+                    result.update(
+                        { 'x1': int(target['boxes'][i][0]),
                           'y1': int(target['boxes'][i][1]),
                           'x2': int(target['boxes'][i][2]),
-                          'y2': int(target['boxes'][i][3])}
+                          'y2': int(target['boxes'][i][3])
+                         }
+                    )
                 results_list.append(result)
             if len(results_list)==0:
                 results_list = [{'image_name': os.path.basename(image_path[0]),
