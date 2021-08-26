@@ -1,0 +1,86 @@
+2021-08-26 12:43:12,583 INFO    MainThread:18605 [internal.py:wandb_internal():91] W&B internal server running at pid: 18605, started at: 2021-08-26 12:43:12.583184
+2021-08-26 12:43:12,586 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: check_version
+2021-08-26 12:43:12,587 INFO    WriterThread:18605 [datastore.py:open_for_write():77] open: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/run-3pbo4k1z.wandb
+2021-08-26 12:43:12,589 DEBUG   SenderThread:18605 [sender.py:send():176] send: header
+2021-08-26 12:43:12,590 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: check_version
+2021-08-26 12:43:12,764 DEBUG   SenderThread:18605 [sender.py:send():176] send: run
+2021-08-26 12:43:13,018 INFO    SenderThread:18605 [dir_watcher.py:__init__():168] watching files in: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files
+2021-08-26 12:43:13,018 INFO    SenderThread:18605 [sender.py:_start_run_threads():699] run started: 3pbo4k1z with start time 1629992591
+2021-08-26 12:43:13,018 DEBUG   SenderThread:18605 [sender.py:send():176] send: summary
+2021-08-26 12:43:13,019 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: run_start
+2021-08-26 12:43:13,020 INFO    SenderThread:18605 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-08-26 12:43:13,024 DEBUG   HandlerThread:18605 [meta.py:__init__():39] meta init
+2021-08-26 12:43:13,024 DEBUG   HandlerThread:18605 [meta.py:__init__():53] meta init done
+2021-08-26 12:43:13,024 DEBUG   HandlerThread:18605 [meta.py:probe():210] probe
+2021-08-26 12:43:13,032 DEBUG   HandlerThread:18605 [meta.py:_setup_git():200] setup git
+2021-08-26 12:43:13,050 DEBUG   HandlerThread:18605 [meta.py:_setup_git():207] setup git done
+2021-08-26 12:43:13,051 DEBUG   HandlerThread:18605 [meta.py:_save_pip():57] save pip
+2021-08-26 12:43:13,051 DEBUG   HandlerThread:18605 [meta.py:_save_pip():71] save pip done
+2021-08-26 12:43:13,052 DEBUG   HandlerThread:18605 [meta.py:_save_conda():78] save conda
+2021-08-26 12:43:14,020 INFO    Thread-8  :18605 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/conda-environment.yaml
+2021-08-26 12:43:14,020 INFO    Thread-8  :18605 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/wandb-summary.json
+2021-08-26 12:43:14,020 INFO    Thread-8  :18605 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/requirements.txt
+2021-08-26 12:43:14,911 DEBUG   HandlerThread:18605 [meta.py:_save_conda():86] save conda done
+2021-08-26 12:43:14,912 DEBUG   HandlerThread:18605 [meta.py:probe():252] probe done
+2021-08-26 12:43:14,917 DEBUG   SenderThread:18605 [sender.py:send():176] send: files
+2021-08-26 12:43:14,917 INFO    SenderThread:18605 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-08-26 12:43:14,923 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:43:14,924 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:43:15,018 INFO    Thread-8  :18605 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/output.log
+2021-08-26 12:43:15,023 INFO    Thread-8  :18605 [dir_watcher.py:_on_file_created():216] file/dir created: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/wandb-metadata.json
+2021-08-26 12:43:15,531 INFO    Thread-11 :18605 [upload_job.py:push():133] Uploaded file /tmp/tmpe9uftqegwandb/3w1vozd5-wandb-metadata.json
+2021-08-26 12:43:30,119 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:43:30,120 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:43:41,433 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:43:45,327 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:43:45,328 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:44:00,523 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:44:00,523 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:44:11,839 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:44:15,779 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:44:15,779 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:44:30,989 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:44:30,990 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:44:42,208 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:44:46,185 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:44:46,186 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:45:01,389 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:45:01,389 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:45:12,641 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:45:16,595 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:45:16,596 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:45:31,797 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:45:31,797 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:45:43,033 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:45:46,994 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:45:46,995 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:46:02,189 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:46:02,189 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:46:13,407 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:46:17,421 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:46:17,422 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:46:32,663 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:46:32,664 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:46:43,804 DEBUG   SenderThread:18605 [sender.py:send():176] send: stats
+2021-08-26 12:46:47,897 DEBUG   HandlerThread:18605 [handler.py:handle_request():121] handle_request: stop_status
+2021-08-26 12:46:47,897 DEBUG   SenderThread:18605 [sender.py:send_request():186] send_request: stop_status
+2021-08-26 12:47:01,390 WARNING MainThread:18605 [internal.py:wandb_internal():147] Internal process interrupt: 1
+2021-08-26 12:47:01,495 WARNING MainThread:18605 [internal.py:wandb_internal():147] Internal process interrupt: 2
+2021-08-26 12:47:01,495 ERROR   MainThread:18605 [internal.py:wandb_internal():150] Internal process interrupted.
+2021-08-26 12:47:01,733 INFO    WriterThread:18605 [datastore.py:close():258] close: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/run-3pbo4k1z.wandb
+2021-08-26 12:47:01,735 INFO    HandlerThread:18605 [handler.py:finish():632] shutting down handler
+2021-08-26 12:47:01,735 INFO    SenderThread:18605 [sender.py:finish():925] shutting down sender
+2021-08-26 12:47:01,735 INFO    SenderThread:18605 [dir_watcher.py:finish():282] shutting down directory watcher
+2021-08-26 12:47:02,061 INFO    SenderThread:18605 [dir_watcher.py:finish():312] scan: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files
+2021-08-26 12:47:02,061 INFO    SenderThread:18605 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/output.log output.log
+2021-08-26 12:47:02,062 INFO    SenderThread:18605 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/wandb-metadata.json wandb-metadata.json
+2021-08-26 12:47:02,062 INFO    SenderThread:18605 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/requirements.txt requirements.txt
+2021-08-26 12:47:02,062 INFO    SenderThread:18605 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/wandb-summary.json wandb-summary.json
+2021-08-26 12:47:02,071 INFO    SenderThread:18605 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/config.yaml config.yaml
+2021-08-26 12:47:02,076 INFO    SenderThread:18605 [dir_watcher.py:finish():318] scan save: /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/conda-environment.yaml conda-environment.yaml
+2021-08-26 12:47:02,086 INFO    SenderThread:18605 [file_pusher.py:finish():176] shutting down file pusher
+2021-08-26 12:47:02,086 INFO    SenderThread:18605 [file_pusher.py:join():181] waiting for file pusher
+2021-08-26 12:47:02,644 INFO    Thread-12 :18605 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/requirements.txt
+2021-08-26 12:47:02,683 INFO    Thread-14 :18605 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/config.yaml
+2021-08-26 12:47:02,726 INFO    Thread-13 :18605 [upload_job.py:push():133] Uploaded file /home/usuariohi/Documentos/Repos/MixedMaskRCNN/wandb/run-20210826_124311-3pbo4k1z/files/wandb-summary.json
+2021-08-26 12:47:03,269 INFO    MainThread:18605 [internal.py:handle_exit():78] Internal process exited

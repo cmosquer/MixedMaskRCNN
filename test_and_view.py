@@ -213,9 +213,7 @@ def main(args=None):
 
             dfPreds = testAugmented(augm_data_loader_test_files,config['test_augmentation'],
                                     model,device,binary_classifier=test_clf,dfPreds=dfPreds)
-        
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-        #"""
 
 
         del model
