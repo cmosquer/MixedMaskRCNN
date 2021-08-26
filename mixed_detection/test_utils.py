@@ -91,8 +91,8 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
 
             saving_path = "/run/user/1000/gvfs/smb-share:server=lxestudios.hospitalitaliano.net,share=pacs/T-Rx/TRx-v2/Tests/TTA/{}_{}.jpg".format(os.path.basename(image_path[0]),
                                                                                                                                                    j)
-            image = image[0].cpu().numpy()  # Squeeze el batch
-            colorimage = np.float32(np.moveaxis(image, 0, -1).copy())
+            colorimage = image[0].cpu().numpy()  # Squeeze el batch
+            #colorimage = np.float32(np.moveaxis(colorimage, 0, -1).copy())
             cv2.imwrite(saving_path, colorimage)
 
             assert len(dfPreds[dfPreds.image_name == os.path.basename(image_path[0])])==1, "Couldnt find image in dfPreds"
