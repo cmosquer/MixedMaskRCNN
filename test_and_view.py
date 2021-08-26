@@ -262,7 +262,7 @@ def main(args=None):
 
                 img2 = cv2.imread(row['output_file'])
                 img1 = cv2.imread(row_csv_test['trx_v1_heatmap'].values[0])
-
+                print(img1.shape,img2.shape)
                 fig,axs = plt.subplots(1,2,figsize=(18,9))
                 axs[0].imshow(img1)
                 axs[0].set_title('TRx v1')
