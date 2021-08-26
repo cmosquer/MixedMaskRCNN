@@ -259,7 +259,7 @@ def main(args=None):
                 trx2score = 100*float(row['averaged_cont_pred'])
 
                 img2 = cv2.imread(row['output_file'])
-                img1 = cv2.imread(row_csv_test['trx_v1_heatmap'])
+                img1 = cv2.imread(row_csv_test['trx_v1_heatmap'].values[0])
 
                 fig,axs = plt.subplots(1,2,figsize=(18,9))
                 axs[0].imshow(img1)
