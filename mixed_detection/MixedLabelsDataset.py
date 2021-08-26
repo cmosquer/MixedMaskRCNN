@@ -48,7 +48,7 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
         self.aug = iaa.Sequential(
             [
              #iaa.CropAndPad(percent=(-0.2,0),pad_mode="constant",pad_cval=0),
-             iaa.Affine(scale=(0.5, 0),
+             iaa.Affine(scale=(0.8, 1),
                         translate_percent={"x": (-0.1, 0.1), "y": (-0.1, 0.1)},
                         rotate=(-5, 5)
                         ),
