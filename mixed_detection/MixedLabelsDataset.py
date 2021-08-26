@@ -70,7 +70,7 @@ class TestAugmentationDataset(torch.utils.data.Dataset):
         img = np.array(Image.open(img_path.replace('\\','/')).convert('RGB'))
         # Applying augmentations to numpy array
         img = self.aug(image=img)
-        img = self.toTensor(img)
+        img,_ = self.toTensor(img,target=None)
         print(img.shape)
         # converting to pytorch image format & 2,0,1 because pytorch excepts image channel first then dimension of image
         #img = np.transpose(img, (2, 0, 1)).astype(np.float32)
