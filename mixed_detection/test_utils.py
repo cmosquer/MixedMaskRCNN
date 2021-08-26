@@ -100,7 +100,7 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
             dfPreds.at[dfPreds.image_name==os.path.basename(image_path[0]),'cont_pred_augm'+str(j)] = cont_pred
             for x,val in enumerate(x_reg):
                 dfPreds.at[dfPreds.image_name==os.path.basename(image_path[0]),'x_reg_{}_augm{}'.format(x,j)] = val
-
+        print(dfPreds['binary_pred_augm'+str(j)].describe())
     bin_cols = [bin_col for bin_col in dfPreds.columns if 'binary_pred' in bin_col]
     cont_cols = [cont_col for cont_col in dfPreds.columns if 'cont_pred' in cont_col]
     dfPreds['averaged_binary_pred'] = [1 if v > 0.5 else 0 for v in dfPreds[bin_cols].mean(axis=1)]

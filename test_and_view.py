@@ -5,7 +5,7 @@ from mixed_detection.MixedLabelsDataset import MixedLabelsDataset, TestAugmentat
 from mixed_detection.engine import evaluate_coco, evaluate_classification
 from datetime import datetime
 from mixed_detection.BinaryClassifier import BinaryClassifier
-
+from matplotlib import pyplot as plt
 import wandb
 import pandas as pd
 
@@ -19,7 +19,7 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : output_dir+'2021-07-30_binary/testCSV.csv',#trx_dir+'Tests/poc_cases.csv','{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        'test_set' : trx_dir+'Tests/poc_cases_with_trxv1.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
@@ -43,6 +43,8 @@ def main(args=None):
         'loop': False,
 
         'force_cpu': False,
+
+        'save_comparison_trx_v1':True
     }
     print('starting test script')
     clf_from_old_model = False
@@ -234,6 +236,49 @@ def main(args=None):
                           save_figures=config['save_figures'])
 
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
+
+        if config['save_comparison_trx_v1']:
+            assert 'trx_v1_heatmap' in csv_test.columns
+            assert 'trx_v1_cont_pred' in csv_test.columns
+            assert 'trx_v1_binary_pred' in csv_test.columns
+            saving_dir = f'{output_dir}/{chosen_experiment}/test-{date}/comparison_trxv1/'
+            os.makedirs(saving_dir,exist_ok=True)
+
+            csv_test['image_name'] = [path.replace('\\','/') for path in csv_test.image_name]
+            for i,row in dfPreds.iterrows():
+                imagename = row['image_name'].replace('\\','/')
+                row_csv_test = csv_test[csv_test.image_name==imagename]
+
+                an = row_csv_test.accessionNumber
+                trx1pred = 'CON OPACIDAD' if bool(row_csv_test.trx_v1_binary_pred) else 'SIN OPACIDAD'
+                trx1score = 100*float(row_csv_test.trx_v1_cont_pred.values)
+                trx2pred = 'CON OPACIDAD' if bool(row['averaged_binary_pred']) else 'SIN OPACIDAD'
+                trx2score = 100*float(row['averaged_cont_pred'])
+
+                img2 = cv2.imread(row['output_file'])
+                img1 = cv2.imread(row_csv_test['trx_v1_heatmap'])
+
+                fig,axs = plt.subplots(1,2,figsize=(18,9))
+                axs[0].imshow(img1)
+                axs[0].set_title('TRx v1')
+                axs[0].set_xlabel(f'{trx1pred}\n{trx1score}%')
+                axs[0].spines['bottom'].set_visible(False)
+                axs[0].spines['top'].set_visible(False)
+                axs[0].spines['right'].set_visible(False)
+                axs[0].spines['left'].set_visible(False)
+                fig.set_suptitle(f"AN: {an}\nID:{row['sopInstanceUid']}\nGround truth: {row['class_name']}")
+                axs[1].imshow(img2)
+                axs[1].set_title('TRx v2')
+                axs[1].set_xlabel(f'{trx2pred}\n{trx2score}%')
+                axs[1].spines['bottom'].set_visible(False)
+                axs[1].spines['top'].set_visible(False)
+                axs[1].spines['right'].set_visible(False)
+                axs[1].spines['left'].set_visible(False)
+                fig.savefig(saving_dir+f"{an}.jpg")
+
+
+
+
         wandb.log(wandb_valid)
 if __name__ == '__main__':
     main()
