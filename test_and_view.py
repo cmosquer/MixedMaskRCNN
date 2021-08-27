@@ -275,7 +275,10 @@ def main(args=None):
                 axs[0].spines['right'].set_visible(False)
                 axs[0].spines['left'].set_visible(False)
                 gt = 'Sin opacidad' if row_csv_test['class_name'].values[0]=='nofinding' else 'Con opacidad'
-                fig.suptitle(f"AN: {an}\nID:{row['sopInstanceUid']}\nGround truth: {gt}")
+                try:
+                    fig.suptitle(f"AN: {an}\nID:{row_csv_test['sopInstanceUid'].values[0]}\nGround truth: {gt}")
+                except:
+                    fig.suptitle(f"AN: {an}\nGround truth: {gt}")
                 axs[1].imshow(img2)
                 axs[1].set_title('TRx v2')
                 axs[1].set_xlabel(f'{trx2pred}\n{trx2score}%')
@@ -286,7 +289,7 @@ def main(args=None):
                 fig.savefig(saving_dir+f"{an}.jpg")
 
                 plt.cla()
-                
+
 
 
         wandb.log(wandb_valid)
