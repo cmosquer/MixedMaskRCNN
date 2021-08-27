@@ -260,7 +260,9 @@ def main(args=None):
 
                 img2 = cv2.imread(row['output_file'])
                 print(img2.shape)
-                print( row_csv_test['trx_v1_heatmap'].values[0])
+                print(row_csv_test['trx_v1_heatmap'].values[0])
+
+
                 assert os.path.exists(row_csv_test['trx_v1_heatmap'].values[0])
                 img1 = cv2.imread(row_csv_test['trx_v1_heatmap'].values[0])
                 print(img1.shape)
@@ -273,7 +275,7 @@ def main(args=None):
                 axs[0].spines['right'].set_visible(False)
                 axs[0].spines['left'].set_visible(False)
                 gt = 'Sin opacidad' if row_csv_test['class_name'].values[0]=='nofinding' else 'Con opacidad'
-                fig.set_suptitle(f"AN: {an}\nID:{row['sopInstanceUid']}\nGround truth: {gt}")
+                fig.suptitle(f"AN: {an}\nID:{row['sopInstanceUid']}\nGround truth: {gt}")
                 axs[1].imshow(img2)
                 axs[1].set_title('TRx v2')
                 axs[1].set_xlabel(f'{trx2pred}\n{trx2score}%')
@@ -283,7 +285,8 @@ def main(args=None):
                 axs[1].spines['left'].set_visible(False)
                 fig.savefig(saving_dir+f"{an}.jpg")
 
-
+                plt.cla()
+                
 
 
         wandb.log(wandb_valid)
