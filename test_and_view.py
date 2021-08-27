@@ -216,12 +216,6 @@ def main(args=None):
             dfPreds = testAugmented(augm_data_loader_test_files,config['test_augmentation'],
                                     model,device,binary_classifier=test_clf,dfPreds=dfPreds)
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-<<<<<<< HEAD
-=======
-        
->>>>>>> 904c52c075f6f3976f37fd75ef97ff1f9e50e066
-
-
         del model
         if config['save_figures'] is not None:
             model_plot.to(device)
