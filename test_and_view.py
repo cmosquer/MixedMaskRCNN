@@ -260,11 +260,11 @@ def main(args=None):
 
                 img2 = cv2.imread(row['output_file'])
                 assert os.path.exists(row_csv_test['trx_v1_heatmap'].values[0])
-                img1 = cv2.imread(row_csv_test['trx_v1_heatmap'].values[0])
+                img1 = cv2.cvtColor(cv2.imread(row_csv_test['trx_v1_heatmap'].values[0]), cv2.COLOR_BGR2RGB)
                 fig,axs = plt.subplots(1,2,figsize=(18,9))
                 axs[0].imshow(img1)
                 axs[0].set_title('TRx v1')
-                axs[0].set_xlabel(f'{trx1pred}\n{trx1score}%')
+                axs[0].set_xlabel('{}\n{:.1f}%'.format(trx1pred,trx1score))
                 axs[0].spines['bottom'].set_visible(False)
                 axs[0].spines['top'].set_visible(False)
                 axs[0].spines['right'].set_visible(False)
@@ -276,16 +276,18 @@ def main(args=None):
                     fig.suptitle(f"AN: {an}\nGround truth: {gt}")
                 axs[1].imshow(img2)
                 axs[1].set_title('TRx v2')
-                axs[1].set_xlabel(f'{trx2pred}\n{trx2score}%')
+                axs[1].set_xlabel('{}\n{:.2f}%'.format(trx2pred,trx2score))
                 axs[1].spines['bottom'].set_visible(False)
                 axs[1].spines['top'].set_visible(False)
                 axs[1].spines['right'].set_visible(False)
                 axs[1].spines['left'].set_visible(False)
                 fname = saving_dir+f"{an}.jpg"
                 print(fname)
+                fig.tight_layout()
                 fig.savefig(fname)
+                fig.close()
                 assert os.path.exists(fname)
-                plt.cla()
+                plt.close('all')
 
 
 
