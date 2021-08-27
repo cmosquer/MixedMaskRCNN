@@ -286,8 +286,10 @@ def main(args=None):
                 axs[1].spines['top'].set_visible(False)
                 axs[1].spines['right'].set_visible(False)
                 axs[1].spines['left'].set_visible(False)
-                fig.savefig(saving_dir+f"{an}.jpg")
-
+                fname = saving_dir+f"{an}.jpg"
+                print(fname)
+                fig.savefig(fname)
+                assert os.path.exists(fname)
                 plt.cla()
 
 
