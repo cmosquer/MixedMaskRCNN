@@ -199,7 +199,7 @@ def main(args=None):
             dataset_test_originals, batch_size=1, shuffle=False, num_workers=0,
             #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
             )
-
+        """
         dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
                               save_boxes_csv=output_csv_path, binary=binary_opacity,
                              )
@@ -232,8 +232,8 @@ def main(args=None):
                           save_figures=config['save_figures'])
 
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-
-        #dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
+        """
+        dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
         if config['save_comparison_trx_v1']:
             assert 'trx_v1_heatmap' in csv_test.columns
             assert 'trx_v1_cont_pred' in csv_test.columns
