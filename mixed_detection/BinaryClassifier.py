@@ -1,5 +1,6 @@
 import torch
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_curve, precision_recall_curve
 from mixed_detection.utils import getClassificationMetrics, process_output, update_regression_features
 from mixed_detection.calibration import logregCal
 import numpy as np
@@ -7,7 +8,7 @@ from tqdm import tqdm
 
 EPSILON = 1e-100
 
-
+BETA = 1/3  #RATIO IMPORTANCIA RECALL / IMPORTANCIA PRECISION
 class BinaryClassifier():
 
     def __init__(self,expected_prevalence, costs_ratio):
@@ -26,27 +27,35 @@ class BinaryClassifier():
 
         self.train_positive_prior = 0.5
         self.train_negative_prior = 0.5
+        self.feature_idx = -1 #-1 for random forest, else a feature index in x_regression
 
-
+        self.use_calibrated = True
 
     def train(self):
         self.fit_classifier()
         self.calibrate()
 
     def infere(self,x_regresion_test):
-        assert len(self.calibration_parameters) > 0, "Classifier was not trained yet"
 
-        x_binary_cont = self.clf.predict_proba(x_regresion_test[:, :self.used_features])
-        positive_posteriors = x_binary_cont[:, 1]
-        negative_posteriors = x_binary_cont[:, 0]
+        if self.feature_idx == -1:
+            x_binary_cont = self.clf.predict_proba(x_regresion_test[:, :self.used_features])
+            positive_posteriors = x_binary_cont[:, 1]
+            negative_posteriors = x_binary_cont[:, 0]
+        else:
+            x_binary_cont = x_regresion_test[:,self.feature_idx]
+            positive_posteriors = x_binary_cont
+            negative_posteriors = 1-x_binary_cont
+        if self.use_calibrated:
+            assert len(self.calibration_parameters) > 0, "Classifier was not trained yet"
+            LLR = np.log((positive_posteriors + EPSILON) / (negative_posteriors + EPSILON)) - np.log(
+                (self.train_positive_prior + EPSILON) / (self.train_negative_prior + EPSILON))
+            a = self.calibration_parameters['a']
+            b = self.calibration_parameters['b']
+            k = self.calibration_parameters['k']
 
-        LLR = np.log((positive_posteriors + EPSILON) / (negative_posteriors + EPSILON)) - np.log(
-            (self.train_positive_prior + EPSILON) / (self.train_negative_prior + EPSILON))
-        a = self.calibration_parameters['a']
-        b = self.calibration_parameters['b']
-        k = self.calibration_parameters['k']
-
-        x_positive_posteriors = 1 / (1 + np.exp(-(a * LLR + b) + k))
+            x_positive_posteriors = 1 / (1 + np.exp(-(a * LLR + b) + k))
+        else:
+            x_positive_posteriors = x_binary_cont.copy()
         x_binary = [1 if x > self.posteriors_th else 0 for x in x_positive_posteriors]
         return x_binary, x_positive_posteriors
 
@@ -124,8 +133,12 @@ class BinaryClassifier():
 
     def calibrate(self):
         assert self.x_binary_cont is not None
-        positive_posteriors = self.x_binary_cont[:, 1]
-        negative_posteriors = self.x_binary_cont[:, 0]
+        if self.feature_idx == -1:
+            positive_posteriors = self.x_binary_cont[:, 1]
+            negative_posteriors = self.x_binary_cont[:, 0]
+        else:
+            positive_posteriors = self.x_binary_cont
+            negative_posteriors = 1-self.x_binary_cont
 
         LLR = np.log((positive_posteriors + EPSILON) / (negative_posteriors + EPSILON)) - np.log(
             (self.train_positive_prior + EPSILON) / (self.train_negative_prior + EPSILON))
@@ -142,6 +155,34 @@ class BinaryClassifier():
         print('a {:.2f} b {:.2f} k {:.2f}'.format(a, b, k))
         self.calibration_parameters = {'a': a, 'b': b, 'k': k}
         self.x_positive_posteriors = 1 / (1 + np.exp(-(a * LLR + b) + k))
+        tau_bayes = self.costs_ratio * (1 - self.expected_prevalence) / self.expected_prevalence
+        self.posteriors_th = tau_bayes / (1 + tau_bayes)
 
-
-
+    def use_one_feature(self,feature_idx,threshold_method='calibrate'):
+        """threshold_method: "calibrate" or "roc"
+        """
+        self.x_binary_cont = self.x[:,feature_idx]
+        self.feature_idx = feature_idx
+        if threshold_method=='calibrate':
+            self.use_calibrated=True
+            self.calibrate()
+        if threshold_method == 'roc':
+            fpr,tpr,th = roc_curve(self.y,self.x_binary_cont)
+            self.posteriors_th = th[np.argmax(tpr-fpr)]
+            self.use_calibrated = False
+        if threshold_method == 'precision':
+            precision,recall,th = precision_recall_curve(self.y,self.x_binary_cont)
+            self.posteriors_th = th[np.argmax(precision)]
+            self.use_calibrated = False
+        if threshold_method == 'f1':
+            precision,recall,th = precision_recall_curve(self.y,self.x_binary_cont)
+            f1 = (1+BETA**2)*precision*recall/((BETA**2)*precision+recall)
+            self.posteriors_th = th[np.argmax(f1)]
+            self.use_calibrated = False
+    def copy_data(self,binary_classifier):
+        self.x = binary_classifier.x
+        self.y = binary_classifier.y
+        self.x_binary_cont = binary_classifier.x_binary_cont
+        self.x_positive_posteriors = binary_classifier.x_positive_posteriors
+        self.train_positive_prior = binary_classifier.train_positive_prior
+        self.train_negative_prior = binary_classifier.train_negative_prior

@@ -23,21 +23,21 @@ def main(args=None):
         "initial_lr": 0.001,
         "lr_scheduler_epochs_interval": 3,
         'lr_scheduler_factor':0.1,
-        'dataset': "TX-RX-ds-20210625-00_ubuntu",
+        'dataset': "TX-RX-ds-20210625-00_removedCovid",
         'revised_test_set' : '{}/{}'.format(experiment_dir,'test_groundtruth_validados.csv'),
         'unfreeze_only_mask': False,
-        'data_augmentation': True,
+        'data_augmentation': False,
         'existing_valid_set': '{}/2021-07-30_binary/testCSV.csv'.format(experiment_dir),
         'opacityies_as_binary':False,
         'no_findings_examples_in_valid': False,
-        'no_findings_examples_in_train': 0.7,#Noneget,
+        'no_findings_examples_in_train': 0.2,#Noneget,
         'max_valid_set_size': 1000,
         'masks_as_boxes': True,
         'experiment_type': 'boxes',
         'date': datetime.today().strftime('%Y-%m-%d'),
         'epochs': 8,
         'random_seed': 40,
-        'pretrained_checkpoint': None, #experiment_dir + '/2021-07-25_binary/mixedMaskRCNN-1.pth',
+        'pretrained_checkpoint': experiment_dir + '/18-04-21/mixedMaskRCNN-9.pth',
         'pretrained_backbone_path': None, #experiment_dir + '/17-04-21/resnetBackbone-8.pth',
         'costs_ratio': 1 / 1,  # Costo FP/CostoFN
         'expected_prevalence': 0.1,
@@ -50,9 +50,9 @@ def main(args=None):
      'PatronIntersticial': 3,
      'Atelectasia': 4,
      'LesionesDeLaPared': 5,
-     'Covid_Typical_Appearance':6,
-        'Covid_Indeterminate_Appearance':7,
-        'Covid_Atypical_Appearance':8,
+     #'Covid_Typical_Appearance':2,
+     #   'Covid_Indeterminate_Appearance':2,
+     #   'Covid_Atypical_Appearance':2,
 
      }
 
@@ -86,7 +86,7 @@ def main(args=None):
             collate_fn=collate_fn,
             # sampler=train_sampler
         )
-
+        print('LEN DATA',len(data_loader))
         data_loader_calibration = torch.utils.data.DataLoader(
             dataset, batch_size=4, shuffle=False, num_workers=0,
             collate_fn=collate_fn)
@@ -97,7 +97,7 @@ def main(args=None):
 
 
         print('N train: {}. N test: {}'.format(len(data_loader),len(data_loader_valid)))
-
+        """
         if config['experiment_type'] == 'boxes':
             # get the model using our helper function
             model = get_object_detection_model(num_classes,
@@ -108,7 +108,8 @@ def main(args=None):
                                                 )
         if config['experiment_type'] == 'masks':
             # get the model using our helper function
-            model = get_instance_segmentation_model(num_classes,
+        """
+        model = get_instance_segmentation_model(num_classes,
                                                     pretrained_on_coco=True,
                                                     #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
                                                     pretrained_backbone=pretrained_backbone_path,

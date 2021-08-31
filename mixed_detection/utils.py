@@ -84,7 +84,7 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None,check_f
             prop_0 = config["no_findings_examples_in_train"]
             prop_1 = 1 - prop_0
             train_1 = len(csv)
-            train_required_0 = (train_1/prop_1)-train_1
+            train_required_0 = int(train_1/prop_1)-train_1
             train_required_0 = min(train_required_0, len(nofindings))
             print('train_required_0',train_required_0)
 
@@ -146,11 +146,11 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None,check_f
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
     print('Initializing Datasets...')
-    dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), colorjitter=config['data_augmentation'],
+    dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), #colorjitter=config['data_augmentation'],
                                  binary_opacity=config['opacityies_as_binary'],
                                  masks_as_boxes=config['masks_as_boxes'],
                                  check_files=check_files)
-    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False), colorjitter=False,
+    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False), #colorjitter=False,
                                        binary_opacity=config['opacityies_as_binary'],
                                        masks_as_boxes=config['masks_as_boxes'],
                                        check_files=check_files

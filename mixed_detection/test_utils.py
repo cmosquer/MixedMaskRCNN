@@ -16,9 +16,9 @@ def label_to_name(label,binary=True):
          3:'PatronIntersticial',
          4:'Atelectasia',
          5:'LesionesDeLaPared',
-         6: 'Covid_Typical_Appearance',
-         7: 'Covid_Indeterminate_Appearance',
-         8: 'Covid_Atypical_Appearance'
+         #6: 'Covid_Typical_Appearance',
+         #7: 'Covid_Indeterminate_Appearance',
+         #8: 'Covid_Atypical_Appearance'
          }
     return labels[label]
 
@@ -103,8 +103,9 @@ def testAugmented(loader_augmented,N_augms,model,device,binary_classifier,dfPred
         print(dfPreds['binary_pred_augm'+str(j)].describe())
     bin_cols = [bin_col for bin_col in dfPreds.columns if 'binary_pred' in bin_col]
     cont_cols = [cont_col for cont_col in dfPreds.columns if 'cont_pred' in cont_col]
-    dfPreds['averaged_binary_pred'] = [1 if v > 0.5 else 0 for v in dfPreds[bin_cols].mean(axis=1)]
+    #dfPreds['averaged_binary_pred'] = [1 if v > 0.5 else 0 for v in dfPreds[bin_cols].mean(axis=1)]
     dfPreds['averaged_cont_pred'] = dfPreds[cont_cols].mean(axis=1)
+    dfPreds['averaged_binary_pred'] = [1 if v > binary_classifier.posteriors_th else 0 for v in dfPreds[cont_cols].mean(axis=1)]
 
     return dfPreds
 

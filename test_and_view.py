@@ -19,7 +19,7 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : trx_dir+'Tests/poc_cases_with_trxv1.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        'test_set' : trx_dir+'Tests/poc_cases_with_trxv1_rawscores.csv', #Discrepancias/test_discrepancias.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
@@ -32,8 +32,9 @@ def main(args=None):
 
 
         'test_augmentation': 4,
-        'costs_ratio': 1/1, #Costo FP/CostoFN
+        'costs_ratio': 2/1, #Costo FP/CostoFN
         'expected_prevalence': 0.1,
+        'use_max_box_score':True,
 
         'calculate_coco': False,
         'calculate_classification': False,
@@ -41,6 +42,7 @@ def main(args=None):
         'only_best_datasets': False,
         'view_in_window': False,
         'loop': False,
+
 
         'force_cpu': False,
 
@@ -79,9 +81,9 @@ def main(args=None):
      'PatronIntersticial': 3,
      'Atelectasia': 4,
      'LesionesDeLaPared': 5,
-    'Covid_Typical_Appearance':6,
-    'Covid_Indeterminate_Appearance': 7,
-    'Covid_Atypical_Appearance': 8,
+    'Covid_Typical_Appearance':2,
+    'Covid_Indeterminate_Appearance': 2,
+    'Covid_Atypical_Appearance': 2,
     }
 
     if force_cpu:
@@ -134,6 +136,7 @@ def main(args=None):
     with wandb.init(config=config, project=project, name=experiment_id):
         config = wandb.config
         wandb_valid = {}
+
         if config['calculate_coco']:
             dataset_test = MixedLabelsDataset(csv_test, class_numbers, ut.get_transform(train=False),
                                               binary_opacity=binary_opacity,
@@ -154,11 +157,22 @@ def main(args=None):
                 print('Loaded binary model for classification')
                 test_clf = classification_data_dict['clf']
                 print('CLASSIFIER ', test_clf)
+
+
+                print('POSTERIORS THRESHOLD: ',test_clf.posteriors_th)
+                if config['use_max_box_score']:
+                    new_test_clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'],
+                                           costs_ratio=config['costs_ratio'])
+                    new_test_clf.copy_data(test_clf)
+                    new_test_clf.use_one_feature(1,threshold_method='f1')
+                    test_clf = new_test_clf
+                    print('feature idx',test_clf.feature_idx)
+
+                print('POSTERIORS THRESHOLD: ', test_clf.posteriors_th)
                 if test_clf.costs_ratio!=config['costs_ratio'] or test_clf.expected_prevalence!=config['expected_prevalence']:
                     print('Reseting params')
+                    print('Old params: ',test_clf.calibration_parameters)
                     test_clf.reset_params(config['expected_prevalence'],config['costs_ratio'])
-
-
             else:
                 print('No se encontro clasificador binario',classification_data)
                 return
@@ -199,12 +213,14 @@ def main(args=None):
             dataset_test_originals, batch_size=1, shuffle=False, num_workers=0,
             #collate_fn=ut.collate_fn #As it is only one image, we do not need collate fn
             )
-        """
+
         dfPreds = testOriginals(data_loader_test_files, model, device=device, binary_classifier=test_clf,
                               save_boxes_csv=output_csv_path, binary=binary_opacity,
                              )
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-        #dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
+
+
+        dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
         if config['test_augmentation'] > 0:
             print('starting tta')
             dataset_test_aug = TestAugmentationDataset(csv_test_files,
@@ -231,8 +247,10 @@ def main(args=None):
                           plot_parameters=plot_parameters, binary=binary_opacity,
                           save_figures=config['save_figures'])
 
+
         dfPreds.to_csv(output_csv_path+'_preds.csv',index=False)
-        """
+
+
         dfPreds = pd.read_csv(output_csv_path + '_preds.csv')
         if config['save_comparison_trx_v1']:
             assert 'trx_v1_heatmap' in csv_test.columns
@@ -249,6 +267,11 @@ def main(args=None):
                 dfPreds.loc[i,'gt'] = 0 if row_csv_test['class_name'].values[0]=='nofinding' else 1
 
                 an = row_csv_test.accessionNumber.values[0]
+                try:
+                    an = int(an)
+                except:
+                    an = row_csv_test['sopInstanceUid'].values[0]
+                    print(an)
                 trx1pred = 'CON OPACIDAD' if bool(row_csv_test.trx_v1_binary_pred.values[0]) else 'SIN OPACIDAD'
                 trx1score = 100*float(row_csv_test.trx_v1_cont_pred.values[0])
                 trx2pred = 'CON OPACIDAD' if bool(row['averaged_binary_pred']) else 'SIN OPACIDAD'
@@ -259,8 +282,7 @@ def main(args=None):
                 img1 = cv2.cvtColor(cv2.imread(row_csv_test['trx_v1_heatmap'].values[0]), cv2.COLOR_BGR2RGB)
                 fig,axs = plt.subplots(1,2,figsize=(18,9))
                 axs[0].imshow(img1)
-                axs[0].set_title('TRx v1')
-                axs[0].set_xlabel('{}\n{:.1f}%'.format(trx1pred,trx1score))
+                axs[0].set_title('TRx v1 - {} - {:.1f}%'.format(trx1pred,trx1score))
                 axs[0].spines['bottom'].set_visible(False)
                 axs[0].spines['top'].set_visible(False)
                 axs[0].spines['right'].set_visible(False)
@@ -270,9 +292,11 @@ def main(args=None):
                     fig.suptitle(f"AN: {an}\nID:{row_csv_test['sopInstanceUid'].values[0]}\nGround truth: {gt}")
                 except:
                     fig.suptitle(f"AN: {an}\nGround truth: {gt}")
-                axs[1].imshow(img2)
-                axs[1].set_title('TRx v2')
-                axs[1].set_xlabel('{}\n{:.2f}%'.format(trx2pred,trx2score))
+                try:
+                    axs[1].imshow(img2)
+                except:
+                    print(row['output_file'])
+                axs[1].set_title('TRx v2 - {} - {:.2f}%'.format(trx2pred,trx2score))
                 axs[1].spines['bottom'].set_visible(False)
                 axs[1].spines['top'].set_visible(False)
                 axs[1].spines['right'].set_visible(False)
@@ -281,7 +305,6 @@ def main(args=None):
                 print(fname)
                 fig.tight_layout()
                 fig.savefig(fname)
-                fig.close()
                 assert os.path.exists(fname)
                 plt.close('all')
 
