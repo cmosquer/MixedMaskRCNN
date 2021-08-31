@@ -146,7 +146,7 @@ def main(args=None):
         interval_steps = int(len(data_loader)/20)
         print('Wandb logging after {} steps'.format(interval_steps))
         wandb.watch(model, optimizer, log_freq=interval_steps)
-        steps_per_epoch = 1000
+        steps_per_epoch = 3300
 
         absolute_epochs = int(config.epochs*(len(data_loader)/steps_per_epoch))
         print('{} epochs of {} steps'.format(absolute_epochs,steps_per_epoch))
