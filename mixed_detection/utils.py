@@ -146,11 +146,15 @@ def prepareDatasets(config,output_dir,class_numbers,train_transform=None,check_f
     csv_train.to_csv('{}/trainCSV.csv'.format(output_dir),index=False)
     csv_valid.to_csv('{}/testCSV.csv'.format(output_dir),index=False)
     print('Initializing Datasets...')
-    dataset = MixedLabelsDataset(csv_train, class_numbers,get_transform(train=True), #colorjitter=config['data_augmentation'],
+    if config['data_augmentation']:
+        transforms = get_transform()
+    else:
+        transforms = None
+    dataset = MixedLabelsDataset(csv_train, class_numbers,transforms=transforms,
                                  binary_opacity=config['opacityies_as_binary'],
                                  masks_as_boxes=config['masks_as_boxes'],
                                  check_files=check_files)
-    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers, get_transform(train=False), #colorjitter=False,
+    dataset_valid = MixedLabelsDataset(csv_valid, class_numbers,
                                        binary_opacity=config['opacityies_as_binary'],
                                        masks_as_boxes=config['masks_as_boxes'],
                                        check_files=check_files
@@ -330,14 +334,11 @@ def mean_average_precision(
 def collate_fn(batch):
     return tuple(zip(*batch))
 
-def get_transform(train):
+def get_transform():
     transforms = []
-    # converts the image, a PIL image, into a PyTorch Tensor
-    transforms.append(T.ToTensor())
-    if train:
 
-        transforms.append(T.RandomHorizontalFlip(0.5))
-        transforms.append(T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2))
+    transforms.append(T.RandomHorizontalFlip(0.5))
+    transforms.append(T.ColorJitter(brightness=0.2, saturation=0.2, contrast=0.2, hue=0.2))
     print('TRANSFORMS: ',transforms)
     return T.Compose(transforms)
 

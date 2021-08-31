@@ -90,7 +90,7 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         self.return_image_source = return_image_source
         self.binary = binary_opacity
         self.masks_as_boxes = masks_as_boxes
-
+        self.toTensor = T.ToTensor()
         assert pd.Series(['mask_path','label_level',
                           'x1','x2','y1','y2',
                           'class_name','image_source',
@@ -218,6 +218,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
         #print('Memory before transforms: %', psutil.virtual_memory().percent)
         if self.transforms is not None:
             img, target = self.transforms(img, target)
+
+        img,target = self.toTensor(img,target=target)
 
         if self.return_image_source:
             return img, target, image_source, img_path
