@@ -148,9 +148,11 @@ def main(args=None):
 
         absolute_epochs = int(config.epochs*(len(data_loader)/steps_per_epoch))
         print('{} epochs of {} steps'.format(absolute_epochs,steps_per_epoch))
-
-        clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'],
+        if config['opacityies_as_binary']:
+            clf = BinaryClassifier(expected_prevalence=config['expected_prevalence'],
                                costs_ratio=config['costs_ratio'])
+        else:
+            clf = None
         for epoch in range(absolute_epochs):
             print('Memory when starting epoch: ', psutil.virtual_memory().percent)
             # train for one epoch, printing every 10 iterations
@@ -177,15 +179,16 @@ def main(args=None):
             results_coco = evaluate_coco(model, data_loader_valid, device=device,
                                          results_file=results_coco_file,use_cpu=True, iou_types=iou_types)
             wandb_valid.update(results_coco)
-            if epoch % 2 == 0:
-                # Ajustar clasificador binario y calibrarlo
-                clf.get_data_from_model(model, data_loader_calibration, device)
-                clf.train()
+            if config['opacityies_as_binary']:
+                if epoch % 2 == 0:
+                    # Ajustar clasificador binario y calibrarlo
+                    clf.get_data_from_model(model, data_loader_calibration, device)
+                    clf.train()
 
 
-            results_classif = evaluate_classification(model, data_loader_valid, device=device,
+                results_classif = evaluate_classification(model, data_loader_valid, device=device,
                                                       results_file=results_coco_file, test_clf=clf)
-            wandb_valid.update(results_classif)
+                wandb_valid.update(results_classif)
 
             #evaluate_dice(model, data_loader_valid, device=device, results_file=results_coco_file)
 

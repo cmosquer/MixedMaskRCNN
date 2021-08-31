@@ -145,8 +145,7 @@ def evaluate_classification(model, data_loader, device,
                             results_file=None, test_clf=None,log_wandb=True,
                             max_detections=None,min_box_proportionArea=None,
                             min_score_threshold=None,
-                            costs_ratio=1/10, #Costo FP/CostoFN
-                            prior_esperada = 0.1,
+
                              ):
     print('STARTING VALIDATION')
     assert data_loader.batch_size == 1
