@@ -100,6 +100,7 @@ def main(args=None):
         """
         if config['experiment_type'] == 'boxes':
             # get the model using our helper function
+            arch = "fasterRCNN"
             model = get_object_detection_model(num_classes,
                                                 pretrained_on_coco=True,
                                                 # rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
@@ -109,12 +110,13 @@ def main(args=None):
         if config['experiment_type'] == 'masks':
             # get the model using our helper function
         """
+        arch = "maskRCNN"
         model = get_instance_segmentation_model(num_classes,
                                                     pretrained_on_coco=True,
                                                     #rpn_nms_thresh=0.5,rpn_fg_iou_thresh=0.5, #Parametros a probar
                                                     pretrained_backbone=pretrained_backbone_path,
                                                     #trainable_layers=0
-                                                    )
+                                                     )
         if pretrained_checkpoint is not None:
             print('Loading pretrained checkpoint ...')
             model.load_state_dict(torch.load(pretrained_checkpoint))
@@ -164,7 +166,7 @@ def main(args=None):
             # update the learning rate
             lr_scheduler.step()
             # evaluate on the test dataset
-            saving_path = '{}/fasterRCNN-{}.pth'.format(output_dir,epoch) #None#
+            saving_path = '{}/{}-{}.pth'.format(output_dir,arch,epoch) #None#
 
             if saving_path:
                 torch.save(model.state_dict(), saving_path)
