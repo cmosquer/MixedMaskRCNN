@@ -19,15 +19,15 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : trx_dir+'Tests/poc_cases_with_trxv1_rawscores.csv', #Discrepancias/test_discrepancias.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        'test_set' : trx_dir+'Tests/Discrepancias/test_discrepancias.csv', #poc_cases_with_trxv1_rawscores.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
         #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
 
-        'experiment': '2021-07-30_binary',
+        'experiment': '2021-08-31',
         'experiment_type': 'boxes',
-        'tested_epoch': 0,
+        'tested_epoch': 11,
 
-        'opacityies_as_binary': True,
+        'opacityies_as_binary': False,
         'masks_as_boxes': True,
 
 
@@ -57,7 +57,7 @@ def main(args=None):
 
     chosen_experiment = config['experiment']
     chosen_epoch = config['tested_epoch']
-    trainedModelPath = "{}/{}/fasterRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
+    trainedModelPath = "{}/{}/maskRCNN-{}.pth".format(output_dir, chosen_experiment, chosen_epoch)
     save_figures = config['save_figures']
     date = datetime.today().strftime('%Y-%m-%d')
     save_fig_dir = f'{output_dir}/{chosen_experiment}/test-{date}/detections_test_epoch-{chosen_epoch}_{save_figures}/'
@@ -81,9 +81,9 @@ def main(args=None):
      'PatronIntersticial': 3,
      'Atelectasia': 4,
      'LesionesDeLaPared': 5,
-    'Covid_Typical_Appearance':2,
-    'Covid_Indeterminate_Appearance': 2,
-    'Covid_Atypical_Appearance': 2,
+    #'Covid_Typical_Appearance':2,
+    #'Covid_Indeterminate_Appearance': 2,
+    #'Covid_Atypical_Appearance': 2,
     }
 
     if force_cpu:
