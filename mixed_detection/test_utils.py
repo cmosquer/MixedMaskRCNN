@@ -215,9 +215,11 @@ def testOriginals(loader_originals, model, device,
         assert len(image) == 1, "Must use one-sample batchs for testing"
         image = image.to(device)
         target = dict(zip(target.keys(),[val[0].to('cpu').detach() for val in target.values()]))
-        print(target['labels'])
+        print(target['labels'],len(target['labels']))
         if len(target['labels']) > 1:
             gt = 1
+        elif len(target['labels']) == 0:
+            gt = 0
         else:
             gt = float(target['labels'].item())
         pred, cont_pred, x_reg, outputs = infereImage(model,image,binary_classifier)
