@@ -19,9 +19,9 @@ def main(args=None):
     output_dir = trx_dir+'Experiments/'
 
     config = {
-        'test_set' : trx_dir+'Tests/Discrepancias/test_discrepancias.csv', #poc_cases_with_trxv1_rawscores.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
+        #'test_set' : trx_dir+'Tests/Discrepancias/test_discrepancias.csv', #poc_cases_with_trxv1_rawscores.csv', #output_dir+'2021-07-30_binary/testCSV.csv',#'{}/{}'.format(output_dir,'test_groundtruth_validados.csv'), #
 
-        #'test_set' : '{}/{}'.format(output_dir,'2021-06-25_boxes_binary/testCSV.csv'), #output_dir+,#
+        'test_set' : '{}/{}'.format(output_dir,'2021-08-31/testCSV.csv'), #output_dir+,#
 
         'experiment': '2021-08-31',
         'experiment_type': 'boxes',
@@ -46,7 +46,7 @@ def main(args=None):
 
         'force_cpu': False,
 
-        'save_comparison_trx_v1':True
+        'save_comparison_trx_v1': False
     }
     print('starting test script')
     clf_from_old_model = False
