@@ -192,7 +192,8 @@ class MixedLabelsDataset(torch.utils.data.Dataset):
                             else:
                                 labels += [1]*len(raw_labels)
                         else:
-                            labels += [self.class_numbers[c] for c in raw_labels]
+
+                            labels += [self.class_numbers[c] for c in raw_labels if c != 'nofinding']
 
             masks = np.zeros((len(boxes),img.shape[0],img.shape[1])) #Masks with all-zero elements will be considered as empty masks
 
