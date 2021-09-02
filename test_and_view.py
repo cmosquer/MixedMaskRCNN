@@ -116,7 +116,7 @@ def main(args=None):
         if clf_from_old_model:
             print('WILL CREATE CLASSIFIER')
             dataset_train = MixedLabelsDataset(csv_train, class_numbers,
-                                              ut.get_transform(train=False),
+                                              #ut.get_transform(train=False),
                                               binary_opacity=binary_opacity,check_files=False,
                                               return_image_source=False)
             data_loader_train = torch.utils.data.DataLoader(
@@ -138,7 +138,7 @@ def main(args=None):
         wandb_valid = {}
 
         if config['calculate_coco']:
-            dataset_test = MixedLabelsDataset(csv_test, class_numbers, ut.get_transform(train=False),
+            dataset_test = MixedLabelsDataset(csv_test, class_numbers, #ut.get_transform(train=False),
                                               binary_opacity=binary_opacity,
                                               return_image_source=False)
             data_loader_test = torch.utils.data.DataLoader(
@@ -178,7 +178,7 @@ def main(args=None):
                 return
         if config['calculate_classification']:
             dataset_test = MixedLabelsDataset(csv_test, class_numbers,
-                                              ut.get_transform(train=False),
+                                              #ut.get_transform(train=False),
                                               masks_as_boxes=config['masks_as_boxes'],
                                               binary_opacity=binary_opacity,
                                               return_image_source=True)
@@ -205,7 +205,7 @@ def main(args=None):
 
 
         dataset_test_originals = MixedLabelsDataset(csv_test_files, class_numbers,
-                                              ut.get_transform(train=False),
+                                              #ut.get_transform(train=False),
                                               masks_as_boxes=config['masks_as_boxes'],
                                               binary_opacity=binary_opacity,
                                               return_image_source=True)
