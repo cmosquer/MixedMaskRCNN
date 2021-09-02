@@ -11,7 +11,8 @@ def label_to_name(label,binary=True):
         labels = {1: "Opacidad", 0: "Sin hallazgo"}
 
     else:
-        labels = {1:'NoduloMasa',
+        labels = \
+         {1:'NoduloMasa',
          2:'Consolidacion',
          3:'PatronIntersticial',
          4:'Atelectasia',
@@ -193,7 +194,7 @@ def plotOriginals(loader_originals, device, dfPreds,
                         draw_annotations(colorimage, target, color=(255, 0, 0),
                                          label_to_name=label_to_name,binary=binary)
                     if save_figures=='masks':
-                        draw_masks(colorimage, target,
+                        draw_masks(colorimage, target,binary=binary,
                                    color=(255, 0, 0),label_to_name=label_to_name)
 
 

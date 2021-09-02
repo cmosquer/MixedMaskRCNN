@@ -208,7 +208,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
             label = label.item()
         except:
             pass
-        
+
         c = color if color is not None else label_color(label)
 
         if binary:
