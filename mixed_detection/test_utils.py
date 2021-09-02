@@ -70,7 +70,7 @@ def infereImage(model,image,binary_classifier=None):
             cont_pred=0
     else:
         pred = 1 if len(outputs['boxes']>0) else 0
-        cont_pred = outputs['scores'][0] if len(outputs['scores'])>0 else 0
+        cont_pred = outputs['scores'][0].item() if len(outputs['scores'])>0 else 0
         x_reg = None
     return pred, cont_pred, x_reg, outputs
 
@@ -134,9 +134,12 @@ def plotOriginals(loader_originals, device, dfPreds,
         folder = ''
         imgpath = os.path.basename(image_path[0])
         img_row = dfPreds[dfPreds.image_name == imgpath]
-        pred = img_row['averaged_binary_pred'].values[0]
-        cont_pred = img_row['averaged_cont_pred'].values[0]
-
+        if 'averaged_binary_pred' in img_row.columns:
+            pred = img_row['averaged_binary_pred'].values[0]
+            cont_pred = img_row['averaged_cont_pred'].values[0]
+        else:
+            pred = img_row['binary_pred_original'].values[0]
+            cont_pred = img_row['cont_pred_original'].values[0]
         if pred is not None:
             print(target['labels'])
             if len(target['labels']) > 1:
