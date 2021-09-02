@@ -277,8 +277,10 @@ def testOriginals(loader_originals, model, device,
                           'cont_pred_original': cont_pred,
                           'original_file_name': image_path[0],
                           }
-        for x,val in enumerate(x_reg):
-            results_preds["x_reg_"+str(x)+"_original"] = val
+
+        if x_reg is not None:
+            for x,val in enumerate(x_reg):
+                results_preds["x_reg_"+str(x)+"_original"] = val
         dfPreds = dfPreds.append(results_preds,ignore_index=True)
         del outputs,target, image
 
