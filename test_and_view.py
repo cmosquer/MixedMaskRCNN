@@ -76,7 +76,8 @@ def main(args=None):
 
     print('{} images to evaluate'.format(len(csv_test)))
 
-    class_numbers = {'NoduloMasa': 1,
+    class_numbers = {
+                'NoduloMasa': 1,
      'Consolidacion': 2,
      'PatronIntersticial': 3,
      'Atelectasia': 4,
@@ -97,6 +98,7 @@ def main(args=None):
         num_classes = 2
     else:
         num_classes = len(class_numbers.keys())+1
+    class_numbers['Opacidad'] = 6
     print('NUM CLASSES: ',num_classes)
     """if config['experiment_type']=='boxes':
         # get the model using our helper function
