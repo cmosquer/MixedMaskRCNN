@@ -1,1 +1,0 @@
-       device='cuda:0', grad_fn=<IndexBackward>)}

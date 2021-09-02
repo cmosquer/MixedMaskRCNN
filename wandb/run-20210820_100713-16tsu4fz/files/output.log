@@ -1,1 +1,0 @@
-          [0, 0, 0,  ..., 0, 0, 0]]]], dtype=torch.uint8), 'boxes': tensor([[[ 461., 1661.,  825., 1919.]]]), 'labels': tensor([[1]]), 'image_id': tensor([[6]]), 'area': tensor([[93912.]]), 'iscrowd': tensor([[0]])}

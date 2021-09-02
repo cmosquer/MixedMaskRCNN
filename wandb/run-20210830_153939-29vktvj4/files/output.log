@@ -1,1 +1,0 @@
-  self.x_positive_posteriors = 1 / (1 + np.exp(-(a * LLR + b) + k))
