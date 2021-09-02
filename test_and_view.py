@@ -31,7 +31,7 @@ def main(args=None):
         'masks_as_boxes': True,
 
 
-        'test_augmentation': 4,
+        'test_augmentation': 0,
         'costs_ratio': 2/1, #Costo FP/CostoFN
         'expected_prevalence': 0.1,
         'use_max_box_score':True,
