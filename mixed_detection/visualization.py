@@ -181,7 +181,7 @@ def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None
         if binary:
             caption = ('opacidad {0:.2f}'.format(scores[i]))
         else:
-            caption = (label_to_name(labels[i]) if label_to_name else labels[i]) + ': {0:.2f}'.format(scores[i])
+            caption = (label_to_name(labels[i], binary=binary) if label_to_name else labels[i]) + ': {0:.2f}'.format(scores[i])
         draw_caption(image, boxes[i, :], caption)
 
 
@@ -214,7 +214,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
         if binary:
             caption = f'{i}-opacidad'
         else:
-            caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
+            caption = '{}-{}'.format(i,label_to_name(label, binary=binary) if label_to_name else label)
         if 'scores' in annotations.keys():
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
@@ -252,7 +252,7 @@ def draw_masks(image, annotations, color=(0, 255, 0), label_to_name=None,binary=
         if binary:
             caption=f'{i}-opacidad'
         else:
-            caption = '{}-{}'.format(i,label_to_name(label) if label_to_name else label)
+            caption = '{}-{}'.format(i,label_to_name(label, binary=binary) if label_to_name else label)
         if 'scores' in annotations.keys():
             score = annotations['scores'][i]
             caption += '-{:.2f}'.format(score)
