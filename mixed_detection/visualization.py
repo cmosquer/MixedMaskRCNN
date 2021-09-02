@@ -194,6 +194,7 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
         color         : The color of the boxes. By default the color from keras_retinanet.utils.colors.label_color will be used.
         label_to_name : (optional) Functor for mapping a label to a name.
     """
+
     if isinstance(annotations, np.ndarray):
         annotations = {'boxes': annotations[:, :4], 'labels': annotations[:, 4]}
 
@@ -203,6 +204,11 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None,b
 
     for i in range(annotations['boxes'].shape[0]):
         label = annotations['labels'][i]
+        try:
+            label = label.item()
+        except:
+            pass
+        
         c = color if color is not None else label_color(label)
 
         if binary:
