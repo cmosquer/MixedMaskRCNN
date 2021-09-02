@@ -108,6 +108,8 @@ def main(args=None):
     if config['experiment_type']=='masks':
         # get the model using our helper function"""
     model = ut.get_instance_segmentation_model(num_classes)
+    model_plot = ut.get_instance_segmentation_model(num_classes, box_score_thresh=0.19, box_nms_thresh=0.3,
+                                               box_detections_per_img=8)
     model.to(device)
     model.load_state_dict(torch.load(trainedModelPath))
     #model = torch.load(trainedModelPath)
