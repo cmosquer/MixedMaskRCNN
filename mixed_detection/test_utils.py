@@ -16,6 +16,7 @@ def label_to_name(label,binary=True):
          3:'PatronIntersticial',
          4:'Atelectasia',
          5:'LesionesDeLaPared',
+         6: 'Opacidad'
          #6: 'Covid_Typical_Appearance',
          #7: 'Covid_Indeterminate_Appearance',
          #8: 'Covid_Atypical_Appearance'
