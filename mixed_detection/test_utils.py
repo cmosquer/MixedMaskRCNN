@@ -140,7 +140,7 @@ def plotOriginals(loader_originals, device, dfPreds,
         else:
             pred = img_row['binary_pred_original'].values[0]
             cont_pred = img_row['cont_pred_original'].values[0]
-        print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
+
         if pred is not None:
             if len(target['labels']) > 1:
                 gt = 1
@@ -148,6 +148,7 @@ def plotOriginals(loader_originals, device, dfPreds,
                 gt = 0
             else:
                 gt = float(target['labels'].item())
+            print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
             if np.all(pred == gt):
                 if np.all(gt == 0):
                     folder = 'TrueNegative'
