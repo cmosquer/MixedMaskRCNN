@@ -137,8 +137,11 @@ def plotOriginals(loader_originals, device, dfPreds,
         cont_pred = img_row['averaged_cont_pred'].values[0]
 
         if pred is not None:
-            print(target['labels'].item())
-            gt = float(target['labels'].item())
+            print(target['labels'])
+            if len(target['labels']) > 1:
+                gt = 1
+            else:
+                gt = float(target['labels'].item())
             if np.all(pred == gt):
                 if np.all(gt == 0):
                     folder = 'TrueNegative'
