@@ -126,8 +126,8 @@ def plotOriginals(loader_originals, device, dfPreds,
     os.makedirs(save_fig_dir + 'FalsePositive', exist_ok=True)
     os.makedirs(save_fig_dir + 'FalseNegative', exist_ok=True)
     os.makedirs(save_fig_dir + 'TrueNegative', exist_ok=True)
-    for image, target,image_source,image_path in loader_originals:
-        assert len(image)== 1, "Must use one-sample batchs for testing"
+    for image, target, image_source, image_path in loader_originals:
+        assert len(image) == 1, "Must use one-sample batchs for testing"
         image = image.to(device)
         target = dict(zip(target.keys(),[val[0].to('cpu').detach() for val in target.values()]))
         outputs = getOutputForPlot(plot_parameters,image)
@@ -140,10 +140,12 @@ def plotOriginals(loader_originals, device, dfPreds,
         else:
             pred = img_row['binary_pred_original'].values[0]
             cont_pred = img_row['cont_pred_original'].values[0]
+        print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
         if pred is not None:
-            print(target['labels'])
             if len(target['labels']) > 1:
                 gt = 1
+            elif len(target['labels']) == 0:
+                gt = 0
             else:
                 gt = float(target['labels'].item())
             if np.all(pred == gt):
@@ -156,7 +158,7 @@ def plotOriginals(loader_originals, device, dfPreds,
                     folder = 'FalsePositive'
                 else:
                     folder = 'FalseNegative'
-            print('CONT PRED: {}, BINARY PRED: {} , GT: {}'.format(cont_pred, pred, gt))
+
         if save_fig_dir is not None:
             saving_path = "{}/{}/{}".format(save_fig_dir, folder,
                                             #image_source[0],
@@ -219,7 +221,6 @@ def testOriginals(loader_originals, model, device,
         assert len(image) == 1, "Must use one-sample batchs for testing"
         image = image.to(device)
         target = dict(zip(target.keys(),[val[0].to('cpu').detach() for val in target.values()]))
-        print(target['labels'],len(target['labels']))
         if len(target['labels']) > 1:
             gt = 1
         elif len(target['labels']) == 0:
